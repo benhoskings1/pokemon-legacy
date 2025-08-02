@@ -27,3 +27,6 @@ class Obstacle(pg.sprite.Sprite):
         pos = pg.Vector2(rect.topleft) * scale
         self.rect = pg.Rect(pos, size)
         self.surf = pg.Surface(self.rect.size, pg.SRCALPHA)
+
+    def __repr__(self):
+        return f"Obstacle at {self.rect}"

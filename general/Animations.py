@@ -6,8 +6,8 @@ from PIL import Image
 
 from Image_Processing.ImageEditor import ImageEditor
 
-pokedex = pd.read_csv("game_data/Pokedex/Local Dex.tsv", delimiter='\t', index_col=1)
-attributes = pd.read_csv("game_data/Pokedex/AttributeDex.tsv", delimiter='\t', index_col=1)
+pokedex = pd.read_csv("game_data/pokedex/Local Dex.tsv", delimiter='\t', index_col=1)
+attributes = pd.read_csv("game_data/pokedex/AttributeDex.tsv", delimiter='\t', index_col=1)
 editor = ImageEditor()
 
 

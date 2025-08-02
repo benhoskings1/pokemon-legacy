@@ -6,7 +6,7 @@ from pygame import Surface
 
 import pokemon
 from screen_V2 import Colours, FontOption, Screen, BlitLocation
-from sprite_screen import SpriteScreen, PokeballCatchAnimation
+from sprite_screen import SpriteScreen, PokeballCatchAnimation, DisplayContainer
 from pokemon import Pokemon, PokemonSpriteSmall
 import pygame as pg
 from enum import Enum
@@ -58,46 +58,6 @@ BAG_DISPLAY_ITEM_TYPE_MAP = {
 
 
 # ======== CONTAINERS ==============
-class DisplayContainer(pg.sprite.Sprite, SpriteScreen):
-    """
-    Main game object button. Inherits from Sprite and SpriteScreen, enabling the full set of screen methods to
-    act on the sprite image.
-    """
-    def __init__(self, image_path, sprite_id, pos=(0, 0), scale=None):
-        """
-        Provide the image path for the base asset to create the sprite from
-
-        :param image_path:
-        :param sprite_id:
-        :param pos:
-        :param scale:
-        """
-        pg.sprite.Sprite.__init__(self)
-
-        self.sprite_type = "container"
-        self.image = pg.image.load(image_path)
-        if scale:
-            self.image = pg.transform.scale(self.image, pg.Vector2(self.image.get_size()) * scale)
-            pos = pg.Vector2(pos) * scale
-
-        self.rect = self.image.get_rect()
-        self.rect.topleft = pos
-        self.id = sprite_id
-        self.scale = scale
-
-        SpriteScreen.__init__(self, self.image.get_size())
-        self.load_image(image_path, base=True, scale=pg.Vector2(scale, scale))
-
-    def click_return(self):
-        return self.sprite_type, self.id
-
-    def is_clicked(self, pos):
-        if self.rect.collidepoint(pos):
-            return True
-        else:
-            return False
-
-
 class MoveContainer(DisplayContainer):
     def __init__(self, move, pos=(0, 0), scale=None):
 
@@ -262,8 +222,6 @@ class MoveContainer2(DisplayContainer):
         self.addText("PP", pos=pg.Vector2(47, 27) * self.scale, colour=Colours.white.value, shadowColour=Colours.darkGrey.value)
         self.addText(f"{move.PP}/{move.maxPP}", pos=pg.Vector2(90, 27) * self.scale,
                      location=BlitLocation.midTop, colour=Colours.white.value, shadowColour=Colours.darkGrey.value)
-
-        self.image = self.get_surface()
 
 
 class TeamMoveSelect(DisplayContainer):
@@ -476,7 +434,6 @@ class BattleDisplayItemSelect(SpriteScreen):
         select_container = DisplayContainer("assets/containers/item_select_pokeball.png", item, pos=(1, 152), scale=self.scale)
         select_container.sprite_type = "item"
         select_container.addText("USE", pos=pg.Vector2(92, 17) * self.scale, colour=Colours.white.value, shadowColour=Colours.darkGrey.value)
-        select_container.image = select_container.get_surface()
 
         self.sprites.add([return_container, select_container])
 
@@ -589,13 +546,13 @@ class PokemonSelector(SpriteScreen):
         summary_container = DisplayContainer("assets/containers/pokemon_container_2.png", TeamDisplayStates.summary, pos=(1, 152), scale=self.scale)
         summary_container.addText("SUMMARY", pos=pg.Vector2(51, 16) * self.scale, lines=1, location=BlitLocation.midTop,
                                   colour=Colours.white.value, shadowColour=Colours.lightGrey.value)
-        summary_container.image = summary_container.get_surface()
+        # summary_container.image = summary_container.get_surface()
 
         check_container = DisplayContainer("assets/containers/pokemon_container_2.png", TeamDisplayStates.moves, pos=(105, 152),
                                              scale=self.scale)
         check_container.addText("CHECK MOVES", pos=pg.Vector2(51, 16) * self.scale, lines=1, location=BlitLocation.midTop,
                                   colour=Colours.white.value, shadowColour=Colours.lightGrey.value)
-        check_container.image = check_container.get_surface()
+        # check_container.image = check_container.get_surface()
 
         self.sprites.add([summary_container, return_container, check_container, self.select_container])
 
@@ -614,7 +571,6 @@ class PokemonSelector(SpriteScreen):
         return display_surf
 
     def load_pk_details(self, pokemon):
-        print(f"loading {repr(pokemon)}")
         self.sprites.remove(self.select_container)
         self.select_container = PokemonContainerSingle(pokemon, pos=(9, 8), scale=self.scale)
         self.sprites.add(self.select_container)
@@ -637,7 +593,7 @@ class PokemonSummary(SpriteScreen):
                                              scale=self.scale)
         summary_container.addText("Check Moves", pos=pg.Vector2(51, 16) * self.scale, lines=1, location=BlitLocation.midTop,
                                   colour=Colours.white.value, shadowColour=Colours.lightGrey.value)
-        summary_container.image = summary_container.get_surface()
+        # summary_container.image = summary_container.get_surface()
 
         self.sprites.add([return_container, up_arrow, down_arrow, summary_container])
 
@@ -760,7 +716,7 @@ class PokemonMoves(SpriteScreen):
         summary_container.addText("SUMMARY", pos=pg.Vector2(51, 16) * self.scale, lines=1,
                                   location=BlitLocation.midTop,
                                   colour=Colours.white.value, shadowColour=Colours.lightGrey.value)
-        summary_container.image = summary_container.get_surface()
+        # summary_container.image = summary_container.get_surface()
 
         self.sprites.add([return_container, up_arrow, down_arrow, summary_container])
 

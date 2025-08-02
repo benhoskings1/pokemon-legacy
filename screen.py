@@ -18,12 +18,12 @@ class BlitLocation(Enum):
     centre = 8
 
 
-fonts = {"Main": Font(2), "Level": LevelFont(2)}
+fonts = {"Main": Font(2), "level": LevelFont(2)}
 
 
 class FontOption(Enum):
     main = fonts["Main"]
-    level = fonts["Level"]
+    level = fonts["level"]
 
 
 class Screen:

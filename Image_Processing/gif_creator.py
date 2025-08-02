@@ -1,12 +1,24 @@
 import imageio as iio
+
+from ImageEditor import ImageEditor2
 images = []
 
+import pygame as pg
+pg.display.set_mode((640, 480))
 
-FILENAMES = [f"/Users/benhoskings/Documents/Projects/pokemon-legacy/assets/battle/main_display/text_box_{idx+1}.png" for idx in range(2)]
+pg.init()
 
-images = []
+FILENAMES = [f"frames/frame_{idx}.png" for idx in range(5)]
+# images = [pg.image.load(file) for file in FILENAMES]
 
-for filename in FILENAMES:
-    images.append(iio.v3.imread(filename))
+editor = ImageEditor2()
+for idx, file in enumerate(FILENAMES):
+    editor.load_image(file)
+    editor.erase_colour(pg.Color("white"), overwrite=True)
+    pg.image.save(editor.image, f"frames/frame_{idx}.png")
+#
+images = [iio.v3.imread(filename) for filename in FILENAMES]
+
+editor = ImageEditor2()
 
 iio.mimsave('test.gif', images)

@@ -2,7 +2,7 @@ import pygame as pg
 from screen_V2 import Screen, BlitLocation
 
 from player import Player
-from pokemon import Pokemon
+from pokemon import Pokemon, PokemonSprite
 
 
 class PokeballCatchAnimation(pg.sprite.Sprite):
@@ -53,8 +53,9 @@ class GameObjects(pg.sprite.Group):
         for obj in self.sprites():
             if isinstance(obj, Player):
                 screen.add_surf(obj.image, pos=obj.blit_rect.topleft, sprite=True)
-            elif isinstance(obj, Pokemon) and obj.visible:
-                screen.add_surf(obj.image, pos=obj.rect.topleft, sprite=True)
+            elif isinstance(obj, Pokemon):
+                if obj.visible:
+                    screen.add_surf(obj.image, pos=obj.rect.topleft, sprite=True)
             elif isinstance(obj, DisplayContainer):
                 screen.add_surf(obj.get_surface(), pos=obj.rect.topleft, sprite=True)
             else:
@@ -134,6 +135,8 @@ class DisplayContainer(pg.sprite.Sprite, SpriteScreen):
 
         SpriteScreen.__init__(self, self.image.get_size())
         self.load_image(image_path, base=True, scale=pg.Vector2(scale, scale))
+
+        self.alpha = 255
 
     def click_return(self):
         return self.sprite_type, self.id

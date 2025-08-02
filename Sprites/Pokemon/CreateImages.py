@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import pygame as pg
 
-localDex = pd.read_csv("/Users/benhoskings/Documents/Coding/Pokemon/Game Data/Pokedex/Local Dex.tsv",
+localDex = pd.read_csv("/Users/benhoskings/Documents/Coding/Pokemon/Game Data/pokedex/Local Dex.tsv",
                        delimiter='\t', index_col=1)
 
 

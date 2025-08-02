@@ -10,9 +10,9 @@ class Pokedex:
         self.game = game
         self.controller = game.controller
 
-        self.national_dex = pd.read_csv("game_data/Pokedex/NationalDex/NationalDex.tsv", delimiter='\t', index_col=0)
+        self.national_dex = pd.read_csv("game_data/pokedex/NationalDex/NationalDex.tsv", delimiter='\t', index_col=0)
 
-        self.data: pd.Dataframe = pokedex
+        self.data: pd.DataFrame = pokedex
         if "appearances" not in self.data.columns:
             self.data["appearances"] = 0
         if "caught" not in self.data.columns:
@@ -24,6 +24,17 @@ class Pokedex:
         self.touch_display = None
 
         self.load_surfaces()
+
+    def get_next_seen_index(self, descending=True):
+        direction_mask = (self.data["Local_Num"] > self.main_display.pokemon_idx) if descending else \
+                            (self.data["Local_Num"] < self.main_display.pokemon_idx)
+
+        seen_pks = self.data.loc[direction_mask & (self.data["appearances"] > 0)]
+
+        if not descending:
+            seen_pks = seen_pks.sort_values("Local_Num", ascending=False)
+
+        return seen_pks["Local_Num"].iloc[0] if len(seen_pks) > 0 else None
 
     def update_display(self, flip=True):
         self.game.topSurf.blit(self.main_display.active_display.get_surface(), (0, 0))
@@ -40,13 +51,11 @@ class Pokedex:
         while not action:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
-                    self.game.save()
-                    self.game.running = False
+                    self.game.save_and_exit()
                     return None
 
                 elif event.type == pg.KEYDOWN:
                     if event.key == self.controller.a and self.main_display.display_state == PokedexDisplayStates.home:
-                        # print(self.data.loc[self.data["Local_Num"] == self.main_display.pokemon_idx, "caught"])
                         if self.data.loc[self.data["Local_Num"] == self.main_display.pokemon_idx, "appearances"].iloc[0] > 0:
                             self.main_display.display_state = PokedexDisplayStates.info
                             self.main_display.update()
@@ -62,13 +71,25 @@ class Pokedex:
 
                     elif event.key == self.controller.up:
                         if self.main_display.pokemon_idx != 1:
-                            self.main_display.pokemon_idx -= 1
+                            if self.main_display.display_state == PokedexDisplayStates.home:
+                                self.main_display.pokemon_idx -= 1
+                            else:
+                                next_idx = self.get_next_seen_index(descending=False)
+                                if next_idx is not None:
+                                    self.main_display.pokemon_idx = next_idx
+
                             self.main_display.update()
                             self.update_display()
 
                     if event.key == self.controller.down:
                         if self.main_display.pokemon_idx != 151:
-                            self.main_display.pokemon_idx += 1
+                            if self.main_display.display_state == PokedexDisplayStates.home:
+                                self.main_display.pokemon_idx += 1
+                            else:
+                                next_idx = self.get_next_seen_index()
+                                if next_idx is not None:
+                                    self.main_display.pokemon_idx = next_idx
+
                             self.main_display.update()
                             self.update_display()
 

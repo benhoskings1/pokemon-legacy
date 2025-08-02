@@ -1,4 +1,6 @@
 import os
+import re
+
 from enum import Enum
 from PIL import Image
 
@@ -43,7 +45,7 @@ def clean_surfaces(obj, _path='root'):
         return obj
 
 
-# with open("game_data/Pokedex/LocalDex/LocalDex.pickle", 'rb') as file:
+# with open("game_data/pokedex/LocalDex/LocalDex.pickle", 'rb') as file:
 #     pokedex: pd.DataFrame = pickle.load(file)
 
 editor = ImageEditor()
@@ -104,6 +106,15 @@ def load_gif(gif_path: str, bit_mask=None, opacity=255, scale=1) -> list[pg.Surf
         frames.append(surf)
 
     return frames
+
+
+def get_image_frame(file_name):
+    """ Extracts the number of the frame string using regex """
+    match = re.search(r".*_(\d+).png", file_name)
+    if match:
+        return int(match.group(1))
+    else:
+        return None
 
 
 class Colours(Enum):

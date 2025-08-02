@@ -1,8 +1,8 @@
 [
     {
         "Name": "Riolu",
-        "Level": 10,
-        "XP": 2000,
+        "level": 10,
+        "XP": 700,
         "Move_Names": [
             "Scratch",
             "Leer"
@@ -41,11 +41,11 @@
         },
         "Friendly": true,
         "Shiny": false,
-        "Visible": true
+        "visible": false
     },
     {
         "Name": "Piplup",
-        "Level": 5,
+        "level": 5,
         "XP": 135,
         "Move_Names": [
             "Pound",
@@ -87,11 +87,11 @@
         },
         "Friendly": true,
         "Shiny": true,
-        "Visible": true
+        "visible": false
     },
     {
         "Name": "Chimchar",
-        "Level": 5,
+        "level": 5,
         "XP": 135,
         "Move_Names": [
             "Scratch",
@@ -131,7 +131,7 @@
         },
         "Friendly": true,
         "Shiny": true,
-        "Visible": true
+        "visible": false
     }
 
 ]

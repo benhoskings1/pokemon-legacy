@@ -2,6 +2,7 @@ import os
 import re
 from os import close
 
+import pandas as pd
 import pygame as pg
 from enum import Enum
 
@@ -14,7 +15,7 @@ from sprite_screen import SpriteScreen, DisplayContainer
 
 BUTTON_POSITIONS = [(11, 36), (19, 84), (43, 124), (83, 148), (139, 148), (179, 124), (203, 84), (211, 36)]
 
-
+# ==== Enums ====
 class MenuTeamDisplayStates(Enum):
     items = 0
     medicine = 1
@@ -27,6 +28,7 @@ class MenuTeamDisplayStates(Enum):
     exit = 8
 
 
+# ==== Sprites ====
 class PocketButton(pg.sprite.Sprite):
     def __init__(self, item_type: MenuTeamDisplayStates, scale=1):
         pg.sprite.Sprite.__init__(self, )
@@ -66,6 +68,7 @@ class ItemSelector(pg.sprite.Sprite):
         self.id = None
 
 
+# ==== Containers =====
 class SelectedContainer(DisplayContainer):
     def __init__(self, item, scale=1):
         DisplayContainer.__init__(
@@ -101,6 +104,8 @@ class ItemSetContainer(DisplayContainer):
 
         sorted_items = sorted(bag_items, key=lambda item: item[0].item_id)[offset:min(offset+7, len(bag_items))]
 
+        # sorted_items += Item(pd.Series({"name": "close", "buy_price": None, "sell_price": None}), item_type)
+
         for idx, (item, count) in enumerate(sorted_items):
             # print(item.item_id)
             self.addText(f"No{item.item_id:02}", pg.Vector2(9, 17 + 16*idx)*self.scale, fontOption=FontOption.level)
@@ -111,6 +116,7 @@ class ItemSetContainer(DisplayContainer):
         return sorted_items[item_idx - offset][0] if sorted_items else None
 
 
+# ==== Displays ====
 class MenuBagDisplay(SpriteScreen):
     def __init__(self, size, scale, game):
         SpriteScreen.__init__(self, pg.Vector2(size.x, size.y / 2))
@@ -124,7 +130,9 @@ class MenuBagDisplay(SpriteScreen):
 
         self.active_display_state = MenuTeamDisplayStates.items
         self.item_ids = [0 for _ in MenuTeamDisplayStates]
-        self.item_counts = [len(self.game.bag.get_items(item_type=item_type)) for item_type in ItemType]
+        self.item_counts = [
+            len(self.game.bag.get_items(item_type=item_type)) for item_type in ItemType
+        ]
 
         self.selected_item = None
 

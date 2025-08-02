@@ -88,24 +88,31 @@ class StatContainer(pg.sprite.Sprite, Screen):
 
 
 class TextBox(pg.sprite.Sprite, Screen):
-    def __init__(self, sprite_id, scale):
+    def __init__(self, sprite_id, scale, static=False):
         pg.sprite.Sprite.__init__(self)
         self.sprite_type = "text_box"
         self.id = sprite_id
 
-        imageAnimation = Image.open("assets/battle/main_display/text_box.gif")
-        self.frames = []
-        self.frame_count = imageAnimation.n_frames
-        for frame in range(self.frame_count):
-            imageAnimation.seek(frame)
-            imageData = np.asarray(imageAnimation.convert("RGBA"))
-            editor.loadData(imageData)
-            surf = editor.createSurface(bgr=False)
-            surf = pg.transform.scale(surf, pg.Vector2(surf.get_size())*scale)
-            self.frames.append(surf)
+        if static:
+            self.frames = [pg.image.load("assets/battle/main_display/text_box_main.png")]
+            self.frames = [pg.transform.scale(frame, pg.Vector2(frame.get_size()) * scale) for frame in self.frames]
+            self.frame_count = 1
+        else:
+            imageAnimation = Image.open("assets/battle/main_display/text_box.gif")
+            self.frames = []
+            self.frame_count = imageAnimation.n_frames
+            for frame in range(self.frame_count):
+                imageAnimation.seek(frame)
+                imageData = np.asarray(imageAnimation.convert("RGBA"))
+                editor.loadData(imageData)
+                surf = editor.createSurface(bgr=False)
+                surf = pg.transform.scale(surf, pg.Vector2(surf.get_size())*scale)
+                self.frames.append(surf)
 
-        self.image = self.frames[0]
         Screen.__init__(self, size=self.frames[0].get_size())
+        # self.base_surface.fill(Colours.black.value)
+        self.image = self.frames[0]
+
 
         self.rect = self.image.get_rect()
         self.rect.topleft = pg.Vector2(0, 144) * scale
@@ -173,10 +180,10 @@ class BattleDisplayMain(SpriteScreen):
 
         # self.image_scale = pg.Vector2(15 / 8, 15 / 8)
 
-        self.friendly: Pokemon = None
-        self.foe: Pokemon = None
+        self.friendly: None | Pokemon = None
+        self.foe: None | Pokemon = None
 
-        self.text: str = None
+        self.text: None| str = None
 
         # configure base surfaces for each screen level
         self.screens["background"].load_image(
@@ -231,10 +238,6 @@ class BattleDisplayMain(SpriteScreen):
                 self.load_image(str.format("Images/Status Labels/{}.png", self.foe.status.name),
                                 pg.Vector2(int((10 - offset * (not friendly)) * 15 / 8), int(62 * 15 / 8)),
                                 scale=pg.Vector2(2, 2))
-
-            # finally add the image of the Pokémon
-            if opacity and not friendly:
-                self.foe.image.set_alpha(opacity)
 
         # Display options for the friendly Pokémon
         if self.friendly.visible:

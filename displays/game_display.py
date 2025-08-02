@@ -3,7 +3,7 @@ import pygame as pg
 
 from sprite_screen import SpriteScreen
 from Map_Files.TiledMap import TiledMap2
-
+from displays.battle.battle_display_main import TextBox
 from displays.menu.menu_display_popup import MenuDisplayPopup
 
 
@@ -25,10 +25,14 @@ class GameDisplay(SpriteScreen):
         self.player = player
         self.map = TiledMap2("Map_Files/Sinnoh Map.tmx", size, player=player)
 
+        self.scale = scale
+
+        self.text_box = TextBox(sprite_id="text_box", scale=scale, static=True)
+        self.text_box.rect.topleft += pg.Vector2(3, 0) * scale
         self.player.blit_rect.center = self.surface.get_rect().center
         self.sprites.add(self.player)
 
-    def get_surface(self, show_sprites: bool = True, offset: None | pg.Vector2 = None):
+    def get_surface(self, show_sprites: bool = True, offset: None | pg.Vector2 = None) -> pg.Surface:
         if self.power_off:
             return self.power_off_surface
 
@@ -47,19 +51,26 @@ class GameDisplay(SpriteScreen):
     def move_animation(self, window, direction, frames=20, duration=500):
         self.refresh()
 
-        self.player.image = self.player.sprites[self.player.spriteIdx + (1 if self.player.leg else 2)]
-
         start_pos = self.player.position
         for frame in range(frames):
             window.blit(self.get_surface(offset=(direction.value * self.map.tilewidth) / frames * frame), (0, 0))
             pg.display.flip()
             pg.time.delay(int(duration / frames))
 
-        self.player.image = self.player.sprites[self.player.spriteIdx]
         self.player.position = start_pos + direction.value
         self.player.rect.topleft = self.player.position * self.map.tilewidth
 
         self.map.render(self.player.position)
+
+    def update_display_text(self, text, max_chars=None):
+        if self.text_box not in self.sprites:
+            self.sprites.add(self.text_box)
+
+        self.text_box.refresh()
+
+        text_rect = pg.Rect(pg.Vector2(10, 4) * self.scale, pg.Vector2(201, 40) * self.scale)
+        self.text_box.add_text_2(text, text_rect.inflate(-10, -18), max_chars=max_chars)
+        self.text_box.update_image()
 
     def menu_loop(self, game):
         """
@@ -76,7 +87,7 @@ class GameDisplay(SpriteScreen):
                 if event.type == pg.QUIT:
                     game.running = False
                 elif event.type == pg.KEYDOWN:
-                    if event.key == game.controller.y:
+                    if event.key in (game.controller.y, game.controller.b):
                         popup.kill()
                         return None
                     elif event.key == game.controller.a and GameDisplayStates(popup.selector.position_idx) in game.menu_objects:

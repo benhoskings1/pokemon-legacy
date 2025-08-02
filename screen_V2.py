@@ -1,7 +1,7 @@
 from enum import Enum
 
 import pygame as pg
-from font.font import LevelFont, Font
+from font.font import LevelFont, Font, FontType
 
 from general.utils import clean_surfaces
 
@@ -46,12 +46,15 @@ class BlitPosition(Enum):
     centre = 8
 
 
-fonts = {"Main": Font(2), "Level": LevelFont(2)}
+fonts = {
+    "regular": Font(2, font_type=FontType.regular),
+    "level": Font(2, font_type=FontType.level)
+}
 
 
 class FontOption(Enum):
-    main = fonts["Main"]
-    level = fonts["Level"]
+    main = fonts["regular"]
+    level = fonts["level"]
 
 
 class Screen:

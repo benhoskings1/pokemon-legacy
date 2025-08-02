@@ -11,6 +11,11 @@ from general.utils import Colours
 
 MODULE_PATH = resources.files(__package__)
 
+class FontType(Enum):
+    regular = 0
+    level = 1
+    clock = 2
+
 
 class CharacterType(Enum):
     baseline = 0
@@ -60,7 +65,7 @@ def colour_change(surface, baseColours, shadowColours=None):
 
 
 class Font:
-    def __init__(self, scale):
+    def __init__(self, scale, font_type: FontType = FontType.regular):
         self.scale = scale
 
         self.space = 1 * scale
@@ -68,7 +73,7 @@ class Font:
         self.letters = {}
         self.sizes = {}
 
-        names = sorted(os.listdir(os.path.join(MODULE_PATH, "Letter Images")))
+        names = sorted(os.listdir(os.path.join(MODULE_PATH, font_type.name)))
 
         for name in names:
             letter = name[0]
@@ -78,7 +83,7 @@ class Font:
                 letter = "/"
 
             if name.endswith(".png"):
-                image = pg.image.load(str.format(os.path.join(MODULE_PATH, "Letter Images/{}"), name))
+                image = pg.image.load(os.path.join(MODULE_PATH, f"{font_type.name}/{name}"))
                 newImage = pg.transform.scale(image, pg.Vector2(image.get_size()) * scale)
                 self.sizes[letter] = newImage.get_size()
                 self.letters[letter] = newImage
@@ -298,7 +303,7 @@ class LevelFont:
         self.letters = {}
         self.sizes = {}
 
-        names = sorted(os.listdir(os.path.join(MODULE_PATH, "Level")))
+        names = sorted(os.listdir(os.path.join(MODULE_PATH, "level")))
 
         for name in names:
 
@@ -306,7 +311,7 @@ class LevelFont:
             if "slash" in name:
                 letter = "/"
 
-            image = pg.image.load(str.format(os.path.join(MODULE_PATH, "Level/{}"), name))
+            image = pg.image.load(str.format(os.path.join(MODULE_PATH, "level/{}"), name))
             newImage = pg.transform.scale(image, pg.Vector2(image.get_size()) * scale)
             self.sizes[letter] = newImage.get_size()
             self.letters[letter] = newImage

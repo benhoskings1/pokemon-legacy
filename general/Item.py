@@ -40,7 +40,10 @@ class Item:
         self.item_id = data.name
         self.name = data["name"]
         self.type = type
-        self.image = pg.image.load(str.format("Sprites/Items/{}/{}.png", self.type, data["name"]))
+        try:
+            self.image = pg.image.load(str.format("Sprites/Items/{}/{}.png", self.type, data["name"]))
+        except FileNotFoundError:
+            self.image = None
 
         self.buyPrice = None if pd.isna(data.buy_price) else data.buy_price
         self.sellPrice = None if pd.isna(data.sell_price) else data.sell_price

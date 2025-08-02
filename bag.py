@@ -9,12 +9,6 @@ from general.Item import Item, Pokeball, MedicineItem, BattleItemType, ItemType
 
 pokeballs = pd.read_csv("game_data/Items/pokeballs.tsv", delimiter="\t", index_col=0)
 
-# def unpack_dict(d):
-#     return list(chain.from_iterable(
-#         [unpack_dict(v) if isinstance(v, dict) else [v]
-#          if isinstance(v, str) else v for v in d.values()]
-#     ))
-
 
 class BagV2:
     def __init__(self, data):
@@ -48,6 +42,9 @@ class BagV2:
         if self.data[item.item_type][item] == 0:
             self.data[item.item_type].pop(item)
 
+    def get_json_data(self):
+        ...
+
 
 if __name__ == "__main__":
     # pygame setup
@@ -58,6 +55,6 @@ if __name__ == "__main__":
         bag_data = json.load(read_file)
 
     demo_bag = BagV2(bag_data)
-    item_list = list(demo_bag.get_items(item_type=ItemType.pokeball).items())
+    item_list = list(demo_bag.get_items(item_type=ItemType.mail).items())
     print(item_list)
     print(sorted(item_list, key=lambda item: item[0].item_id))

@@ -173,6 +173,24 @@ class ImageEditor:
         return surf
 
 
+class ImageEditor2:
+    def __init__(self,):
+        self.image = None
+        self.pixel_array = None
+
+    def load_image(self, path):
+        self.image = pg.image.load(path)
+        self.image.convert_alpha()
+
+    def erase_colour(self, colour: pg.Color | tuple[int] | list[int], overwrite=False):
+
+        self.pixel_array = pg.PixelArray(self.image)
+        self.pixel_array.replace(colour, pg.Color(*colour[0:3], 0))
+        self.pixel_array.close()
+
+        return None
+
+
 if __name__ == "__main__":
     IMAGE_REGEX = r""
     move = "bubble"

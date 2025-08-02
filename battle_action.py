@@ -23,7 +23,7 @@ class BattleAttack(pg.sprite.Sprite, BattleAction, ):
     def __init__(self, target: Pokemon, move, animation_size=pg.Vector2(256, 192)):
         """
         Battle attacks are an object that allows the tracking of battle moves and contains the
-        wrapper for their animations too. Battle animations are stored according to who the move
+        wrapper for their animations too. Battle animations are stored according to whom the move
         is affecting.
 
         For example if the move affects the foe, and the relevant animation frames can be found at
@@ -61,7 +61,7 @@ class BattleAttack(pg.sprite.Sprite, BattleAction, ):
             self.frame_count, self.frame_idx = 0, 0
 
     def get_animation_frame(self, idx):
-        return self.animation.get_frame(idx)
+        return self.animation[idx]
 
 
 class BattleTagIn(pg.sprite.Sprite, BattleAction, ):
@@ -90,7 +90,7 @@ class BattleTagIn(pg.sprite.Sprite, BattleAction, ):
             self.frame_count, self.frame_idx = 0, 0
 
     def get_animation_frame(self, idx):
-        return self.animation.get_frame(idx)
+        return self.animation[idx]
 
 
 if __name__ == '__main__':

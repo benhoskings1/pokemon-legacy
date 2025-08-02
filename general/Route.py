@@ -7,6 +7,7 @@ import pandas as pd
 class Route:
     def __init__(self, name):
         data = pd.read_csv(str.format("game_data/Locations/{}.tsv", name), delimiter='\t', index_col=0)
+        self.name = name
         self.data = {}
         for time in data.index:
             timeData = data.loc[time]
@@ -22,8 +23,10 @@ class Route:
             dictValue = {time: timeData}
             self.data.update(dictValue)
 
-    def encounter(self, time):
+    def __repr__(self):
+        return f"Route({self.name})"
 
+    def encounter(self, time):
         if time.hour < 12:
             data = self.data["Morning"]
         elif time.hour < 20:

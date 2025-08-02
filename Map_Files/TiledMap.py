@@ -8,6 +8,20 @@ from Map_Files.Map_Objects.Tall_Grass import TallGrass, Obstacle
 from sprite_screen import SpriteScreen
 
 from player import Player
+from trainer import Trainer, TrainerTypes
+
+
+class MapObjects(pg.sprite.Group):
+    def __init__(self):
+        pg.sprite.Group.__init__(self)
+
+    def draw(self, surface, player_offset: pg.Vector2=pg.Vector2(0, 0), special_flags: int = 0):
+        for obj in self.sprites():
+            if isinstance(obj, Trainer):
+                surface.blit(obj.image, obj.rect.topleft - player_offset - pg.Vector2(obj.image.get_size()) / 2)
+            else:
+                print(f"Object {obj} not implemented yet")
+                ...
 
 
 class TiledMap2(TiledMap, SpriteScreen):
@@ -30,6 +44,10 @@ class TiledMap2(TiledMap, SpriteScreen):
         self.grassObjects = pg.sprite.Group()
         self.obstacles = pg.sprite.Group()
 
+        self.map_objects = MapObjects()
+
+        self.border_limits = pg.Vector2(3, 5)
+
         self.x_limits = (8, self.width - 8)
         self.y_limits = (7, self.height - 6)
 
@@ -41,36 +59,50 @@ class TiledMap2(TiledMap, SpriteScreen):
             elif obj.name == "Obstacle":
                 obstacle = Obstacle(rect, self.scale)
                 self.obstacles.add(obstacle)
+            elif obj.name == "NPC":
+                trainer = Trainer(rect, obj.properties)
+                self.map_objects.add(trainer)
 
         self.player = player
         self.render(self.player.position)
 
-    def render(self, player_pos: pg.Vector2, grid_lines=False):
+        # self.sprites = self.map_objects
 
+    def render(self, player_pos: pg.Vector2, grid_lines=False):
         self.refresh()
 
+        # ====== render static ======
         for layer in self.layers:
             count = 0
             if isinstance(layer, pytmx.TiledTileLayer):
                 for x, y, gid in layer:
-                    if player_pos.x - 10 <= x <= player_pos.x + 10 and player_pos.y - 8 <= y+1 <= player_pos.y + 8:
-                        tileImage = self.get_tile_image_by_gid(gid)
-                        if tileImage:
-                            (width, height) = tileImage.get_size()
-                            pos = pg.Vector2(self.tilewidth * (count % 21), self.tileheight * (count // 21) - height) + pg.Vector2(-16, 0)
-                            self.add_image(tileImage, pos)
+                    if player_pos.x - 10 <= x <= player_pos.x + 10 and player_pos.y - 6 <= y+1 <= player_pos.y + 11:
+                        tile_image = self.get_tile_image_by_gid(gid)
+                        if tile_image:
+                            (width, height) = tile_image.get_size()
+
+                            pos = (
+                                (self.size / 2)
+                                + pg.Vector2(
+                                    (x - player_pos.x - 0.5) * self.tilewidth,
+                                    (y - player_pos.y + 1) * self.tileheight - height
+                                )
+                            )
+                            self.add_image(tile_image, pos)
                             if grid_lines:
-                                pg.draw.rect(self.surface, Colours.red.value, pg.Rect(pos, tileImage.get_size()), width=2)
+                                pg.draw.rect(self.surface, Colours.red.value, pg.Rect(pos, tile_image.get_size()), width=2)
                         count += 1
         if grid_lines:
             pg.draw.line(self.surface, Colours.green.value, self.surface.get_rect().midtop,
                          self.surface.get_rect().midbottom, width=5)
 
+        # ===== render trainers ======
+        self.map_objects.draw(self.surface, player_offset=pg.Vector2(self.player.rect.topleft)-self.size/2)
+
+
     def detect_collision(self) -> list[pg.sprite.Sprite]:
         """
         Detects collisions between the player and the grass objects.
-
-        :return: bool if the player is standing in the tall grass.
         """
         return pg.sprite.spritecollide(self.player, self.grassObjects, dokill=False)
 
@@ -99,6 +131,3 @@ if __name__ == '__main__':
 
         window.blit(sinnoh_map.get_surface(), (32, 32))
         pg.display.flip()
-
-
-    # print(sinnoh_map.data.)

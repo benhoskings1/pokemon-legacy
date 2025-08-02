@@ -5,7 +5,6 @@ import datetime
 import pickle
 from enum import Enum
 from math import floor
-# from random import randint, choice, random
 import random
 
 import cv2
@@ -19,15 +18,15 @@ from general.ability import Ability
 from Image_Processing.ImageEditor import ImageEditor
 
 
-with open("game_data/Pokedex/LocalDex/LocalDex.pickle", 'rb') as file:
+with open("game_data/pokedex/LocalDex/LocalDex.pickle", 'rb') as file:
     pokedex: pd.DataFrame = pickle.load(file)
 
-oldPokedex = pd.read_csv("game_data/Pokedex/Local Dex.tsv", delimiter='\t', index_col=1)
-attributes = pd.read_csv("game_data/Pokedex/AttributeDex.tsv", delimiter='\t', index_col=1)
+oldPokedex = pd.read_csv("game_data/pokedex/Local Dex.tsv", delimiter='\t', index_col=1)
+attributes = pd.read_csv("game_data/pokedex/AttributeDex.tsv", delimiter='\t', index_col=1)
 effectiveness = pd.read_csv("game_data/Effectiveness.csv", index_col=0)
 level_up_values = pd.read_csv("game_data/level_up_exp.tsv", delimiter='\t', index_col=6)
 natures = pd.read_csv("game_data/Natures.tsv", delimiter='\t', index_col=0)
-national_dex = pd.read_csv("game_data/Pokedex/NationalDex/NationalDex.tsv", delimiter='\t', index_col=0)
+national_dex = pd.read_csv("game_data/pokedex/NationalDex/NationalDex.tsv", delimiter='\t', index_col=0)
 
 capWildMoves = True
 
@@ -112,8 +111,6 @@ class Stats:
         self.exp = exp
 
     def __sub__(self, other):
-        # [val2 - val1 for ]
-
         return Stats(
             health=self.health-other.health, attack=self.attack-other.attack, defence=self.defence-other.defence,
             spAttack=self.spAttack - other.spAttack, spDefence=self.spDefence - other.spDefence,
@@ -177,7 +174,7 @@ class PokemonSpriteSmall(pg.sprite.Sprite):
 
 
 class PokemonSprite(pg.sprite.Sprite):
-    def __init__(self, pk_id, shiny, friendly=True):
+    def __init__(self, pk_id, shiny, friendly=True, visible=False):
         pg.sprite.Sprite.__init__(self)
 
         self.front, self.back, self.small = getImages(pk_id, shiny=shiny)
@@ -199,6 +196,8 @@ class PokemonSprite(pg.sprite.Sprite):
 
         self.load_stat_stage_animations()
 
+        self.visible = visible
+
     def load_stat_stage_animations(self):
         for direction in ["raise", "lower"]:
             frames = load_gif(f"assets/battle/main_display/stat_{direction}.gif", bit_mask=self.mask, opacity=150, scale=2)
@@ -209,9 +208,9 @@ class PokemonSprite(pg.sprite.Sprite):
 
 
 class Pokemon(pg.sprite.Sprite):
-    def __init__(self, Name, Level=None, XP=None, Move_Names=None, Move_PPs=None, Health=None, Status=None,
+    def __init__(self, Name, level=None, XP=None, Move_Names=None, Move_PPs=None, Health=None, Status=None,
                  EVs=None, IVs=None, Gender=None, Nature=None, ability_name=None, KO=False, Stat_Stages=None,
-                 Friendly=False, Shiny=None, Visible=True, Catch_Location=None, Catch_Level=None,
+                 Friendly=False, Shiny=None, visible=False, Catch_Location=None, Catch_Level=None,
                  Catch_Date=None):
         # ===== Load Default Data ======
         data = pokedex.loc[Name]
@@ -233,8 +232,8 @@ class Pokemon(pg.sprite.Sprite):
             self.type1 = data.Type[0]
             self.type2 = data.Type[1]
 
-        XP = int(level_up_values.loc[Level, self.growthRate]) if XP is None else XP
-        Level = random.randint(1, 10) if Level is None else Level
+        XP = int(level_up_values.loc[level, self.growthRate]) if XP is None else XP
+        Level = random.randint(1, 10) if level is None else level
 
         self.level, self.exp = Level, XP
         self.level_exp = int(level_up_values.loc[Level, self.growthRate])
@@ -308,11 +307,8 @@ class Pokemon(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
         self.sprite_type = "pokemon"
         self.id = Name
-        self.rect = self.image.get_rect()
 
-        self.rect.midbottom = pg.Vector2(64, 153) * 2 if self.friendly else pg.Vector2(192, 90) * 2
-
-        self.visible = Visible
+        self.visible = visible
 
         self.sprite_mask = None
 
@@ -321,6 +317,31 @@ class Pokemon(pg.sprite.Sprite):
 
     def __repr__(self):
         return f"Pokemon({self.name},Lv{self.level},Type:{self.type1}, IVs:{self.IVs})"
+
+    def __getstate__(self):
+        self.sprite = None
+        self.animation = None
+        self.image = None
+        self.displayImage = None
+        self.smallImage = None
+        self.small_animation = None
+
+        return self.__dict__
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
+        # self.loadImages()
+
+    @property
+    def rect(self):
+        img_rect = self.image.get_rect()
+        img_rect.midbottom = pg.Vector2(64, 153) * 2 if self.friendly else pg.Vector2(192, 90) * 2
+        return img_rect
+
+    @property
+    def is_koed(self):
+        return self.health <= 0
 
     def getMoveDamage(self, move, target, ignoreModifiers=False):
         if move.category == "Physical":
@@ -518,15 +539,15 @@ class Pokemon(pg.sprite.Sprite):
     def get_json_data(self):
         movePPs = [move.PP for move in self.moves]
         status = self.status.value if self.status else None
-        self.visible = True if self.friendly else self.visible
+        # self.visible = True if self.friendly else self.visible
 
         data = {
-            "Name": self.name, "Level": self.level, "XP": self.exp,
-            "Move_Names": self.moveNames, "Move_PPs": movePPs, "Health": self.health,
+            "Name": self.name, "level": self.level, "XP": self.exp,
+            "Move_Names": [move.name for move in self.moves], "Move_PPs": movePPs, "Health": self.health,
             "Status": status, "EVs": self.EVs, "IVs": self.IVs,
             "Gender": self.gender, "Nature": self.nature, "ability_name": self.ability.name,
             "KO": self.KO, "Stat_Stages": self.statStages.__dict__,
-            "Friendly": self.friendly, "Shiny": self.shiny, "Visible": self.visible,
+            "Friendly": self.friendly, "Shiny": self.shiny, "visible": self.visible,
             "Catch_Date": self.catchDate.strftime("%Y-%m-%d"),
             "Catch_Location": self.catchLocation,
             "Catch_Level": self.catchLevel

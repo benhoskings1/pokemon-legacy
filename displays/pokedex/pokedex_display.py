@@ -4,7 +4,7 @@ import pygame
 import pygame as pg
 
 from general.utils import Colours
-from sprite_screen import SpriteScreen, DisplayContainer
+from sprite_screen import SpriteScreen, DisplayContainer, BlitLocation
 from pokemon import getImages, oldPokedex
 
 
@@ -80,6 +80,8 @@ class PokedexDisplayMain(SpriteScreen):
                 container.load_image("assets/menu/pokedex/pokeball.png", pos=pg.Vector2(2, 2) * self.scale,
                                 scale=self.scale, )
 
+            # container.surface.set_alpha(255 - abs(i)*50)
+
             self.sprites.add(container)
 
 
@@ -91,6 +93,8 @@ class PokedexDisplayInfo(SpriteScreen):
         self.pokedex_display = display
 
         self.load_image("assets/menu/pokedex/info/background.png", scale=scale, base=True)
+        self.addText("HT", pg.Vector2(152, 91) * self.scale, base=True)
+        self.addText("WT", pg.Vector2(152, 107) * self.scale, base=True)
 
     def update(self):
         self.refresh()
@@ -99,19 +103,25 @@ class PokedexDisplayInfo(SpriteScreen):
 
         name = oldPokedex.loc[oldPokedex["ID"] == self.pokedex_display.pokemon_idx].index.values[0]
         data = self.pokedex.data.loc[name]
+        caught = data["caught"]
 
-        species = self.pokedex.national_dex.loc[name, "Species"]
+        species = self.pokedex.national_dex.loc[name, "Species"] if caught else "????? Pokemon"
         container = NameContainer2(self.pokedex_display.pokemon_idx, name, species, pg.Vector2(107, 22), scale=self.scale)
 
-        pk_type = data['Type'][0] if isinstance(data['Type'], tuple) else data['Type']
-        img_path = f"Images/Type Labels/{pk_type} Label.png"
-        self.load_image(img_path, pg.Vector2(146, 64) * self.scale, scale=self.scale)
+        if caught:
+            pk_type = data['Type'][0] if isinstance(data['Type'], tuple) else data['Type']
+            img_path = f"Images/Type Labels/{pk_type} Label.png"
+            self.load_image(img_path, pg.Vector2(146, 64) * self.scale, scale=self.scale)
 
-        if self.pokedex.data.loc[name, "caught"]:
-            container.load_image("assets/menu/pokedex/pokeball.png", pos=pg.Vector2(2, 2) * self.scale,
-                                 scale=self.scale, )
+            container.load_image(
+                "assets/menu/pokedex/pokeball.png", pos=pg.Vector2(2, 2) * self.scale, scale=self.scale,
+            )
 
         self.sprites.add(container)
+
+        self.addText("???\'??\'\'", pg.Vector2(225, 101) * self.scale, location=BlitLocation.bottomRight)
+        self.addText(f"{'????.?' if not caught else '2.1'} lbs", pg.Vector2(243, 117) * self.scale,
+                     location=BlitLocation.bottomRight)
 
 
 class PokedexDisplay:

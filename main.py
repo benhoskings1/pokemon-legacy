@@ -45,31 +45,14 @@ def map_properties(obj, path="root", seen=None, filter_types=None, results=None)
 
     return results
 
-# # Example usage
-# class Address:
-#     def __init__(self, city, zip_code):
-#         self.city = city
-#         self.zip_code = zip_code
-#
-#
-# class Person:
-#     def __init__(self, name, age, address):
-#         self.name = name
-#         self.age = age
-#         self.address = address
-#
-#
-# person = Person("Alice", 30, Address("New York", "10001"))
-#
-# map_properties(person)
-
 if __name__ == "__main__":
     pg.init()
     pg.event.pump()
 
-    game = Game(1.5, overwrite=False, new=True)
+    game = Game(1.5, overwrite=True, save_slot=1, new=True)
     game.loop()
     object_map = map_properties(game, filter_types=[pg.Surface])
+    print("writing file")
     with open("matched_properties.json", "w") as f:
         json.dump(object_map, f, indent=2)
 
