@@ -62,14 +62,11 @@ class PedometerDisplay(SpriteScreen):
 class Poketech(SpriteScreen):
     def __init__(self, size, time, scale=1):
         SpriteScreen.__init__(self, size)
-        self.load_image("poketech/assets/Poketech Base.png", base=True, scale=scale)
+        self.load_image("poketech/assets/poketech_base.png", base=True, scale=scale)
 
         self.active_display = PoketechScreens.clock
 
-        self.displays = {
-            PoketechScreens.clock: ClockDisplay(size, scale),
-            PoketechScreens.pedometer: PedometerDisplay(size, scale),
-        }
+        self.displays: None | dict = None
 
         self.time = time
 
@@ -81,26 +78,17 @@ class Poketech(SpriteScreen):
 
         self.scale = scale
 
+        self._load_surfaces()
+
     def __getstate__(self):
         self.font, self.fonts = None, None
-        print("[__getstate__] Cleaning surfaces before pickling...")
-        self.displays = None
-
-        self.base_surface = None
-        self.surface = None
-        self.sprite_surface = None
-        self.power_off_surface = None
+        self._clear_surfaces()
 
         return self.__dict__
 
     def __setstate__(self, state):
         self.__dict__.update(state)
-
-        self.base_surface = pg.Surface(self.size, pg.SRCALPHA)
-        self.surface = pg.Surface(self.size, pg.SRCALPHA)
-        self.sprite_surface = pg.Surface(self.size, pg.SRCALPHA)
-
-        self.load_image("poketech/assets/Poketech Base.png", base=True, scale=self.scale)
+        self._load_surfaces()
 
     def get_surface(self, show_sprites: bool = True, offset: None | pg.Vector2 = None):
         if show_sprites:
@@ -117,9 +105,7 @@ class Poketech(SpriteScreen):
     def update_pedometer(self):
         ...
 
-
-    def clear_surfaces(self):
-        print("surfaced cleared")
+    def _clear_surfaces(self):
         self.displays = None
 
         self.base_surface = None
@@ -127,7 +113,15 @@ class Poketech(SpriteScreen):
         self.sprite_surface = None
         self.power_off_surface = None
 
-    def load_surfaces(self):
+    def _load_surfaces(self):
+        # sprite screen init
+        self.base_surface = pg.Surface(self.size, pg.SRCALPHA)
+        self.surface = pg.Surface(self.size, pg.SRCALPHA)
+        self.sprite_surface = pg.Surface(self.size, pg.SRCALPHA)
+
+        self.load_image("poketech/assets/poketech_base.png", base=True, scale=self.scale)
+
+        # poketech init
         self.displays = {
             PoketechScreens.clock: ClockDisplay(self.size, self.scale),
             PoketechScreens.pedometer: PedometerDisplay(self.size, self.scale),

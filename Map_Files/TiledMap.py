@@ -60,7 +60,7 @@ class TiledMap2(TiledMap, SpriteScreen):
                 obstacle = Obstacle(rect, self.scale)
                 self.obstacles.add(obstacle)
             elif obj.name == "NPC":
-                trainer = Trainer(rect, obj.properties)
+                trainer = Trainer(rect, obj.properties, scale=2)
                 self.map_objects.add(trainer)
 
         self.player = player

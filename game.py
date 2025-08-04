@@ -38,12 +38,9 @@ class Game:
 
         self.overwrite: bool = overwrite
         self.save_slot: int = save_slot
+        self.running: bool = True
 
-        self.data_path = f"game_data/save_states/{'save_state_' + str(save_slot) if not new else 'start'}"
-
-        self.running = True
-
-        self.controller = Controller()
+        self.data_path: str = f"game_data/save_states/{'save_state_' + str(save_slot) if not new else 'start'}"
 
         native_size = pg.Vector2(256, 382)
         self.graphics_scale = 2
@@ -56,16 +53,20 @@ class Game:
         self.bottomSurf: None | pg.Surface = None
         self.loadDisplay: None | LoadDisplay = None
 
+        self.load_displays()
+
         self.animations = {}
 
-        # load the displays
-        self.load_displays()
+        # ==== JSON FILE INITIALISATION ====
+        with open(os.path.join(self.data_path, "bag.json"), "r") as read_file:
+            # Convert JSON file to Python Types
+            bag_data = json.load(read_file)
+        self.bag = BagV2(bag_data)
 
         with open(os.path.join(self.data_path, "team.json"), "r") as read_file:
             # Convert JSON file to Python Types
-            teamData = json.load(read_file)
-
-        self.team = Team(teamData)
+            team_data = json.load(read_file)
+        self.team = Team(team_data)
 
         for pk in self.team.pokemon:
             if not (pk.name in self.animations.keys()):
@@ -77,53 +78,37 @@ class Game:
                 # print("Creating ", repr(pk))
                 self.animations[pk.name] = createAnimation(pk.name)
                 animations = self.animations[pk.name]
-                pk.loadImages(animations)
+                pk.load_images(animations)
             else:
-                pk.loadImages(self.animations[pk.name])
+                pk.load_images(self.animations[pk.name])
 
-        self.team.pokemon = self.team.pokemon
-
-        with open(os.path.join(self.data_path, "bag.json"), "r") as read_file:
-            # Convert JSON file to Python Types
-            bagData = json.load(read_file)
-
-        self.bag = BagV2(bagData)
-
-        spriteDirectory = "Sprites/Pokemon Sprites/Gen IV 2"
-        gameData = None
+        # ==== PICKLE DATA INITIALISATION ====
+        sprite_directory = "Sprites/Pokemon Sprites/Gen IV 2"
+        game_data = None
 
         if not new and not os.path.exists(os.path.join(self.data_path, "game.pickle")):
             print("No pickle data not present / corrupted")
 
-        if not new and os.path.exists(os.path.join(self.data_path, "game.pickle")):
-            gameFile = open(os.path.join(self.data_path, "game.pickle"), 'rb')
-            gameData = pickle.load(gameFile, encoding='bytes')
+        elif not new and os.path.exists(os.path.join(self.data_path, "game.pickle")):
+            with open(os.path.join(self.data_path, "game.pickle"), 'rb') as game_file:
+                game_data = pickle.load(game_file)
 
             self.load_displays()
 
-            # update player with the Surfaces
-            self.player = gameData.player
-            self.player.load_surfaces("Sprites/Player Sprites")
-            self.player.update()
+            self.player = game_data.player
+            self.poketech = game_data.poketech
 
-            # update poketech with the Surfaces
-            self.poketech = gameData.poketech
-            self.poketech.load_surfaces()
+            self.battle = game_data.battle if game_data.battle else None
+            if self.battle:
+                self.battle.load_displays(self)
 
-            # update each of the Pokémon with their surfaces
-
-            # print(gameData.battle.__dict__ if gameData.battle else 'no battle')
-            self.battle = gameData.battle if gameData.battle else None
-            self.appearances = gameData.appearances
+            self.appearances = game_data.appearances
 
         else:
             # create new player instance
-            self.player = Player("Sprites/Player Sprites", position=pg.Vector2(35, 18))
-
+            self.player = Player("Sprites/Player Sprites", position=pg.Vector2(35, 18), scale=self.graphics_scale)
             self.poketech = Poketech(self.displaySize, self.time, scale=self.graphics_scale)
-
             self.battle = None
-
             self.appearances = {}
 
         if optimize:
@@ -137,7 +122,7 @@ class Game:
                         appearanceRatio = self.appearances[name] / totalSeen
                         if appearanceRatio >= 0.4:
                             print(name, appearanceRatio)
-                            directory = os.path.join(spriteDirectory, name)
+                            directory = os.path.join(sprite_directory, name)
                             self.loadDisplay.updateAnimationLocation(directory)
                             top, bottom = self.loadDisplay.getScreens()
                             self.topSurf.blit(top, (0, 0))
@@ -146,23 +131,24 @@ class Game:
                             pkAnimations = createAnimation(name)
                             self.animations[name] = pkAnimations
 
-        self.log, self.log_dir = GameLog(), "game_data/logs"
-
         # ========== DISPLAY INITIALISATION =========
-        self.game_display = GameDisplay(self.topSurf.get_size(), self.player, scale=self.graphics_scale)
-
-        self.pokedex = Pokedex(self) if not gameData else gameData.pokedex
-        self.pokedex.game = self
+        self.controller = Controller()
+        self.pokedex = Pokedex(self) if not game_data else game_data.pokedex
         self.pokedex.load_surfaces()
-        self.pokedex.national_dex = pd.read_csv("game_data/pokedex/NationalDex/NationalDex.tsv", delimiter='\t', index_col=0)
 
-        self.menu_active = False
+        self.game_display = GameDisplay(self.topSurf.get_size(), self.player, scale=self.graphics_scale)
 
         self.menu_objects = {
             GameDisplayStates.pokedex: self.pokedex,
             GameDisplayStates.team: MenuTeamDisplay(self.displaySize, self.graphics_scale, self),
             GameDisplayStates.bag: MenuBagDisplay(self.displaySize, self.graphics_scale, self),
         }
+
+        self.menu_active = False
+
+        # ==== LOG INITIALISATION ====
+        self.log, self.log_dir = GameLog(), "game_data/logs"
+        self.log.add_event(GameEvent(name="startup complete"))
 
         # ========== POST INITIALISATION =========
         # happens after all attributes initialised
@@ -175,7 +161,23 @@ class Game:
 
         self.fadeToBlack(500)
 
-        self.log.add_event(GameEvent(name="startup complete"))
+    def __getstate__(self):
+        self.window = None
+        self.topSurf = None
+        self.bottomSurf = None
+
+        # the remove all object surfaces
+        self.pokedex.clear_surfaces()
+
+        # need to set all pygame surfaces to none
+        self.game_display = None
+        self.animations = None
+        self.loadDisplay = None
+
+        self.bag = None
+        self.menu_objects = None
+
+        return self.__dict__
 
     def __setstate__(self, state):
         self.__dict__.update(state)
@@ -199,13 +201,12 @@ class Game:
             self.pokedex.data.loc[name, "appearances"] += 1
 
         if not (name in self.animations.keys()):
-            # print("Creating ", name)
             self.animations[name] = createAnimation(name)
 
         animations = self.animations[name]
 
-        pokemon = Pokemon(name, level=level, XP=exp, Move_Names=moveNames, EVs=EVs, IVs=IVs,
-                          Friendly=friendly, Shiny=shiny)
+        pokemon = Pokemon(name, level=level, exp=exp, Move_Names=moveNames, EVs=EVs, IVs=IVs,
+                          friendly=friendly, shiny=shiny)
 
         pokemon.animation = animations.front
         pokemon.small_animation = animations.small
@@ -230,7 +231,7 @@ class Game:
         blackSurf.set_alpha(255)
         count = 100
         for t in range(0, count):
-            blackSurf.set_alpha((count - t) / count * 255)
+            blackSurf.set_alpha(int((count - t) / count * 255))
             pg.time.delay(int(duration / count))
             if not battle:
                 self.updateDisplay(flip=False)
@@ -323,6 +324,10 @@ class Game:
             wild_name, wild_level = route.encounter(self.time)
             wild_pk: Pokemon = self.createPokemon(wild_name, level=wild_level)
             foe_team = [wild_pk]
+        # else:
+        #     for pk in foe_team:
+        #         if not (pk.name in self.animations.keys()):
+        #             self.animations[pk.name] = createAnimation(pk.name)
 
         self.log.add_event(GameEvent(name=f"battle started against {foe_team}", event_type=GameEventType.game))
         self.battle = Battle(self, self.team, foe_team, route_name=route, trainer=trainer)
@@ -387,7 +392,6 @@ class Game:
             self.fadeFromBlack(500)
 
         self.updateDisplay()
-        print("load_disp")
 
         while self.running:
             pg.time.delay(25)  # set the debounce-time for keys
@@ -457,47 +461,8 @@ class Game:
                             self.start_battle(foe_team=trainer.team, trainer=trainer)
                             trainer.battled = True
 
-                            # self.startBattle(trainer)
-
         if self.overwrite:
             self.save()
-
-    def demo(self):
-        pg.event.pump()
-        self.player.position = pg.Vector2(10, 9)
-
-        self.player.spriteIdx = 9
-        for step in range(10):
-            self.movePlayer(Direction.right)
-            pg.time.delay(25)
-
-        self.player.movement = Movement.running
-        self.player.update()
-
-        for step in range(6):
-            self.movePlayer(Direction.right)
-            pg.time.delay(25)
-
-        for idx in [3, 6, 0, 9, 3]:
-            self.player.spriteIdx = idx
-            self.player.update()
-            self.updateDisplay()
-            pg.time.delay(750)
-
-        self.player.movement = Movement.walking
-        self.player.update()
-
-        for step in range(4):
-            self.player.spriteIdx = 3
-            self.movePlayer(Direction.down, detectGrass=False)
-
-        pg.time.delay(500)
-        self.movePlayer(Direction.down, detectGrass=False)
-        self.detectGrassCollision(battle=True)
-
-        while True:
-            pg.time.delay(1000)
-            pg.event.pump()
 
     def save(self):
         # save_temp = f"game_data/save_states/save_{self.save_slot}_temp"
@@ -511,27 +476,11 @@ class Game:
             with open(os.path.join(save_dir, "team.json"), "w") as write_file:
                 json.dump([pk.get_json_data() for pk in self.team], write_file, indent=4)
 
-            # need to set all pygame surfaces to none
-            self.game_display = None
-            self.animations = None
-            self.loadDisplay = None
-
-            # the remove all object surfaces
-            self.player.clear_surfaces()
-            self.pokedex.clear_surfaces()
-            self.poketech.clear_surfaces()
-
-            self.bag = None
-            # self.menu_objects = None
             self.team = None
 
-            self.window = None
-            self.topSurf = None
-            self.bottomSurf = None
-
-            if self.battle:
-                self.battle.clear_surfaces()
-                self.battle = None # battle loading not yet implemented
+            # if self.battle:
+                # self.battle.clear_surfaces()
+                # self.battle = None # battle loading not yet implemented
 
             self.menu_objects = None
 
@@ -547,7 +496,7 @@ class Game:
         except TypeError as e:
             save_error = True
             self.log.add_event(GameEvent("Pickle failed", GameEventType.error))
-            self.log.add_event(GameEvent(str(e.__dict__), GameEventType.error))
+            self.log.add_event(GameEvent(str(e), GameEventType.error))
             warnings.warn("Pickle Failed...\nThe data was not overwritten")
             # raise e
         if not save_error:

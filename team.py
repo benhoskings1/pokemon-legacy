@@ -8,7 +8,7 @@ class Team:
         if isinstance(data[0], dict):
             self.pokemon: list[Pokemon] = [Pokemon(**pkData) for pkData in data]
         else:
-            self.pokemon = data
+            self.pokemon: list[Pokemon] = data
 
         self.display_running = False
 

@@ -1,51 +1,26 @@
 {
   "0": [
     {
-        "Name": "Prinplup",
+        "name": "Prinplup",
         "level": 3,
-        "Move_Names": [
-            "Tackle",
-            "Leer"
+        "moves": [
+          {"name": "Scratch"},
+          {"name": "Leer"}
         ],
-        "Move_PPs": [
-            35,
-            28
-        ],
-        "Friendly": false,
-        "Shiny": false,
-        "visible": false
-    },
-    {
-        "Name": "Shinx",
-        "level": 3,
-        "Move_Names": [
-            "Tackle",
-            "Leer"
-        ],
-        "Move_PPs": [
-            35,
-            28
-        ],
-        "Friendly": false,
-        "Shiny": false,
-        "visible": false
+        "friendly": false,
+        "shiny": false
     }
   ],
   "1": [
     {
-        "Name": "Shinx",
+        "name": "Shinx",
         "level": 3,
-        "Move_Names": [
-            "Tackle",
-            "Leer"
+        "moves": [
+          {"name": "Scratch"},
+          {"name": "Leer"}
         ],
-        "Move_PPs": [
-            35,
-            28
-        ],
-        "Friendly": false,
-        "Shiny": false,
-        "visible": false
+        "friendly": false,
+        "shiny": false
     }
   ]
 

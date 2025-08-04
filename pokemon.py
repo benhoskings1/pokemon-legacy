@@ -208,17 +208,17 @@ class PokemonSprite(pg.sprite.Sprite):
 
 
 class Pokemon(pg.sprite.Sprite):
-    def __init__(self, Name, level=None, XP=None, Move_Names=None, Move_PPs=None, Health=None, Status=None,
-                 EVs=None, IVs=None, Gender=None, Nature=None, ability_name=None, KO=False, Stat_Stages=None,
-                 Friendly=False, Shiny=None, visible=False, Catch_Location=None, Catch_Level=None,
-                 Catch_Date=None):
+    def __init__(self, name, level=None, exp=None, moves=None, health=None, status=None,
+                 EVs=None, IVs=None, gender=None, nature=None, ability_name=None, stat_stages=None,
+                 friendly=False, shiny=None, visible=False, catch_location=None, catch_level=None,
+                 catch_date=None):
         # ===== Load Default Data ======
-        data = pokedex.loc[Name]
-        oldData = oldPokedex.loc[Name]
+        data = pokedex.loc[name]
+        oldData = oldPokedex.loc[name]
 
-        self.name = Name
+        self.name = name
         self.ID = data.Local_Num
-        self.species = national_dex.loc[Name, "Species"]
+        self.species = national_dex.loc[name, "Species"]
         self.growthRate = data.Growth_Rate
         self.catchRate = data.Catch_Rate
         self.EVYield = data.EV_Yield
@@ -232,20 +232,23 @@ class Pokemon(pg.sprite.Sprite):
             self.type1 = data.Type[0]
             self.type2 = data.Type[1]
 
-        XP = int(level_up_values.loc[level, self.growthRate]) if XP is None else XP
-        Level = random.randint(1, 10) if level is None else level
+        exp: int = int(level_up_values.loc[level, self.growthRate]) if exp is None else exp
+        level: int = random.randint(1, 10) if level is None else level
 
-        self.level, self.exp = Level, XP
-        self.level_exp = int(level_up_values.loc[Level, self.growthRate])
-        self.level_up_exp = int(level_up_values.loc[Level+1, self.growthRate])
-        self.evolveLevel = oldData.Evolve_Level
+        self.level, self.exp = level, exp
+        self.level_exp: int = int(level_up_values.loc[level, self.growthRate])
+        self.level_up_exp: int = int(level_up_values.loc[level+1, self.growthRate])
+        self.evolveLevel: int = oldData.Evolve_Level
 
-        if Move_Names is None:
+        if moves is None:
             possible_moves = [name for name, level in self.moveData if level <= self.level]
-            Move_Names = random.choices(possible_moves, k=min([4, len(possible_moves)]))
+            move_names = random.choices(possible_moves, k=min([4, len(possible_moves)]))
+            move_pps = [None] * len(move_names)
+        else:
+            move_names = [move["name"] for move in moves]
+            move_pps = [move["pp"] if "pp" in move else None for move in moves]
 
-        self.moveNames = Move_Names
-        self.moves = [getMove(move_name) for move_name in Move_Names]
+        self.moves = [getMove(name, move_pp) for name, move_pp in zip(move_names, move_pps)]
 
         self.EVs = EVs if EVs is not None else [0 for _ in range(6)]
         self.IVs = IVs if IVs is not None else [random.randint(0, 31) for _ in range(6)]
@@ -253,52 +256,50 @@ class Pokemon(pg.sprite.Sprite):
         self.stats = Stats(exp=data.Base_Exp)
         self.updateStats()
 
-        self.health = Health if Health else self.stats.health
-        self.friendly = Friendly
+        self.health = health if health else self.stats.health
+        self.friendly = friendly
 
-        if Gender:
-            self.gender = Gender.lower()
+        if gender:
+            self.gender = gender.lower()
         else:
             genders = data.Gender
             self.gender = ("male" if random.random() * 100 < genders[0] else "female") if genders else None
 
         ability_name = ability_name if ability_name else random.choice(data.Abilities[:len(data.Abilities)])
         self.ability = Ability(name=ability_name)
-        self.nature = Nature if Nature else natures.loc[random.randint(0, 24)].Name
+        self.nature = nature if nature else natures.loc[random.randint(0, 24)].Name
 
-        self.shiny = Shiny if Shiny else (True if random.randint(0, 4095) == 0 else False)
+        self.shiny = shiny if shiny else (True if random.randint(0, 4095) == 0 else False)
 
         self.sprite = PokemonSprite(self.ID, self.shiny, friendly=self.friendly)
 
         front, back, small = getImages(self.ID, self.shiny)
 
-        self.image = back if Friendly else front
+        self.image = back if friendly else front
         self.displayImage = self.image.copy()
         self.sprite_mask = pg.mask.from_surface(self.image)
         self.smallImage = small
         self.animation, self.small_animation = None, None
 
-        if Move_PPs:
-            for idx, move in enumerate(self.moves):
-                move.PP = Move_PPs[idx] if Move_PPs[idx] else move.maxPP
+        # if Move_PPs:
+        #     for idx, move in enumerate(self.moves):
+        #         move.PP = Move_PPs[idx] if Move_PPs[idx] else move.maxPP
 
-        self.statStages = StatStages(**Stat_Stages) if Stat_Stages else StatStages()
-        self.status = StatusEffect(Status) if Status else None
-
-        self.KO = KO
+        self.statStages = StatStages(**stat_stages) if stat_stages else StatStages()
+        self.status = StatusEffect(status) if status else None
 
         self.item = None
 
-        self.catchLocation = Catch_Location
-        self.catchLevel = Catch_Level
-        if Catch_Date:
-            year, month, day = Catch_Date.split("-")
+        self.catchLocation = catch_location
+        self.catchLevel = catch_level
+        if catch_date:
+            year, month, day = catch_date.split("-")
             self.catchDate = datetime.date(int(year), int(month), int(day))
         else:
             self.catchDate = None
 
         # loading for the first time from the start team
-        if self.friendly and (not Catch_Date and not Catch_Location and not Catch_Level):
+        if self.friendly and (not catch_date and not catch_location and not catch_level):
             self.catchLocation = None
             self.catchLevel = self.level
             self.catchDate = datetime.datetime.now()
@@ -306,11 +307,13 @@ class Pokemon(pg.sprite.Sprite):
         # =========== SPRITE INITIALISATION =======
         pg.sprite.Sprite.__init__(self)
         self.sprite_type = "pokemon"
-        self.id = Name
+        self.id = name
 
         self.visible = visible
 
         self.sprite_mask = None
+
+        self.load_images()
 
     def __str__(self):
         return f"Lv.{self.level} {self.name} caught on {self.catchDate}.\nIt likes playing \n{self.stats}"
@@ -319,19 +322,12 @@ class Pokemon(pg.sprite.Sprite):
         return f"Pokemon({self.name},Lv{self.level},Type:{self.type1}, IVs:{self.IVs})"
 
     def __getstate__(self):
-        self.sprite = None
-        self.animation = None
-        self.image = None
-        self.displayImage = None
-        self.smallImage = None
-        self.small_animation = None
-
+        self._clear_images()
         return self.__dict__
 
     def __setstate__(self, state):
         self.__dict__.update(state)
-
-        # self.loadImages()
+        self.load_images()
 
     @property
     def rect(self):
@@ -496,16 +492,14 @@ class Pokemon(pg.sprite.Sprite):
     def get_new_moves(self):
         return [getMove(move_name) for move_name, level in self.moveData if level == self.level]
 
-    def switchImage(self, direction="back"):
+    def switch_image(self, direction="back"):
         front, back, small = getImages(self.ID, self.shiny)
         self.image = back if direction == "back" else front
 
-        self.rect.midbottom = pg.Vector2(64, 153) * 2
-
-    def getEvolution(self):
+    def get_evolution(self):
         return oldPokedex[oldPokedex["ID"] == self.ID + 1].index[0]
 
-    def clearImages(self):
+    def _clear_images(self):
         self.image = None
         self.animation = None
 
@@ -514,18 +508,20 @@ class Pokemon(pg.sprite.Sprite):
         self.smallImage = None
         self.small_animation = None
         self.sprite = None
-        self.small_sprite = None
         self.sprite_mask = None
 
-    def loadImages(self, animations: Animations):
+    def load_images(self, animations: None | Animations = None):
         front, back, small = getImages(self.ID, self.shiny)
         self.image = back if self.friendly else front
 
         self.smallImage = small
+        if not animations:
+            animations = createAnimation(self.name)
+
         self.small_animation = animations.small
         self.animation = animations.front
 
-    def resetStatStages(self):
+    def reset_stat_stages(self):
         self.statStages = StatStages()
 
     def restore(self):
@@ -542,15 +538,15 @@ class Pokemon(pg.sprite.Sprite):
         # self.visible = True if self.friendly else self.visible
 
         data = {
-            "Name": self.name, "level": self.level, "XP": self.exp,
-            "Move_Names": [move.name for move in self.moves], "Move_PPs": movePPs, "Health": self.health,
-            "Status": status, "EVs": self.EVs, "IVs": self.IVs,
-            "Gender": self.gender, "Nature": self.nature, "ability_name": self.ability.name,
-            "KO": self.KO, "Stat_Stages": self.statStages.__dict__,
-            "Friendly": self.friendly, "Shiny": self.shiny, "visible": self.visible,
-            "Catch_Date": self.catchDate.strftime("%Y-%m-%d"),
-            "Catch_Location": self.catchLocation,
-            "Catch_Level": self.catchLevel
+            "name": self.name, "level": self.level, "exp": self.exp,
+            "moves": [move.get_json() for move in self.moves], "health": self.health,
+            "status": status, "EVs": self.EVs, "IVs": self.IVs,
+            "gender": self.gender, "nature": self.nature, "ability_name": self.ability.name,
+            "stat_stages": self.statStages.__dict__,
+            "friendly": self.friendly, "shiny": self.shiny, "visible": self.visible,
+            "catch_date": self.catchDate.strftime("%Y-%m-%d"),
+            "catch_location": self.catchLocation,
+            "catch_level": self.catchLevel
         }
 
         return data

@@ -1,1 +1,3 @@
 /game_data/logs/*
+/game_data/save_states/save_state_[0-9]/*
+!/game_data/save_states/start/*

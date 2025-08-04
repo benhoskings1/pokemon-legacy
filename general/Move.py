@@ -13,28 +13,30 @@ class EffectType(Enum):
     multiple = "Multiple"
 
 
-def getMove(name):
+def getMove(name, move_pp=None):
     moveData = movesData.loc[name]
+
+    move_pp = move_pp if move_pp is not None else moveData.PP
 
     if not pd.isna(moveData.Effect):
         effect = moveData.Effect[1: len(moveData.Effect) - 1].split(", ")
         moveEffect = MoveEffect(effect)
         move = Move2(name, moveData.Type, moveData.Cat, moveData.Power,
-                     moveData.Acc, moveData.PP, moveData.Description, moveEffect)
+                     moveData.Acc, move_pp, moveData.Description, moveEffect)
     else:
         move = Move2(name, moveData.Type, moveData.Cat, moveData.Power,
-                     moveData.Acc, moveData.PP, moveData.Description)
+                     moveData.Acc, move_pp, moveData.Description)
 
     return move
 
 
 class Move2:
-    def __init__(self, name, moveType, category, power, accuracy, PP, description, effect=None):
+    def __init__(self, name, moveType, category, power, accuracy, pp, description, effect=None):
         self.name = name
         self.type = moveType.title()
         self.category = category
-        self.maxPP = int(PP)
-        self.PP = int(PP)
+        self.maxPP = int(pp)
+        self.PP = int(pp)
 
         if power != "-":
             self.power = int(power)
@@ -58,6 +60,12 @@ class Move2:
 
     def __repr__(self):
         return f"Move({self.name},{self.type},{self.category},{self.power},{self.accuracy})"
+
+    def get_json(self):
+        return {
+            "name": self.name,
+            "pp": self.PP,
+        }
 
 
 class MoveEffect:

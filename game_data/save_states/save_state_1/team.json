@@ -1,39 +1,44 @@
 [
     {
-        "Name": "Riolu",
-        "level": 10,
-        "XP": 700,
-        "Move_Names": [
-            "Scratch",
-            "Leer"
+        "name": "Riolu",
+        "level": 11,
+        "exp": 761,
+        "moves": [
+            {
+                "name": "Scratch",
+                "pp": 34
+            },
+            {
+                "name": "Leer",
+                "pp": 30
+            },
+            {
+                "name": "Force Palm",
+                "pp": 10
+            }
         ],
-        "Move_PPs": [
-            35,
-            28
-        ],
-        "Health": 28,
-        "Status": null,
+        "health": 29,
+        "status": null,
         "EVs": [
             0,
             0,
             0,
-            0,
+            2,
             0,
             0
         ],
         "IVs": [
-            31,
-            31,
-            31,
-            31,
-            31,
-            31
+            12,
+            21,
+            25,
+            21,
+            2,
+            17
         ],
-        "Gender": "male",
-        "Nature": "Lax",
-        "ability_name": "Inner Focus",
-        "KO": false,
-        "Stat_Stages": {
+        "gender": "female",
+        "nature": "Careful",
+        "ability_name": "Steadfast",
+        "stat_stages": {
             "attack": 0,
             "defence": 0,
             "spAttack": 0,
@@ -42,113 +47,11 @@
             "accuracy": 0,
             "evasion": 0
         },
-        "Friendly": true,
-        "Shiny": false,
-        "visible": false,
-        "Catch_Date": "2025-08-02",
-        "Catch_Location": null,
-        "Catch_Level": 10
-    },
-    {
-        "Name": "Piplup",
-        "level": 5,
-        "XP": 135,
-        "Move_Names": [
-            "Pound",
-            "Growl",
-            "Bubble"
-        ],
-        "Move_PPs": [
-            35,
-            28,
-            30
-        ],
-        "Health": 20,
-        "Status": null,
-        "EVs": [
-            0,
-            0,
-            0,
-            0,
-            0,
-            0
-        ],
-        "IVs": [
-            31,
-            31,
-            31,
-            31,
-            31,
-            31
-        ],
-        "Gender": "male",
-        "Nature": "Careful",
-        "ability_name": "Defiant",
-        "KO": false,
-        "Stat_Stages": {
-            "attack": 0,
-            "defence": 0,
-            "spAttack": 0,
-            "spDefence": 0,
-            "speed": 0,
-            "accuracy": 0,
-            "evasion": 0
-        },
-        "Friendly": true,
-        "Shiny": true,
-        "visible": false,
-        "Catch_Date": "2025-08-02",
-        "Catch_Location": null,
-        "Catch_Level": 5
-    },
-    {
-        "Name": "Chimchar",
-        "level": 5,
-        "XP": 135,
-        "Move_Names": [
-            "Scratch",
-            "Leer"
-        ],
-        "Move_PPs": [
-            35,
-            28
-        ],
-        "Health": 19,
-        "Status": null,
-        "EVs": [
-            0,
-            0,
-            0,
-            0,
-            0,
-            0
-        ],
-        "IVs": [
-            31,
-            31,
-            31,
-            31,
-            31,
-            31
-        ],
-        "Gender": "female",
-        "Nature": "Lonely",
-        "ability_name": "Iron Fist",
-        "KO": false,
-        "Stat_Stages": {
-            "attack": 0,
-            "defence": 0,
-            "spAttack": 0,
-            "spDefence": 0,
-            "speed": 0,
-            "accuracy": 0,
-            "evasion": 0
-        },
-        "Friendly": true,
-        "Shiny": true,
-        "visible": false,
-        "Catch_Date": "2025-08-02",
-        "Catch_Location": null,
-        "Catch_Level": 5
+        "friendly": true,
+        "shiny": false,
+        "visible": true,
+        "catch_date": "2025-08-05",
+        "catch_location": null,
+        "catch_level": 10
     }
 ]

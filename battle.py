@@ -68,54 +68,43 @@ class Battle:
         self.active_touch_display = None
         self.lowerScreenBase = None
 
-        self.load_displays()
-
+        self.load_displays(game)
         self.update_screen(cover=True)
 
 
     def __getstate__(self):
-        self.battle_display = None
-
-        self.active_touch_display = None
-
-        self.lowerScreenBase = None
-        self.touch_displays = None
+        self._clear_surfaces()
         return self.__dict__
 
     def __setstate__(self, state):
+        self.game = None
         self.__dict__.update(state)
-
-        self.load_displays()
-
-    # @property
-    # def friendly(self):
-    #     return self.friendly_team.get_active_pokemon()
 
     @property
     def active_pokemon(self):
         return [self.friendly, self.foe]
 
-    def load_displays(self):
-        self.battle_display = BattleDisplayMain(self.game.topSurf, self.screenSize, self.game.time_of_day, self.environment)
+    def load_displays(self, game):
+        self.game = game
+
+        self.battle_display = BattleDisplayMain(game.topSurf, self.screenSize, game.time_of_day, self.environment)
         self.battle_display.add_pokemon_sprites(self.active_pokemon)
 
         self.touch_displays = {
-            TouchDisplayStates.home: BattleDisplayTouch(self.game.bottomSurf, self.screenSize,
-                                                        self.game.graphics_scale),
-            TouchDisplayStates.fight: BattleDisplayFight(self.game.bottomSurf, self.screenSize,
-                                                         self.game.graphics_scale),
-            TouchDisplayStates.bag: BattleDisplayBag(self.game.bottomSurf, self.screenSize, self.game.bag,
-                                                     self.game.graphics_scale),
-            TouchDisplayStates.team: BattleDisplayTeam(self.screenSize, self.friendly_team, self.game.graphics_scale),
+            TouchDisplayStates.home: BattleDisplayTouch(game.bottomSurf, self.screenSize,
+                                                        game.graphics_scale),
+            TouchDisplayStates.fight: BattleDisplayFight(game.bottomSurf, self.screenSize,
+                                                         game.graphics_scale),
+            TouchDisplayStates.bag: BattleDisplayBag(game.bottomSurf, self.screenSize, game.bag,
+                                                     game.graphics_scale),
+            TouchDisplayStates.team: BattleDisplayTeam(self.screenSize, self.friendly_team, game.graphics_scale),
         }
 
         self.touch_displays[TouchDisplayStates.fight].load_move_sprites(self.friendly.moves)
         self.active_touch_display = self.touch_displays[TouchDisplayStates.home]
 
-        lowerScreenBase = pg.image.load("Images/Battle/Other/Lower Base.png")
-        self.lowerScreenBase = pg.transform.scale(lowerScreenBase, self.game.bottomSurf.get_size())
-
-        # print(self.foe.visible)
+        lower_screen_base = pg.image.load("Images/Battle/Other/Lower Base.png")
+        self.lowerScreenBase = pg.transform.scale(lower_screen_base, game.bottomSurf.get_size())
 
     # ======== GRAPHICS HANDLERS =========
     def update_upper_screen(self):
@@ -337,7 +326,7 @@ class Battle:
         black_surf.set_alpha(0)
         count = 100
         for t in range(0, count):
-            black_surf.set_alpha(t / count * 255)
+            black_surf.set_alpha(round(t / count * 255))
             pg.time.delay(int(duration / count))
             self.game.topSurf.blit(black_surf, (0, 0))
             self.game.bottomSurf.blit(black_surf, (0, 0))
@@ -378,7 +367,7 @@ class Battle:
             print(f"new pokemon {repr(self.foe)}")
             return None
 
-    def friendlyKO(self):
+    def friendly_ko(self):
         # self.battleDisplay.text = str.format("{} fainted!", self.friendly.name)
         self.update_upper_screen()
         pg.display.flip()
@@ -386,16 +375,16 @@ class Battle:
 
     def level_up_friendly(self, duration=1000):
 
-        prevStats = self.friendly.stats
+        prev_stats = self.friendly.stats
         self.friendly.level_up()
-        newStats = self.friendly.stats
-        self.friendly.health += newStats.health - prevStats.health
+        new_stats = self.friendly.stats
+        self.friendly.health += new_stats.health - prev_stats.health
 
         self.display_message(f"{self.friendly.name} grew to Lv. {self.friendly.level}!", duration=duration)
         # stat_container = self.battle_display.screens["stats"].get_object("friendly_stats")
 
-        for old_stats in [prevStats, None]:
-            level_up_box = LevelUpBox("level_up", self.game.graphics_scale, new_stats=newStats, old_stats=old_stats)
+        for old_stats in [prev_stats, None]:
+            level_up_box = LevelUpBox("level_up", self.game.graphics_scale, new_stats=new_stats, old_stats=old_stats)
             self.battle_display.sprites.add(level_up_box)
             self.update_upper_screen()
             pg.display.flip()
@@ -409,14 +398,15 @@ class Battle:
                     self.game.save()
                 quit()
 
-    def use_item(self, item, targetFriendly=True):
+    def use_item(self, item, target_friendly=True) -> None | BattleOutcome:
+        """ Use the selected item. """
         # Ensure that the pokeball targets the friendly Pokémon
         if item.type == "Pokeball":
-            targetFriendly = False
+            target_friendly = False
 
         self.display_message(str.format("Used the {}", item.name), 1000)
 
-        target = self.friendly if targetFriendly else self.foe
+        target = self.friendly if target_friendly else self.foe
 
         count = self.game.bag.data[item.item_type][item] -1
         self.game.bag.decrement_item(item)
@@ -460,14 +450,14 @@ class Battle:
                 target.catchLevel = target.level
                 target.friendly = True
                 target.visible = False
-                target.switchImage()
+                target.switch_image()
                 self.friendly_team.pokemon.append(target)
                 self.game.pokedex.data.loc[target.name, "caught"] = True
                 self.running = False
                 return BattleOutcome.catch
             else:
                 target.image.set_alpha(255)
-                return False
+                return None
 
         elif isinstance(item, MedicineItem):
             item: MedicineItem
@@ -491,7 +481,7 @@ class Battle:
                 elif item.status == "Sleeping":
                     self.display_message(str.format("{} woke up", target.name), 1500)
 
-        return False
+        return None
 
     def check_kos(self) -> list[Pokemon] | BattleOutcome:
         """Return any Pokémon that are knocked out"""
@@ -543,13 +533,17 @@ class Battle:
                 self.update_screen()
 
             elif res[0] == "container" and res[1] == "run":
-                if self.friendly.stats.speed > self.foe.stats.speed:
+                if self.trainer_battle:
+                    self.display_message("No! There's no running from a trainer battle!", 1500)
+
+                elif self.friendly.stats.speed > self.foe.stats.speed:
                     self.display_message("Successfully fled the battle", 1500)
                     return BattleOutcome.run
                 else:
                     self.display_message("Couldn't Escape!", 1500)
-                    self.battle_display.update_display_text(f"What will {self.friendly.name} do?")
-                    return None
+
+                self.battle_display.update_display_text(f"What will {self.friendly.name} do?")
+                return None
 
             elif res[0] == "container" and res[1] == TeamDisplayStates.select:
                 self.active_touch_display = self.touch_displays[TouchDisplayStates.team].sub_displays[TeamDisplayStates.select]
@@ -653,7 +647,8 @@ class Battle:
 
         return action
 
-    def take_turn(self, pokemon, action):
+    def take_turn(self, pokemon: Pokemon, action) -> None | BattleOutcome:
+        """ Take battle turn based on action selected """
         if isinstance(action, Move2):
             if pokemon.friendly:
                 self.attack(attacker=pokemon, target=self.foe, move=action)
@@ -661,13 +656,18 @@ class Battle:
             else:
                 self.attack(attacker=pokemon, target=self.friendly, move=action)
 
+            return None
+
         elif isinstance(action, Item):
-            res = self.use_item(action, targetFriendly=True)
+            res = self.use_item(action, target_friendly=True)
             if res:
                 return res
 
         elif isinstance(action, Pokemon):
             self.tag_in_teammate(action)
+            return None
+
+        return None
 
     def tag_in_teammate(self, teammate: Pokemon):
         self.display_message(f"{self.active_pokemon[0].name} switch out", duration=1000)
@@ -738,7 +738,7 @@ class Battle:
                     # check if both Pokémon are still alive
                     res = self.check_kos()
                     for pk_ko in res:
-                        outcome = self.friendlyKO() if pk_ko.friendly else self.foe_ko()
+                        outcome = self.friendly_ko() if pk_ko.friendly else self.foe_ko()
                         if isinstance(outcome, BattleOutcome):
                             print(outcome)
                             return outcome
@@ -756,8 +756,7 @@ class Battle:
                             pokemon.health -= pokemon.status.damage * pokemon.stats.health
                             self.display_message(str.format("{} is hurt by its poison", pokemon.name), 1000)
 
-            if not end:
-                ko_pokemon = self.check_kos()
+            self.check_kos()
 
             self.state = State.home
 
@@ -769,30 +768,55 @@ class Battle:
     def entry_sequence(self) -> None:
         """ Pre-battle animations"""
         if self.game.player.battle_animation.frames is not None:
-            start_pos = pg.Vector2(63, 144)*self.game.graphics_scale
+            player_sprite = self.game.player.battle_sprite
+            self.battle_display.screens["animations"].sprites.add(player_sprite)
+            self.update_upper_screen()
+            pg.display.flip()
 
-            for idx, (frame, duration) in enumerate(self.game.player.battle_animation):
-                self.battle_display.screens["animations"].add_surf(
-                    frame, start_pos, location=BlitLocation.midBottom
-                )
-                self.update_upper_screen()
-                pg.display.flip()
+            if self.trainer is not None:
+                # if self.trainer.battle_font is not None:
+                battle_sprite = self.trainer.battle_sprite
+                self.battle_display.screens["animations"].sprites.add(battle_sprite)
 
-                if idx == 0:
-                    if self.trainer is not None:
-                        self.display_message(f"You are challenged by {self.trainer.trainer_type.name.title()} {self.trainer.name}! ", 2000)
-                        self.display_message(f"{self.trainer.trainer_type.name.title()} {self.trainer.name} sent out {self.foe.name.upper()}!", 2000)
-                        self.battle_display.intro_animations(self.game.topSurf, 2000)
-                        self.foe.visible = True
-                    else:
-                        self.foe.visible = True
-                        self.battle_display.intro_animations(self.game.topSurf, 2000)
-                        self.display_message(f"A wild {self.foe.name.upper()} appeared!", duration=2000)
+                self.display_message(
+                    f"You are challenged by {self.trainer.trainer_type.name.title()} {self.trainer.name}! ", 2000)
+                self.display_message(
+                    f"{self.trainer.trainer_type.name.title()} {self.trainer.name} sent out {self.foe.name.upper()}!",
+                    2000)
 
-                    self.display_message(f"Go! {self.friendly.name.upper()}!", duration=1000)
+                x_dist, count = self.battle_display.size.x - battle_sprite.rect.topleft[0], 30
+                for i in range(count):
+                    # shift the sprite to the right
+                    battle_sprite.rect = battle_sprite.rect.move(x_dist / count, 0)
+                    self.update_screen(cover=True)
+                    self.battle_display.screens["animations"].refresh()
+                    pg.time.delay(25)
 
-                self.wait(duration)
+                battle_sprite.kill()
+
+                self.foe.visible = True
+                self.update_screen(cover=True)
+                self.battle_display.intro_animations(self.game.topSurf, 2000)
+
+            else:
+                self.foe.visible = True
+                self.battle_display.intro_animations(self.game.topSurf, 2000)
+                self.display_message(f"A wild {self.foe.name.upper()} appeared!", duration=2000)
+
+            self.display_message(f"Go! {self.friendly.name.upper()}!", duration=1000)
+
+            x_dist, frames = player_sprite.rect.right, 30
+            for i in range(frames):
+                frame_count = (i * len(self.game.player.battle_animation.frames)) // frames
+                player_sprite.image = self.game.player.battle_animation.frames[frame_count]
+                player_sprite.rect = player_sprite.rect.move(-x_dist / frames, 0)
+                self.update_screen(cover=True)
                 self.battle_display.screens["animations"].refresh()
+                pg.time.delay(25)
+
+            self.battle_display.screens["animations"].sprites.remove(player_sprite)
+            player_sprite.image = self.game.player.battle_animation.frames[0]
+            self.game.player.reset_battle_sprite()
 
         else:
             print("no battle_animation for the player")
@@ -809,7 +833,7 @@ class Battle:
 
         # clear up pk stats
         for pk in self.friendly_team:
-            pk.resetStatStages()
+            pk.reset_stat_stages()
 
         self.game.bottomSurf.blit(self.lowerScreenBase, (0, 0))
         pg.display.flip()
@@ -828,11 +852,9 @@ class Battle:
         self.exit_sequence(outcome)
         return outcome
 
-    def clear_surfaces(self):
+    def _clear_surfaces(self):
         self.battle_display = None
-
         self.active_touch_display = None
-
         self.lowerScreenBase = None
         self.touch_displays = None
 
