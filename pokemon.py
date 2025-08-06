@@ -9,7 +9,6 @@ import random
 import cv2
 import pandas as pd
 import pygame as pg
-import numpy as np
 from pandas import DataFrame
 
 from general.utils import load_gif
@@ -62,7 +61,7 @@ class Stats:
         # )
 
     def __str__(self):
-        return f"HP: {self.health}, Atk: {self.attack}, Def: {self.defence}, Sp. Atk: {self.spAttack}, Speed: {self.speed}, Exp: {self.exp}"
+        return f"{[(k, v) for k, v in self.__dict__.items()]}"
 
     def __iter__(self):
         for val in self.get_values():
@@ -144,7 +143,8 @@ class PokemonSprite(pg.sprite.Sprite):
 
     def load_stat_stage_animations(self):
         for direction in ["raise", "lower"]:
-            frames = load_gif(f"assets/battle/main_display/stat_{direction}.gif", bit_mask=self.mask, opacity=150, scale=2)
+            frames = load_gif(f"assets/battle/main_display/stat_{direction}.gif",
+                              bit_mask=self.mask, opacity=150, scale=2)
             self.animations[f"stat_{direction}"] = [self.image.copy() for _ in range(len(frames))]
             for frame_idx in range(len(frames)):
                 self.animations[f"stat_{direction}"][frame_idx].blit(frames[frame_idx], (0, 0))
@@ -276,7 +276,7 @@ class Pokemon(pg.sprite.Sprite):
 
     @classmethod
     def get_images(cls, local_id, crop=False, shiny=False) -> dict[str, pg.Surface]:
-        """ Return the font, back and small images for the pokemon """
+        """ Return the font, back and small images for the Pokémon """
         grid_width, per_row = 5, 32
 
         image_size = pg.Vector2(80, 80)
@@ -325,7 +325,7 @@ class Pokemon(pg.sprite.Sprite):
 
     @property
     def is_koed(self) -> bool:
-        """ Return True if the pokemon has no health left """
+        """ Return True if the Pokémon has no health left """
         return self.health <= 0
 
     @property
