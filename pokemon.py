@@ -1,6 +1,8 @@
 import datetime
 import pickle
 from enum import Enum
+from typing import Any
+
 from math import floor
 import random
 
@@ -28,59 +30,7 @@ level_up_values: DataFrame = pd.read_csv("game_data/level_up_exp.tsv", delimiter
 natures = pd.read_csv("game_data/Natures.tsv", delimiter='\t', index_col=0)
 national_dex = pd.read_csv("game_data/pokedex/NationalDex/NationalDex.tsv", delimiter='\t', index_col=0)
 
-allSprites = cv2.imread("Sprites/Pokemon/Gen_IV_Sprites.png", cv2.IMREAD_UNCHANGED)
-smallSprites = cv2.imread("Sprites/Pokemon/Gen_IV_Small_Sprites.png", cv2.IMREAD_UNCHANGED)
 editor = ImageEditor()
-
-
-def get_pokemon_images(local_id: int, shiny=False, crop=True):
-    grid_width, per_row = 5, 32
-    y, x = divmod(local_id-1, int(per_row / 2))
-
-    topleft = pg.Vector2(x * (80 + grid_width) * 2 + grid_width, y * (80 + grid_width) * 2 + grid_width)
-    front_rect = pg.Rect(topleft, (80, 80))
-    back_rect = front_rect.copy()
-    back_rect.topleft += pg.Vector2(80 + grid_width, 0)
-    frontShinyRect = front_rect.copy()
-    frontShinyRect.topleft += pg.Vector2(0, 80 + grid_width)
-    backShinyRect = front_rect.copy()
-    backShinyRect.topleft += pg.Vector2(85, 80 + grid_width)
-
-    per_row = 16
-    pos = pg.Vector2((local_id - 1) % per_row, floor((local_id - 1) / per_row))
-    topLeftSmall = pg.Vector2(x * (32 + grid_width) + grid_width, y * (32 + grid_width) + grid_width)
-    smallRect = pg.Rect(topLeftSmall, (32, 32))
-
-    if not shiny:
-        frontData = allSprites[front_rect.top:front_rect.bottom, front_rect.left:front_rect.right, :]
-        backData = allSprites[back_rect.top:back_rect.bottom, back_rect.left:back_rect.right, :]
-    else:
-        frontData = allSprites[frontShinyRect.top:frontShinyRect.bottom,
-                               frontShinyRect.left:frontShinyRect.right, :]
-        backData = allSprites[backShinyRect.top:backShinyRect.bottom,
-                              backShinyRect.left:backShinyRect.right, :]
-
-    smallData = smallSprites[smallRect.top:smallRect.bottom,
-                             smallRect.left:smallRect.right, :]
-
-    editor.loadData(frontData)
-    if crop:
-        editor.crop_transparent_borders(overwrite=True)
-    editor.scaleImage((2, 2), overwrite=True)
-    frontImage = editor.createSurface()
-
-    editor.loadData(backData)
-    if crop:
-        editor.crop_transparent_borders(overwrite=True)
-    editor.scaleImage((2, 2), overwrite=True)
-    backImage = editor.createSurface()
-
-    editor.loadData(smallData)
-    smallScale = 2
-    editor.scaleImage((smallScale, smallScale), overwrite=True)
-    smallImage = editor.createSurface()
-
-    return frontImage, backImage, smallImage
 
 
 class StatusEffect(Enum):
@@ -171,10 +121,10 @@ class PokemonSprite(pg.sprite.Sprite):
     def __init__(self, pk_id, shiny, friendly=True, visible=False):
         pg.sprite.Sprite.__init__(self)
 
-        self.front, self.back, self.small = get_pokemon_images(pk_id, shiny=shiny)
+        self.images = Pokemon.get_images(pk_id, shiny=shiny)
         self.friendly = friendly
 
-        self.image = self.back if friendly else self.front
+        self.image = self.images["back"] if friendly else self.images["front"]
         self.rect = self.image.get_rect()
 
         # numpy and pygame use different x-y coordinate systems
@@ -195,23 +145,18 @@ class PokemonSprite(pg.sprite.Sprite):
     def load_stat_stage_animations(self):
         for direction in ["raise", "lower"]:
             frames = load_gif(f"assets/battle/main_display/stat_{direction}.gif", bit_mask=self.mask, opacity=150, scale=2)
-            base_image = self.back if self.friendly else self.front
-            self.animations[f"stat_{direction}"] = [base_image.copy() for _ in range(len(frames))]
+            self.animations[f"stat_{direction}"] = [self.image.copy() for _ in range(len(frames))]
             for frame_idx in range(len(frames)):
                 self.animations[f"stat_{direction}"][frame_idx].blit(frames[frame_idx], (0, 0))
 
 
 class Pokemon(pg.sprite.Sprite):
     
-    crit_chance = {
-        0: 1 / 16,
-        1: 1 / 8,
-        2: 1 / 4,
-        3: 1 / 3,
-        4: 1 / 2
-    }
-
+    crit_chance = {0: 1 / 16, 1: 1 / 8, 2: 1 / 4, 3: 1 / 3, 4: 1 / 2}
     stage_multipliers = {idx: (idx + 2 if idx > 0 else 2) / (abs(idx) + 2 if idx < 0 else 2) for idx in range(-6, 7)}
+
+    all_sprites = cv2.imread("Sprites/Pokemon/Gen_IV_Sprites.png", cv2.IMREAD_UNCHANGED)
+    small_sprites = cv2.imread("Sprites/Pokemon/Gen_IV_Small_Sprites.png", cv2.IMREAD_UNCHANGED)
 
     def __init__(self, name, level=None, exp=None, moves=None, health=None, status=None,
                  EVs=None, IVs=None, gender=None, nature=None, ability_name=None, stat_stages=None,
@@ -278,13 +223,17 @@ class Pokemon(pg.sprite.Sprite):
 
         self.sprite = PokemonSprite(self.ID, self.shiny, friendly=self.friendly)
 
-        front, back, small = get_pokemon_images(self.ID, self.shiny)
+        self._clear_surfaces = False
+        self.images = self.get_images(self.ID, crop=True, shiny=self.shiny)
 
-        self.image = back if friendly else front
+        self.smallImage: None | pg.Surface = None
+        self.animation = None
+        self.small_animation = None
+
+        self.load_images()
+
         self.displayImage = self.image.copy()
         self.sprite_mask = pg.mask.from_surface(self.image)
-        self.smallImage = small
-        self.animation, self.small_animation = None, None
 
         self.statStages = StatStages(**stat_stages) if stat_stages else StatStages()
         self.status = StatusEffect(status) if status else None
@@ -309,12 +258,7 @@ class Pokemon(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
         self.sprite_type = "pokemon"
         self.id = name
-
         self.visible = visible
-
-        self.sprite_mask = None
-
-        self.load_images()
 
     def __str__(self):
         return f"Lv.{self.level} {self.name} caught on {self.catchDate}.\nIt likes playing \n{self.stats}"
@@ -330,16 +274,69 @@ class Pokemon(pg.sprite.Sprite):
         self.__dict__.update(state)
         self.load_images()
 
+    @classmethod
+    def get_images(cls, local_id, crop=False, shiny=False) -> dict[str, pg.Surface]:
+        """ Return the font, back and small images for the pokemon """
+        grid_width, per_row = 5, 32
+
+        image_size = pg.Vector2(80, 80)
+
+        y, x = divmod(local_id - 1, int(per_row / 2))
+
+        images = {
+            "front": None,
+            "back": None,
+            "small": None,
+        }
+
+        pk_block = pg.Rect((x * (80 + grid_width) * 2 + grid_width, y * (80 + grid_width) * 2 + grid_width),
+                           image_size * 2 + pg.Vector2(grid_width, grid_width))
+
+        front_rect = pg.Rect(pk_block.topleft, image_size)
+        back_rect = pg.Rect(pk_block.topleft + pg.Vector2(image_size.x + grid_width, 0), image_size)
+
+        if shiny:
+            front_rect = front_rect.move(pg.Vector2(0, grid_width + image_size.y))
+            back_rect = back_rect.move(pg.Vector2(0, grid_width + image_size.y))
+
+        per_row = 16
+        y, x = divmod(local_id - 1, int(per_row))
+        small_rect = pg.Rect(pg.Vector2(x * (32 + grid_width) + grid_width, y * (32 + grid_width) + grid_width),
+                             (32, 32))
+
+        images["front"] = cls.all_sprites[front_rect.top:front_rect.bottom, front_rect.left:front_rect.right, :]
+        images["back"] = cls.all_sprites[back_rect.top:back_rect.bottom, back_rect.left:back_rect.right, :]
+        images["small"] = cls.small_sprites[small_rect.top:small_rect.bottom, small_rect.left:small_rect.right, :]
+
+        for k, v in images.items():
+            editor.loadData(v)
+            if crop and k != "small":
+                editor.crop_transparent_borders(overwrite=True)
+            editor.scaleImage((2, 2), overwrite=True)
+            images[k] = editor.createSurface()
+
+        return images
+
     @property
-    def rect(self):
+    def rect(self) -> pg.Rect:
         img_rect = self.image.get_rect()
         img_rect.midbottom = pg.Vector2(64, 153) * 2 if self.friendly else pg.Vector2(192, 90) * 2
         return img_rect
 
     @property
-    def is_koed(self):
+    def is_koed(self) -> bool:
         """ Return True if the pokemon has no health left """
         return self.health <= 0
+
+    @property
+    def image(self) -> None | pg.Surface:
+        if self._clear_surfaces:
+            return None
+        return self.images["back"] if self.friendly else self.images["front"]
+
+    @image.setter
+    def image(self, img: pg.Surface):
+        self.images["front"] = img
 
     def _get_move_damage(self, move: Move2, target, ignore_modifiers=False) -> float:
         """ Return the damage that the move will do to the target"""
@@ -465,15 +462,10 @@ class Pokemon(pg.sprite.Sprite):
     def get_new_moves(self):
         return [getMove(move_name) for move_name, level in self.moveData if level == self.level]
 
-    def switch_image(self, direction="back"):
-        front, back, small = get_pokemon_images(self.ID, self.shiny)
-        self.image = back if direction == "back" else front
-
     def get_evolution(self):
         return oldPokedex[oldPokedex["ID"] == self.ID + 1].index[0]
 
     def _clear_images(self):
-        self.image = None
         self.animation = None
 
         self.displayImage = None
@@ -484,10 +476,7 @@ class Pokemon(pg.sprite.Sprite):
         self.sprite_mask = None
 
     def load_images(self, animations: None | Animations = None):
-        front, back, small = get_pokemon_images(self.ID, self.shiny)
-        self.image = back if self.friendly else front
-
-        self.smallImage = small
+        self.smallImage = self.images["small"]
         if not animations:
             animations = createAnimation(self.name)
 

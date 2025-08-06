@@ -1,6 +1,6 @@
 import pygame as pg
 from screen_V2 import Screen, BlitLocation
-from pokemon import get_pokemon_images, oldPokedex
+from pokemon import Pokemon
 from sprite_screen import SpriteScreen, DisplayContainer
 
 
@@ -26,8 +26,8 @@ class BattleCatchDisplay(SpriteScreen):
         self.addText("HT", pg.Vector2(152, 91) * scale)
         self.addText("WT", pg.Vector2(152, 107) * scale)
 
-        front_image, _, _ = get_pokemon_images(pokemon.ID, crop=False)
-        self.add_image(front_image, pg.Vector2(8, 32) * self.scale)
+        images = Pokemon.get_images(pokemon.ID, crop=False)
+        self.add_image(images["front"], pg.Vector2(8, 32) * self.scale)
 
         container = NameContainer2(pokemon.ID, pokemon.name, pokemon.species, pg.Vector2(107, 22), scale=self.scale)
         container.load_image("assets/menu/pokedex/pokeball.png", pos=pg.Vector2(2, 2) * self.scale,

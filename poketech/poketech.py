@@ -4,7 +4,6 @@ from enum import Enum
 import pygame as pg
 
 from font.font import ClockFont
-from pokemon import smallSprites
 from screen_V2 import Screen, BlitLocation
 from sprite_screen import SpriteScreen
 

@@ -450,7 +450,6 @@ class Battle:
                 target.catchLevel = target.level
                 target.friendly = True
                 target.visible = False
-                target.switch_image()
                 self.friendly_team.pokemon.append(target)
                 self.game.pokedex.data.loc[target.name, "caught"] = True
                 self.running = False

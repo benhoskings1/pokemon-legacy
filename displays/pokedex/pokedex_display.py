@@ -1,11 +1,10 @@
 from enum import Enum
 
-import pygame
 import pygame as pg
 
 from general.utils import Colours
 from sprite_screen import SpriteScreen, DisplayContainer, BlitLocation
-from pokemon import get_pokemon_images, oldPokedex
+from pokemon import Pokemon, oldPokedex
 
 
 NAME_CONTAINER_POSITIONS = [
@@ -59,7 +58,7 @@ class PokedexDisplayMain(SpriteScreen):
         self.update()
 
     def update(self):
-        front_image, _, _ = get_pokemon_images(self.pokedex_display.pokemon_idx, crop=False)
+        images = Pokemon.get_images(self.pokedex_display.pokemon_idx, crop=False)
 
         self.kill_sprites()
 
@@ -67,7 +66,7 @@ class PokedexDisplayMain(SpriteScreen):
 
         name = oldPokedex.loc[oldPokedex["ID"] == self.pokedex_display.pokemon_idx].index.values[0]
         if self.pokedex.data.loc[name, "appearances"] > 0:
-            self.add_image(front_image, pg.Vector2(16, 40)*self.scale)
+            self.add_image(images["front"], pg.Vector2(16, 40)*self.scale)
         else:
             self.load_image("assets/menu/pokedex/unknown_pk.png", pos=pg.Vector2(24, 48)*self.scale,scale=self.scale,)
 
@@ -98,7 +97,7 @@ class PokedexDisplayInfo(SpriteScreen):
 
     def update(self):
         self.refresh()
-        front_image, _, _ = get_pokemon_images(self.pokedex_display.pokemon_idx, crop=False)
+        front_image, _, _ = Pokemon.get_images(self.pokedex_display.pokemon_idx, crop=False)
         self.add_image(front_image, pg.Vector2(8, 32) * self.scale)
 
         name = oldPokedex.loc[oldPokedex["ID"] == self.pokedex_display.pokemon_idx].index.values[0]

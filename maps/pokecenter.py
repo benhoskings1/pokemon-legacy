@@ -8,7 +8,7 @@ from sprite_screen import SpriteScreen
 
 # MODULE_PATH = resources.files(__package__)
 
-move_directions = {pg.K_UP: (0, 1), pg.K_DOWN: (0, -1), pg.K_LEFT: (-1, 0), pg.K_RIGHT: (1, 0)}
+move_directions = {pg.K_UP: (0, 1), pg.K_DOWN: (0, -1), pg.K_LEFT: (1, 0), pg.K_RIGHT: (-1, 0)}
 
 
 class PokeCenter(SpriteScreen):

@@ -5,7 +5,7 @@ import pygame as pg
 
 import team
 from general.Move import Move2
-from pokemon import Pokemon, get_pokemon_images
+from pokemon import Pokemon
 from general.utils import Colours, create_display_bar
 from screen_V2 import FontOption, BlitLocation
 from sprite_screen import SpriteScreen, DisplayContainer, GameObjects
@@ -433,14 +433,14 @@ class MenuTeamDisplaySummary(SpriteScreen):
     def load_pokemon_details(self, pokemon: Pokemon):
         self.refresh()
 
-        front_image, _, _ = get_pokemon_images(pokemon.ID, crop=False)
+        images = Pokemon.get_images(pokemon.ID, crop=False)
 
         self.addText(
             pokemon.name.upper(), pg.Vector2(pg.Vector2(24, 27)) * self.scale,
             colour=Colours.white.value, shadowColour=Colours.darkGrey.value
         )
         self.addText(f"{pokemon.level}", pg.Vector2(25, 43) * self.scale)
-        self.add_image(front_image, pg.Vector2(52, 104) * self.scale, location=BlitLocation.centre)
+        self.add_image(images["front"], pg.Vector2(52, 104) * self.scale, location=BlitLocation.centre)
         self.load_image(f"assets/general/{pokemon.gender}.png", pos=pg.Vector2(90, 27) * self.scale, scale=self.scale)
         self.addText("None" if pokemon.item is None else pokemon.item.name, pg.Vector2(8, 179) * self.scale)
 
