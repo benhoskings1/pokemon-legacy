@@ -182,7 +182,7 @@ class Pokemon(pg.sprite.Sprite):
             self.type1 = data.Type[0]
             self.type2 = data.Type[1]
 
-        exp: np.int64 = level_up_values.loc[level, self.growthRate] if exp is None else exp
+        exp: int = int(level_up_values.loc[level, self.growthRate]) if exp is None else exp
         level: int = random.randint(1, 10) if level is None else level
 
         self.level, self.exp = level, exp
@@ -335,7 +335,7 @@ class Pokemon(pg.sprite.Sprite):
         return self.images["back"] if self.friendly else self.images["front"]
 
     @image.setter
-    def image(self, img: pg.Surface):
+    def image(self, img: pg.Surface) -> None:
         self.images["front"] = img
 
     def _get_move_damage(self, move: Move2, target, ignore_modifiers=False) -> float:
@@ -416,13 +416,14 @@ class Pokemon(pg.sprite.Sprite):
 
         return damage, type1 * type2, inflict_condition, heal, modify, hits, crit
 
-    def updateEVs(self, name):
+    def updateEVs(self, name) -> None:
         data = pokedex.loc[name]
         EVYield = data.EV_Yield
         for [idx, value] in enumerate(EVYield):
             self.EVs[idx] += value
 
-    def get_faint_xp(self):
+    def get_faint_xp(self) -> float:
+        """ Return the exp yield of the pokemon on ko """
         a, e, f, L, Lp, p, s, t, v = 1, 1, 1, 1, 1, 1, 1, 1, 1
 
         b = self.stats.exp
@@ -459,13 +460,14 @@ class Pokemon(pg.sprite.Sprite):
         self.level_up_exp = int(level_up_values.loc[self.level + 1, self.growthRate])
         self.update_stats()
 
-    def get_new_moves(self):
+    def get_new_moves(self) -> list[Move2]:
+        """ Return a list of new moves for this level """
         return [getMove(move_name) for move_name, level in self.moveData if level == self.level]
 
     def get_evolution(self):
         return oldPokedex[oldPokedex["ID"] == self.ID + 1].index[0]
 
-    def _clear_images(self):
+    def _clear_images(self) -> None:
         self.animation = None
 
         self.displayImage = None
@@ -475,7 +477,7 @@ class Pokemon(pg.sprite.Sprite):
         self.sprite = None
         self.sprite_mask = None
 
-    def load_images(self, animations: None | Animations = None):
+    def load_images(self, animations: None | Animations = None) -> None:
         self.smallImage = self.images["small"]
         if not animations:
             animations = createAnimation(self.name)
@@ -483,10 +485,10 @@ class Pokemon(pg.sprite.Sprite):
         self.small_animation = animations.small
         self.animation = animations.front
 
-    def reset_stat_stages(self):
+    def reset_stat_stages(self) -> None:
         self.statStages = StatStages()
 
-    def restore(self):
+    def restore(self) -> None:
         self.health = self.stats.health
         self.status = None
 
@@ -494,7 +496,7 @@ class Pokemon(pg.sprite.Sprite):
             move.PP = move.maxPP
 
     # ========== DISPLAY FUNCTIONS BELOW  =============
-    def get_json_data(self):
+    def get_json_data(self) -> dict[str, Any]:
         status = self.status.value if self.status else None
 
         data = {
