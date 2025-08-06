@@ -5,7 +5,7 @@ import pygame as pg
 
 import team
 from general.Move import Move2
-from pokemon import Pokemon, getImages
+from pokemon import Pokemon, get_pokemon_images
 from general.utils import Colours, create_display_bar
 from screen_V2 import FontOption, BlitLocation
 from sprite_screen import SpriteScreen, DisplayContainer, GameObjects
@@ -433,7 +433,7 @@ class MenuTeamDisplaySummary(SpriteScreen):
     def load_pokemon_details(self, pokemon: Pokemon):
         self.refresh()
 
-        front_image, _, _ = getImages(pokemon.ID, crop=False)
+        front_image, _, _ = get_pokemon_images(pokemon.ID, crop=False)
 
         self.addText(
             pokemon.name.upper(), pg.Vector2(pg.Vector2(24, 27)) * self.scale,

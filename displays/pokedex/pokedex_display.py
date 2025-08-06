@@ -5,7 +5,7 @@ import pygame as pg
 
 from general.utils import Colours
 from sprite_screen import SpriteScreen, DisplayContainer, BlitLocation
-from pokemon import getImages, oldPokedex
+from pokemon import get_pokemon_images, oldPokedex
 
 
 NAME_CONTAINER_POSITIONS = [
@@ -59,7 +59,7 @@ class PokedexDisplayMain(SpriteScreen):
         self.update()
 
     def update(self):
-        front_image, _, _ = getImages(self.pokedex_display.pokemon_idx, crop=False)
+        front_image, _, _ = get_pokemon_images(self.pokedex_display.pokemon_idx, crop=False)
 
         self.kill_sprites()
 
@@ -98,7 +98,7 @@ class PokedexDisplayInfo(SpriteScreen):
 
     def update(self):
         self.refresh()
-        front_image, _, _ = getImages(self.pokedex_display.pokemon_idx, crop=False)
+        front_image, _, _ = get_pokemon_images(self.pokedex_display.pokemon_idx, crop=False)
         self.add_image(front_image, pg.Vector2(8, 32) * self.scale)
 
         name = oldPokedex.loc[oldPokedex["ID"] == self.pokedex_display.pokemon_idx].index.values[0]

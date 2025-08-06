@@ -80,7 +80,7 @@ class GameDisplay(SpriteScreen):
         action = None
         popup = MenuDisplayPopup(scale=game.graphics_scale)
         self.sprites.add(popup)
-        game.updateDisplay()
+        game.update_display()
 
         while not action:
             for event in pg.event.get():
@@ -97,7 +97,7 @@ class GameDisplay(SpriteScreen):
                     else:
                         popup.process_input(event.key, controller=game.controller)
                         # game.menu_active = not game.menu_active
-                        game.updateDisplay()
+                        game.update_display()
 
     def refresh(self, sprite_only=False):
         if not sprite_only:

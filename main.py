@@ -49,7 +49,7 @@ if __name__ == "__main__":
     pg.init()
     pg.event.pump()
 
-    game = Game(1.5, overwrite=True, save_slot=2, new=True)
+    game = Game(overwrite=True, save_slot=2, new=True)
     game.loop()
 
     object_map = map_properties(game, filter_types=[pg.Surface])

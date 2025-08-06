@@ -7,7 +7,7 @@ import pygame as pg
 
 
 class ImageEditor:
-    def __init__(self, file: os.PathLike = None, pixelData=None):
+    def __init__(self, file: None | str | os.PathLike = None, pixelData=None):
         if file:
             if not os.path.exists(file):
                 print("NO such file")
@@ -25,6 +25,33 @@ class ImageEditor:
         else:
             self.image = None
             self.pixelData = None
+
+    def crop_transparent_borders(self, overwrite: bool = False):
+        # Load image with alpha channel
+        img = self.pixelData
+
+        if img.shape[2] < 4:
+            raise ValueError("Image does not have an alpha channel.")
+
+        # Extract the alpha channel
+        alpha = img[:, :, 3]
+
+        # Find all rows and columns where alpha > 0
+        coords = cv2.findNonZero(alpha)
+
+        if coords is None:
+            raise ValueError("The entire image is fully transparent.")
+
+        # Get bounding rectangle of non-transparent area
+        x, y, w, h = cv2.boundingRect(coords)
+
+        # Crop the image
+        cropped = img[y:y + h, x:x + w]
+
+        if overwrite:
+            self.pixelData = cropped
+
+        return cropped
 
     def loadData(self, data):
         self.pixelData = data
@@ -81,54 +108,6 @@ class ImageEditor:
 
         print("Image Saved")
 
-    def checkLine(self, idx, axis):
-        if axis == 0:
-            # get the nth row
-            pixels = self.pixelData[idx, :, :]
-        else:
-            pixels = self.pixelData[:, idx, :]
-
-        for idx, pixel in enumerate(pixels):
-            if pixel[3] != 0:
-                return True
-
-        return False
-
-    def cropImage(self, overwrite=False):
-        rowCrop = []
-
-        for idx, row in enumerate(self.pixelData[:, 0, :]):
-            crop = self.checkLine(idx, 0)
-            rowCrop.append(crop)
-        rowCrop = np.array(rowCrop)
-        rowIndices = np.array(range(self.pixelData.shape[0]))[rowCrop]
-
-        colCrop = []
-        for idx, row in enumerate(self.pixelData[0, :, :]):
-            crop = self.checkLine(idx, 1)
-            colCrop.append(crop)
-        colCrop = np.array(colCrop)
-        colIndices = np.array(range(self.pixelData.shape[1]))[colCrop]
-
-        newImage = self.pixelData[min(rowIndices): max(rowIndices) + 1, min(colIndices):max(colIndices) + 1, :]
-
-        if overwrite:
-            self.pixelData = newImage
-
-        return newImage
-
-    def cropToSize(self, size:pg.Vector2, overwrite=False):
-
-        xLims = (int((self.pixelData.shape[0] - size.x) / 2), int((self.pixelData.shape[0] - size.x) / 2 + size.x))
-        yLims = (int((self.pixelData.shape[1] - size.y) / 2), int((self.pixelData.shape[1] - size.y) / 2 + size.y))
-
-        newImage = self.pixelData[xLims[0]:xLims[1], yLims[0]:yLims[1]]
-
-        if overwrite:
-            self.pixelData = newImage
-
-        return newImage
-
     def resizeImage(self, size, overwrite=False):
         img = self.pixelData.copy()
         img = cv2.resize(img, size, interpolation=cv2.INTER_NEAREST)
@@ -147,10 +126,6 @@ class ImageEditor:
     def showImage(self):
         cv2.imshow("Image", self.pixelData)
         cv2.waitKey()
-
-    def cleanImage(self):
-        self.eraseColour([255, 255, 255], overwrite=True)
-        self.cropImage(overwrite=True)
 
     def createSurface(self, bgr=True):
         surf = pg.Surface((self.pixelData.shape[1], self.pixelData.shape[0]), pg.SRCALPHA)

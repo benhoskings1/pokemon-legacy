@@ -1,6 +1,3 @@
-import os
-import importlib.resources as resources
-
 import datetime
 import pickle
 from enum import Enum
@@ -10,8 +7,11 @@ import random
 import cv2
 import pandas as pd
 import pygame as pg
+import numpy as np
+from pandas import DataFrame
 
 from general.utils import load_gif
+from general.Move import Move2
 from general.Animations import Animations, createAnimation
 from general.Move import getMove
 from general.ability import Ability
@@ -24,44 +24,36 @@ with open("game_data/pokedex/LocalDex/LocalDex.pickle", 'rb') as file:
 oldPokedex = pd.read_csv("game_data/pokedex/Local Dex.tsv", delimiter='\t', index_col=1)
 attributes = pd.read_csv("game_data/pokedex/AttributeDex.tsv", delimiter='\t', index_col=1)
 effectiveness = pd.read_csv("game_data/Effectiveness.csv", index_col=0)
-level_up_values = pd.read_csv("game_data/level_up_exp.tsv", delimiter='\t', index_col=6)
+level_up_values: DataFrame = pd.read_csv("game_data/level_up_exp.tsv", delimiter='\t', index_col=6)
 natures = pd.read_csv("game_data/Natures.tsv", delimiter='\t', index_col=0)
 national_dex = pd.read_csv("game_data/pokedex/NationalDex/NationalDex.tsv", delimiter='\t', index_col=0)
-
-capWildMoves = True
-
-stageMultipliers = {-6: 2 / 8, -5: 2 / 7, -4: 2 / 6, -3: 2 / 5, -2: 2 / 4, -1: 2 / 3,
-                    0: 1, 1: 3 / 2, 2: 4 / 2, 3: 5 / 2, 4: 6 / 2, 5: 7 / 2, 6: 8 / 2}
-otherMultipliers = {-6: 33 / 100, -5: 36 / 100, -4: 43 / 100, -3: 50 / 100, -2: 60 / 100, -1: 75 / 100,
-                    1: 133 / 100, 2: 166 / 100, 3: 200 / 100, 4: 250 / 100, 5: 266 / 100, 6: 300 / 100}
-critChance = {0: 1 / 16, 1: 1 / 8, 2: 1 / 4, 3: 1 / 3, 4: 1 / 2}
 
 allSprites = cv2.imread("Sprites/Pokemon/Gen_IV_Sprites.png", cv2.IMREAD_UNCHANGED)
 smallSprites = cv2.imread("Sprites/Pokemon/Gen_IV_Small_Sprites.png", cv2.IMREAD_UNCHANGED)
 editor = ImageEditor()
 
 
-def getImages(ID, shiny=False, crop=True):
-    gridWidth, perRow = 5, 32
-    pos = pg.Vector2((ID - 1) % (perRow / 2), floor((ID - 1) / (perRow / 2)))
+def get_pokemon_images(local_id: int, shiny=False, crop=True):
+    grid_width, per_row = 5, 32
+    y, x = divmod(local_id-1, int(per_row / 2))
 
-    topleft = pg.Vector2(pos.x * (80 + gridWidth) * 2 + gridWidth, pos.y * (80 + gridWidth) * 2 + gridWidth)
-    frontRect = pg.Rect(topleft, (80, 80))
-    backRect = frontRect.copy()
-    backRect.topleft += pg.Vector2(80 + gridWidth, 0)
-    frontShinyRect = frontRect.copy()
-    frontShinyRect.topleft += pg.Vector2(0, 80 + gridWidth)
-    backShinyRect = frontRect.copy()
-    backShinyRect.topleft += pg.Vector2(85, 80 + gridWidth)
+    topleft = pg.Vector2(x * (80 + grid_width) * 2 + grid_width, y * (80 + grid_width) * 2 + grid_width)
+    front_rect = pg.Rect(topleft, (80, 80))
+    back_rect = front_rect.copy()
+    back_rect.topleft += pg.Vector2(80 + grid_width, 0)
+    frontShinyRect = front_rect.copy()
+    frontShinyRect.topleft += pg.Vector2(0, 80 + grid_width)
+    backShinyRect = front_rect.copy()
+    backShinyRect.topleft += pg.Vector2(85, 80 + grid_width)
 
-    perRow = 16
-    pos = pg.Vector2((ID - 1) % perRow, floor((ID - 1) / perRow))
-    topLeftSmall = pg.Vector2(pos.x * (32 + gridWidth) + gridWidth, pos.y * (32 + gridWidth) + gridWidth)
+    per_row = 16
+    pos = pg.Vector2((local_id - 1) % per_row, floor((local_id - 1) / per_row))
+    topLeftSmall = pg.Vector2(x * (32 + grid_width) + grid_width, y * (32 + grid_width) + grid_width)
     smallRect = pg.Rect(topLeftSmall, (32, 32))
 
     if not shiny:
-        frontData = allSprites[frontRect.top:frontRect.bottom, frontRect.left:frontRect.right, :]
-        backData = allSprites[backRect.top:backRect.bottom, backRect.left:backRect.right, :]
+        frontData = allSprites[front_rect.top:front_rect.bottom, front_rect.left:front_rect.right, :]
+        backData = allSprites[back_rect.top:back_rect.bottom, back_rect.left:back_rect.right, :]
     else:
         frontData = allSprites[frontShinyRect.top:frontShinyRect.bottom,
                                frontShinyRect.left:frontShinyRect.right, :]
@@ -73,13 +65,13 @@ def getImages(ID, shiny=False, crop=True):
 
     editor.loadData(frontData)
     if crop:
-        editor.cropImage(overwrite=True)
+        editor.crop_transparent_borders(overwrite=True)
     editor.scaleImage((2, 2), overwrite=True)
     frontImage = editor.createSurface()
 
     editor.loadData(backData)
     if crop:
-        editor.cropImage(overwrite=True)
+        editor.crop_transparent_borders(overwrite=True)
     editor.scaleImage((2, 2), overwrite=True)
     backImage = editor.createSurface()
 
@@ -111,11 +103,13 @@ class Stats:
         self.exp = exp
 
     def __sub__(self, other):
-        return Stats(
-            health=self.health-other.health, attack=self.attack-other.attack, defence=self.defence-other.defence,
-            spAttack=self.spAttack - other.spAttack, spDefence=self.spDefence - other.spDefence,
-            speed=self.speed - other.speed, exp=self.exp - other.exp
-        )
+        new_dict = {k: v1 - other.__dict__[k] for k, v1 in self.__dict__.items()}
+        return Stats(**new_dict)
+        # return Stats(
+        #     health=self.health-other.health, attack=self.attack-other.attack, defence=self.defence-other.defence,
+        #     spAttack=self.spAttack - other.spAttack, spDefence=self.spDefence - other.spDefence,
+        #     speed=self.speed - other.speed, exp=self.exp - other.exp
+        # )
 
     def __str__(self):
         return f"HP: {self.health}, Atk: {self.attack}, Def: {self.defence}, Sp. Atk: {self.spAttack}, Speed: {self.speed}, Exp: {self.exp}"
@@ -169,7 +163,7 @@ class PokemonSpriteSmall(pg.sprite.Sprite):
         self.image = self.frames[self.frame_idx]
 
     @staticmethod
-    def is_clicked(self):
+    def is_clicked():
         return None
 
 
@@ -177,7 +171,7 @@ class PokemonSprite(pg.sprite.Sprite):
     def __init__(self, pk_id, shiny, friendly=True, visible=False):
         pg.sprite.Sprite.__init__(self)
 
-        self.front, self.back, self.small = getImages(pk_id, shiny=shiny)
+        self.front, self.back, self.small = get_pokemon_images(pk_id, shiny=shiny)
         self.friendly = friendly
 
         self.image = self.back if friendly else self.front
@@ -188,7 +182,7 @@ class PokemonSprite(pg.sprite.Sprite):
 
         self.intro_animation = None
 
-        self.animations = {
+        self.animations: dict[str, None | list[pg.Surface]] = {
             "intro": None,
             "stat_raise": None,
             "stat_lower": None,
@@ -208,6 +202,17 @@ class PokemonSprite(pg.sprite.Sprite):
 
 
 class Pokemon(pg.sprite.Sprite):
+    
+    crit_chance = {
+        0: 1 / 16,
+        1: 1 / 8,
+        2: 1 / 4,
+        3: 1 / 3,
+        4: 1 / 2
+    }
+
+    stage_multipliers = {idx: (idx + 2 if idx > 0 else 2) / (abs(idx) + 2 if idx < 0 else 2) for idx in range(-6, 7)}
+
     def __init__(self, name, level=None, exp=None, moves=None, health=None, status=None,
                  EVs=None, IVs=None, gender=None, nature=None, ability_name=None, stat_stages=None,
                  friendly=False, shiny=None, visible=False, catch_location=None, catch_level=None,
@@ -232,7 +237,7 @@ class Pokemon(pg.sprite.Sprite):
             self.type1 = data.Type[0]
             self.type2 = data.Type[1]
 
-        exp: int = int(level_up_values.loc[level, self.growthRate]) if exp is None else exp
+        exp: np.int64 = level_up_values.loc[level, self.growthRate] if exp is None else exp
         level: int = random.randint(1, 10) if level is None else level
 
         self.level, self.exp = level, exp
@@ -250,11 +255,11 @@ class Pokemon(pg.sprite.Sprite):
 
         self.moves = [getMove(name, move_pp) for name, move_pp in zip(move_names, move_pps)]
 
-        self.EVs = EVs if EVs is not None else [0 for _ in range(6)]
+        self.EVs = EVs if EVs is not None else [0] * 6
         self.IVs = IVs if IVs is not None else [random.randint(0, 31) for _ in range(6)]
 
         self.stats = Stats(exp=data.Base_Exp)
-        self.updateStats()
+        self.update_stats()
 
         self.health = health if health else self.stats.health
         self.friendly = friendly
@@ -267,23 +272,19 @@ class Pokemon(pg.sprite.Sprite):
 
         ability_name = ability_name if ability_name else random.choice(data.Abilities[:len(data.Abilities)])
         self.ability = Ability(name=ability_name)
-        self.nature = nature if nature else natures.loc[random.randint(0, 24)].Name
 
+        self.nature = nature if nature else natures.loc[random.randint(0, 24)].Name
         self.shiny = shiny if shiny else (True if random.randint(0, 4095) == 0 else False)
 
         self.sprite = PokemonSprite(self.ID, self.shiny, friendly=self.friendly)
 
-        front, back, small = getImages(self.ID, self.shiny)
+        front, back, small = get_pokemon_images(self.ID, self.shiny)
 
         self.image = back if friendly else front
         self.displayImage = self.image.copy()
         self.sprite_mask = pg.mask.from_surface(self.image)
         self.smallImage = small
         self.animation, self.small_animation = None, None
-
-        # if Move_PPs:
-        #     for idx, move in enumerate(self.moves):
-        #         move.PP = Move_PPs[idx] if Move_PPs[idx] else move.maxPP
 
         self.statStages = StatStages(**stat_stages) if stat_stages else StatStages()
         self.status = StatusEffect(status) if status else None
@@ -337,77 +338,51 @@ class Pokemon(pg.sprite.Sprite):
 
     @property
     def is_koed(self):
+        """ Return True if the pokemon has no health left """
         return self.health <= 0
 
-    def getMoveDamage(self, move, target, ignoreModifiers=False):
-        if move.category == "Physical":
-            if move.power:
-                if ignoreModifiers:
-                    if target.statStages.defence >= 0:
-                        #  ignore the targets positive stat stages
-                        effectiveDefence = target.stats.defence
-                    else:
-                        effectiveDefence = target.stats.defence * stageMultipliers[target.statStages.defence]
+    def _get_move_damage(self, move: Move2, target, ignore_modifiers=False) -> float:
+        """ Return the damage that the move will do to the target"""
 
-                    if self.statStages.attack <= 0:
-                        #  ignore the attackers negative stat stages
-                        effectiveAttack = self.stats.attack
-                    else:
-                        effectiveAttack = self.stats.attack * stageMultipliers[self.statStages.attack]
-                else:
-                    effectiveDefence = target.stats.defence * stageMultipliers[target.statStages.defence]
-                    effectiveAttack = self.stats.attack * stageMultipliers[self.statStages.attack]
+        if not move.power:
+            return 0
 
-                damage = floor(((2 * self.level / 5) + 2) * move.power *
-                               effectiveAttack / effectiveDefence) / 50
+        attack_stat = self.stats.attack if move.category == "Physical" else self.stats.spAttack
+        defence_stat = self.stats.defence if move.category == "Physical" else self.stats.spDefence
 
-            else:
-                damage = 0
+        attack_stage = self.statStages.attack
+        defence_stage = target.statStages.defence
 
-        elif move.category == "Special":
-            if move.power:
-                if ignoreModifiers:
-                    if target.statStages.spDefence >= 0:
-                        #  ignore the targets positive stat stages
-                        effectiveDefence = target.stats.spDefence
-                    else:
-                        effectiveDefence = target.stats.spDefence * stageMultipliers[target.stats.spDefence]
-
-                    if self.statStages.spAttack <= 0:
-                        #  ignore the attackers negative stat stages
-                        effectiveAttack = self.stats.spAttack
-                    else:
-                        effectiveAttack = self.stats.spAttack * stageMultipliers[self.statStages.spAttack]
-                else:
-                    effectiveDefence = target.stats.spDefence * stageMultipliers[target.statStages.spDefence]
-                    effectiveAttack = self.stats.spAttack * stageMultipliers[self.statStages.spAttack]
-
-                damage = floor(floor(floor(2 * self.level / 5) + 2) * move.power *
-                               floor(effectiveAttack / effectiveDefence)) / 50
-            else:
-                damage = 0
-
+        if not ignore_modifiers:
+            if defence_stage < 0:
+                # no modification for positive defence stat
+                defence_stat *= self.stage_multipliers[target.statStages.defence]
+            if attack_stage > 0:
+                # no modification for negative attack stat
+                attack_stat *= self.stage_multipliers[self.statStages.attack]
         else:
-            damage = 0
+            defence_stat *= self.stage_multipliers[target.statStages.defence]
+            attack_stat *= self.stage_multipliers[self.statStages.attack]
 
-        return damage
+        return floor(floor(floor(2 * self.level / 5) + 2) * move.power *
+                               floor(attack_stat / defence_stat)) / 50
 
-    def useMove(self, move, target):
-        critStage = 0
+    def use_move(self, move: Move2, target):
+        crit_stage = 0
 
         if move.effect:
-            inflictCondition, modify, hits, heal = move.effect.getEffect()
+            inflict_condition, modify, hits, heal = move.effect.getEffect()
 
         else:
-            inflictCondition = None
+            inflict_condition = None
             modify = None
             hits = 1
             heal = 0
 
         num = random.randint(0, 99) / 100
-        crit, critical = (True, 2) if num < critChance[critStage] else (False, 1)
+        crit, critical = (True, 2) if num < self.crit_chance[crit_stage] else (False, 1)
 
-        baseDamage = self.getMoveDamage(move, target, crit)
+        baseDamage: float = self._get_move_damage(move, target, crit)
 
         if self.status == StatusEffect.Burned and move.type == "Physical":
             burn = 0.5
@@ -422,7 +397,7 @@ class Pokemon(pg.sprite.Sprite):
 
         rand = random.randint(85, 100) / 100
 
-        STAB = 1.5 if (move.type == self.type1 or move.type == self.type2) else 1
+        stab = 1.5 if (move.type == self.type1 or move.type == self.type2) else 1
 
         type1 = effectiveness.loc[str.upper(move.type), target.type1]
 
@@ -433,7 +408,7 @@ class Pokemon(pg.sprite.Sprite):
 
         SRF, EB, TL, Berry = 1, 1, 1, 1
 
-        damage = damage * critical * item * first * rand * STAB * type1 * type2 * SRF * EB * TL * Berry
+        damage: float = damage * critical * item * first * rand * stab * type1 * type2 * SRF * EB * TL * Berry
 
         move.PP -= 1
 
@@ -442,9 +417,7 @@ class Pokemon(pg.sprite.Sprite):
         if move.category == "Status":
             damage = 0
 
-        # the move will consist of the following properties:
-        # -> damage     -> effective
-        return damage, type1 * type2, inflictCondition, heal, modify, hits, crit
+        return damage, type1 * type2, inflict_condition, heal, modify, hits, crit
 
     def updateEVs(self, name):
         data = pokedex.loc[name]
@@ -452,7 +425,7 @@ class Pokemon(pg.sprite.Sprite):
         for [idx, value] in enumerate(EVYield):
             self.EVs[idx] += value
 
-    def getFaintXP(self):
+    def get_faint_xp(self):
         a, e, f, L, Lp, p, s, t, v = 1, 1, 1, 1, 1, 1, 1, 1, 1
 
         b = self.stats.exp
@@ -461,7 +434,7 @@ class Pokemon(pg.sprite.Sprite):
         exp = (a * t * b * e * L * p * f * v) / (7 * s)
         return exp
 
-    def updateStats(self):
+    def update_stats(self):
         data = pokedex.loc[self.name]
         stats = data.Stats
 
@@ -487,13 +460,13 @@ class Pokemon(pg.sprite.Sprite):
         self.level += 1
         self.level_exp = int(level_up_values.loc[self.level, self.growthRate])
         self.level_up_exp = int(level_up_values.loc[self.level + 1, self.growthRate])
-        self.updateStats()
+        self.update_stats()
 
     def get_new_moves(self):
         return [getMove(move_name) for move_name, level in self.moveData if level == self.level]
 
     def switch_image(self, direction="back"):
-        front, back, small = getImages(self.ID, self.shiny)
+        front, back, small = get_pokemon_images(self.ID, self.shiny)
         self.image = back if direction == "back" else front
 
     def get_evolution(self):
@@ -511,7 +484,7 @@ class Pokemon(pg.sprite.Sprite):
         self.sprite_mask = None
 
     def load_images(self, animations: None | Animations = None):
-        front, back, small = getImages(self.ID, self.shiny)
+        front, back, small = get_pokemon_images(self.ID, self.shiny)
         self.image = back if self.friendly else front
 
         self.smallImage = small
@@ -533,9 +506,7 @@ class Pokemon(pg.sprite.Sprite):
 
     # ========== DISPLAY FUNCTIONS BELOW  =============
     def get_json_data(self):
-        movePPs = [move.PP for move in self.moves]
         status = self.status.value if self.status else None
-        # self.visible = True if self.friendly else self.visible
 
         data = {
             "name": self.name, "level": self.level, "exp": self.exp,

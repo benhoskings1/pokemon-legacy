@@ -162,7 +162,7 @@ class Battle:
         frames = 100
         attack_time_per_frame = attack_time / frames
 
-        [damage, effective, inflictCondition, heal, modify, hits, crit] = attacker.useMove(move, target)
+        [damage, effective, inflictCondition, heal, modify, hits, crit] = attacker.use_move(move, target)
 
         damage = min([target.health, damage])
 
@@ -339,7 +339,7 @@ class Battle:
         self.ko_animation(1500, self.foe)
 
         frames, duration = 100, 1500
-        exp_gain = round(self.foe.getFaintXP())
+        exp_gain = round(self.foe.get_faint_xp())
         self.display_message(f"{self.friendly.name} gained {exp_gain} Exp.", duration=2000)
         for frame in range(frames):
             self.friendly.exp += exp_gain / frames
@@ -779,10 +779,12 @@ class Battle:
                 self.battle_display.screens["animations"].sprites.add(battle_sprite)
 
                 self.display_message(
-                    f"You are challenged by {self.trainer.trainer_type.name.title()} {self.trainer.name}! ", 2000)
+                    f"You are challenged by {self.trainer.trainer_type.name.title()} {self.trainer.name}! ", 2000
+                )
                 self.display_message(
                     f"{self.trainer.trainer_type.name.title()} {self.trainer.name} sent out {self.foe.name.upper()}!",
-                    2000)
+                    2000
+                )
 
                 x_dist, count = self.battle_display.size.x - battle_sprite.rect.topleft[0], 30
                 for i in range(count):
@@ -858,8 +860,6 @@ class Battle:
         self.lowerScreenBase = None
         self.touch_displays = None
 
-        print(self.__dict__)
-
 
 if __name__ == '__main__':
     from game import Game
@@ -881,7 +881,7 @@ if __name__ == '__main__':
     route = Route("Route 201")
 
     wild_name, wild_level = route.encounter(demo_game.time)
-    wild_pk: Pokemon = demo_game.createPokemon(wild_name, level=wild_level)
+    wild_pk: Pokemon = demo_game.create_pokemon(wild_name, level=wild_level)
 
     battle = Battle(demo_game, demo_game.team, foe_team=[wild_pk])
 

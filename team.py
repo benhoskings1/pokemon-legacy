@@ -61,3 +61,7 @@ class Team:
         if idx_1 is not None and idx_2 is not None:
             self[idx_1], self[idx_2] = pk_2, pk_1
 
+    def set_invisible(self):
+        for pk in self.pokemon:
+            pk.visible = False
+

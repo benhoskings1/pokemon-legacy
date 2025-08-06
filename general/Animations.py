@@ -41,7 +41,7 @@ def getImageAnimation(path):
         imageAnimation.seek(frame)
         imageData = np.asarray(imageAnimation.convert("RGBA"))
         editor.loadData(imageData)
-        editor.cropImage(overwrite=True)
+        editor.crop_transparent_borders(overwrite=True)
         editor.scaleImage((2, 2), overwrite=True)
         surf = editor.createSurface(bgr=False)
         animation.append(surf)

@@ -4,7 +4,7 @@ import pandas as pd
 import pygame as pg
 
 
-from general.Item import Item, Pokeball, MedicineItem, BattleItemType, ItemType
+from general.Item import Pokeball, MedicineItem, BattleItemType, ItemType
 
 
 pokeballs = pd.read_csv("game_data/Items/pokeballs.tsv", delimiter="\t", index_col=0)
@@ -18,6 +18,7 @@ class BagV2:
         self.data[ItemType.pokeball] = {Pokeball(k): v for k, v in self.data[ItemType.pokeball].items()}
 
     def get_items(self, item_type: ItemType = None, battle_item_type: BattleItemType = None):
+        """ Return items """
         if item_type:
             return self.data[item_type]
 
@@ -35,15 +36,22 @@ class BagV2:
 
             return items
 
-    def decrement_item(self, item):
+    def decrement_item(self, item) -> None:
         count = self.data[item.item_type][item] - 1
         self.data[item.item_type][item] = count
 
         if self.data[item.item_type][item] == 0:
             self.data[item.item_type].pop(item)
 
-    def get_json_data(self):
-        ...
+    def get_json_data(self) -> dict:
+        """ Return JSON data """
+        json_data = {
+            item_type.value: {
+                item.name: count for item, count in values.items()
+            } for item_type, values in self.data.items()
+        }
+
+        return json_data
 
 
 if __name__ == "__main__":

@@ -37,7 +37,7 @@ class SpriteSet2:
             rect = pg.Rect(pg.Vector2((size.x + space.x) * num, 0), size)
             imageData = self.spriteSheet[rect.top:rect.bottom, rect.left:rect.right, :]
             editor = ImageEditor(pixelData=imageData)
-            cropped = editor.cropImage()
+            cropped = editor.crop_transparent_borders()
             formattedImage = cv2.cvtColor(cropped, cv2.COLOR_BGRA2RGBA)
             surf = pg.Surface((formattedImage.shape[1], formattedImage.shape[0]), pg.SRCALPHA)
             pixArray = pg.PixelArray(surf)

@@ -34,7 +34,7 @@ pokedex = pd.read_csv("game_data/pokedex/Local Dex.tsv", delimiter='\t', index_c
 
 
 class Game:
-    def __init__(self, scale, optimize=False, new=False, overwrite=False, save_slot=1):
+    def __init__(self, new=False, overwrite=False, save_slot=1):
 
         self.overwrite: bool = overwrite
         self.save_slot: int = save_slot
@@ -83,7 +83,6 @@ class Game:
                 pk.load_images(self.animations[pk.name])
 
         # ==== PICKLE DATA INITIALISATION ====
-        sprite_directory = "Sprites/Pokemon Sprites/Gen IV 2"
         game_data = None
 
         if not new and not os.path.exists(os.path.join(self.data_path, "game.pickle")):
@@ -110,26 +109,6 @@ class Game:
             self.poketech = Poketech(self.displaySize, self.time, scale=self.graphics_scale)
             self.battle = None
             self.appearances = {}
-
-        if optimize:
-            totalSeen = 0
-            for key in self.appearances:
-                totalSeen += int(self.appearances[key])
-
-            if totalSeen != 0:
-                for idx, name in enumerate(pokedex.index):
-                    if name in self.appearances.keys():
-                        appearanceRatio = self.appearances[name] / totalSeen
-                        if appearanceRatio >= 0.4:
-                            print(name, appearanceRatio)
-                            directory = os.path.join(sprite_directory, name)
-                            self.loadDisplay.updateAnimationLocation(directory)
-                            top, bottom = self.loadDisplay.getScreens()
-                            self.topSurf.blit(top, (0, 0))
-                            self.bottomSurf.blit(bottom, (0, 0))
-                            pg.display.flip()
-                            pkAnimations = createAnimation(name)
-                            self.animations[name] = pkAnimations
 
         # ========== DISPLAY INITIALISATION =========
         self.controller = Controller()
@@ -159,7 +138,7 @@ class Game:
         pg.display.flip()
         pg.time.delay(750)
 
-        self.fadeToBlack(500)
+        self.fade_to_black(500)
 
     def __getstate__(self):
         self.window = None
@@ -187,64 +166,6 @@ class Game:
     def time(self):
         return datetime.now()
 
-    def load_displays(self):
-        self.window = pg.display.set_mode(self.displaySize)
-        self.topSurf = self.window.subsurface(((0, 0), (self.displaySize.x, self.displaySize.y / 2)))
-        self.bottomSurf = self.window.subsurface(((0, self.displaySize.y / 2),
-                                                  (self.displaySize.x, self.displaySize.y / 2)))
-        self.bottomSurf.fill(Colours.white.value)
-        self.loadDisplay = LoadDisplay(self.topSurf.get_size())
-
-    def createPokemon(self, name, friendly=False, level=None, exp=None, moveNames=None, EVs=None, IVs=None, shiny=None,):
-
-        if not friendly:
-            self.pokedex.data.loc[name, "appearances"] += 1
-
-        if not (name in self.animations.keys()):
-            self.animations[name] = createAnimation(name)
-
-        animations = self.animations[name]
-
-        pokemon = Pokemon(name, level=level, exp=exp, Move_Names=moveNames, EVs=EVs, IVs=IVs,
-                          friendly=friendly, shiny=shiny)
-
-        pokemon.animation = animations.front
-        pokemon.small_animation = animations.small
-
-        return pokemon
-
-    def fadeToBlack(self, duration):
-        blackSurf = pg.Surface(self.topSurf.get_size())
-        blackSurf.fill(Colours.black.value)
-        blackSurf.set_alpha(0)
-        count = 100
-        for t in range(0, count):
-            blackSurf.set_alpha(round(t / count * 255))
-            pg.time.delay(int(duration / count))
-            self.topSurf.blit(blackSurf, (0, 0))
-            self.bottomSurf.blit(blackSurf, (0, 0))
-            pg.display.flip()
-
-    def fadeFromBlack(self, duration, battle=False):
-        blackSurf = pg.Surface(self.topSurf.get_size())
-        blackSurf.fill(Colours.black.value)
-        blackSurf.set_alpha(255)
-        count = 100
-        for t in range(0, count):
-            blackSurf.set_alpha(int((count - t) / count * 255))
-            pg.time.delay(int(duration / count))
-            if not battle:
-                self.updateDisplay(flip=False)
-            else:
-                if self.battle.state == State.home:
-                    self.battle.update_screen(cover=True, flip=False)
-                else:
-                    self.battle.update_screen(flip=False)
-
-            self.topSurf.blit(blackSurf, (0, 0))
-            self.bottomSurf.blit(blackSurf, (0, 0))
-            pg.display.flip()
-
     @property
     def time_of_day(self):
         if 6 < self.time.hour <= 16:
@@ -254,7 +175,51 @@ class Game:
         else:
             return Time.night
 
-    def updateDisplay(self, flip=True):
+    @staticmethod
+    def create_pokemon(name, friendly=False, level=None, exp=None, EVs=None, IVs=None, shiny=None, ):
+        return Pokemon(name, level=level, exp=exp, EVs=EVs, IVs=IVs, friendly=friendly, shiny=shiny)
+
+    def load_displays(self):
+        self.window = pg.display.set_mode(self.displaySize)
+        self.topSurf = self.window.subsurface(((0, 0), (self.displaySize.x, self.displaySize.y / 2)))
+        self.bottomSurf = self.window.subsurface(((0, self.displaySize.y / 2),
+                                                  (self.displaySize.x, self.displaySize.y / 2)))
+        self.bottomSurf.fill(Colours.white.value)
+        self.loadDisplay = LoadDisplay(self.topSurf.get_size())
+
+    def fade_to_black(self, duration):
+        black_surf = pg.Surface(self.topSurf.get_size())
+        black_surf.fill(Colours.black.value)
+        black_surf.set_alpha(0)
+        count = 100
+        for t in range(0, count):
+            black_surf.set_alpha(round(t / count * 255))
+            pg.time.delay(int(duration / count))
+            self.topSurf.blit(black_surf, (0, 0))
+            self.bottomSurf.blit(black_surf, (0, 0))
+            pg.display.flip()
+
+    def fade_from_black(self, duration, battle=False):
+        black_surf = pg.Surface(self.topSurf.get_size())
+        black_surf.fill(Colours.black.value)
+        black_surf.set_alpha(255)
+        count = 100
+        for t in range(0, count):
+            black_surf.set_alpha(int((count - t) / count * 255))
+            pg.time.delay(int(duration / count))
+            if not battle:
+                self.update_display(flip=False)
+            else:
+                if self.battle.state == State.home:
+                    self.battle.update_screen(cover=True, flip=False)
+                else:
+                    self.battle.update_screen(flip=False)
+
+            self.topSurf.blit(black_surf, (0, 0))
+            self.bottomSurf.blit(black_surf, (0, 0))
+            pg.display.flip()
+
+    def update_display(self, flip=True):
 
         self.game_display.refresh()
         self.topSurf.blit(self.game_display.get_surface(), (0, 0))
@@ -262,7 +227,7 @@ class Game:
         if flip:
             pg.display.flip()
 
-    def movePlayer(self, direction, detectGrass=True):
+    def move_player(self, direction, detect_grass=True):
         self.player.update()
 
         moved = False
@@ -277,10 +242,10 @@ class Game:
                 self.player._moving = False
 
         self.player.update()
-        self.updateDisplay()
+        self.update_display()
         if moved:
-            if detectGrass:
-                self.detectGrassCollision()
+            if detect_grass:
+                self.detect_grass_collision()
             self.player.steps += 1
             self.poketech.pedometerSteps += 1
             self.poketech.update_pedometer()
@@ -307,14 +272,14 @@ class Game:
 
         return False
 
-    def detectGrassCollision(self, battle=False) -> None:
+    def detect_grass_collision(self, battle=False) -> None:
         collide = self.game_display.map.detect_collision()
         if any(collide):
             grass = collide[0]
             num = random.randint(0, (1 if battle else 255))
             if num < grass.encounterNum:
                 pg.time.delay(100)
-                self.battleIntro(250)
+                self.battle_intro(250)
                 self.start_battle(route=grass.route)
 
     def start_battle(self, foe_team: None | list[Pokemon] | Team=None, route="Route 201", trainer=None) -> None:
@@ -322,12 +287,11 @@ class Game:
         if not foe_team:
             route = Route(route)
             wild_name, wild_level = route.encounter(self.time)
-            wild_pk: Pokemon = self.createPokemon(wild_name, level=wild_level)
+            wild_pk: Pokemon = self.create_pokemon(wild_name, level=wild_level)
             foe_team = [wild_pk]
-        # else:
-        #     for pk in foe_team:
-        #         if not (pk.name in self.animations.keys()):
-        #             self.animations[pk.name] = createAnimation(pk.name)
+
+        for pk in foe_team:
+            self.pokedex.data.loc[pk.name, "appearances"] += 1
 
         self.log.add_event(GameEvent(name=f"battle started against {foe_team}", event_type=GameEventType.game))
         self.battle = Battle(self, self.team, foe_team, route_name=route, trainer=trainer)
@@ -339,14 +303,14 @@ class Game:
             self.battle = None
             self.log.add_event(GameEvent(name=f"battle completed with outcome {outcome}", event_type=GameEventType.game))
 
-    def battleIntro(self, time_delay):
-        blackSurf = pg.Surface(self.topSurf.get_size())
-        blackSurf.fill(Colours.darkGrey.value)
+    def battle_intro(self, time_delay):
+        black_surf = pg.Surface(self.topSurf.get_size())
+        black_surf.fill(Colours.darkGrey.value)
         for count in range(2):
-            self.topSurf.blit(blackSurf, (0, 0))
+            self.topSurf.blit(black_surf, (0, 0))
             pg.display.flip()
             pg.time.delay(time_delay)
-            self.updateDisplay()
+            self.update_display()
             pg.time.delay(time_delay)
 
     def wait_for_key(self, key=None, break_on_timeout=True) -> bool:
@@ -367,13 +331,13 @@ class Game:
                 return True
 
     def display_message(self, text, duration=1000):
-        self.updateDisplay()
+        self.update_display()
         # self.game.bottomSurf.blit(self.lowerScreenBase, (0, 0))
         pg.display.flip()
 
         for char_idx in range(1, len(text) + 1):
             self.game_display.update_display_text(text, max_chars=char_idx)
-            self.updateDisplay()
+            self.update_display()
             pg.display.flip()
             pg.time.delay(round(duration * 0.7 / len(text)))
             # self.wait(round(duration * 0.7 / len(text)))
@@ -383,15 +347,21 @@ class Game:
     def loop(self):
         if self.battle:
             self.battle.update_screen(flip=False)
-            self.fadeFromBlack(500, battle=True)
+            self.fade_from_black(500, battle=True)
             outcome = self.battle.loop()
-            self.battle = None
-            self.updateDisplay()
-        else:
-            self.updateDisplay(flip=False)
-            self.fadeFromBlack(500)
 
-        self.updateDisplay()
+            if outcome == BattleOutcome.quit:
+                self.running = False
+            else:
+                self.battle = None
+                self.log.add_event(
+                    GameEvent(name=f"battle completed with outcome {outcome}", event_type=GameEventType.game))
+
+        else:
+            self.update_display(flip=False)
+            self.fade_from_black(500)
+
+        self.update_display()
 
         while self.running:
             pg.time.delay(25)  # set the debounce-time for keys
@@ -399,16 +369,16 @@ class Game:
             mouse = pg.mouse.get_pressed()
             if keys[self.controller.up]:
                 self.player.spriteIdx = 0
-                self.movePlayer(Direction.up)
+                self.move_player(Direction.up)
             elif keys[self.controller.down]:
                 self.player.spriteIdx = 3
-                self.movePlayer(Direction.down)
+                self.move_player(Direction.down)
             elif keys[self.controller.left]:
                 self.player.spriteIdx = 6
-                self.movePlayer(Direction.left)
+                self.move_player(Direction.left)
             elif keys[self.controller.right]:
                 self.player.spriteIdx = 9
-                self.movePlayer(Direction.right)
+                self.move_player(Direction.right)
 
             elif keys[pg.K_h]:
                 print("Restoring all pokemon in team")
@@ -424,15 +394,15 @@ class Game:
                 if self.player.movement != Movement.walking:
                     self.player.movement = Movement.walking
                     self.player.update()
-                    self.updateDisplay()
+                    self.update_display()
 
             if any(mouse):
                 # self.poketech.interact(pg.mouse.get_pos())
-                self.updateDisplay()
+                self.update_display()
                 pg.time.delay(100)
 
             if self.time.minute != datetime.now().minute:
-                self.updateDisplay()
+                self.update_display()
 
             for event in pg.event.get():
                 if event.type == pg.QUIT:
@@ -446,8 +416,8 @@ class Game:
                                     self.menu_objects[action].loop()
 
                             action = self.game_display.menu_loop(self)
-                            self.updateDisplay()
-                        self.updateDisplay()
+                            self.update_display()
+                        self.update_display()
 
                     elif event.key == self.controller.a:
                         trainer = self.check_collision(direction=Direction.up)
@@ -476,11 +446,10 @@ class Game:
             with open(os.path.join(save_dir, "team.json"), "w") as write_file:
                 json.dump([pk.get_json_data() for pk in self.team], write_file, indent=4)
 
-            self.team = None
+            with open(os.path.join(save_dir, "bag.json"), "w") as write_file:
+                json.dump(self.bag.get_json_data(), write_file, indent=4)
 
-            # if self.battle:
-                # self.battle.clear_surfaces()
-                # self.battle = None # battle loading not yet implemented
+            self.team = None
 
             self.menu_objects = None
 
