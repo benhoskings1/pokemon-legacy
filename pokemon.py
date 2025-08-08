@@ -283,11 +283,7 @@ class Pokemon(pg.sprite.Sprite):
 
         y, x = divmod(local_id - 1, int(per_row / 2))
 
-        images = {
-            "front": None,
-            "back": None,
-            "small": None,
-        }
+        images = {}
 
         pk_block = pg.Rect((x * (80 + grid_width) * 2 + grid_width, y * (80 + grid_width) * 2 + grid_width),
                            image_size * 2 + pg.Vector2(grid_width, grid_width))
@@ -299,8 +295,8 @@ class Pokemon(pg.sprite.Sprite):
             front_rect = front_rect.move(pg.Vector2(0, grid_width + image_size.y))
             back_rect = back_rect.move(pg.Vector2(0, grid_width + image_size.y))
 
-        per_row = 16
-        y, x = divmod(local_id - 1, int(per_row))
+        # per_row = 16
+        # y, x = divmod(local_id - 1, int(per_row))
         small_rect = pg.Rect(pg.Vector2(x * (32 + grid_width) + grid_width, y * (32 + grid_width) + grid_width),
                              (32, 32))
 

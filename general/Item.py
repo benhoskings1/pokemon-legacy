@@ -56,9 +56,6 @@ class Item:
     def __repr__(self):
         return f"Item({self.item_id}, {self.name})"
 
-    def display(self):
-        print(vars(self))
-
 
 class Pokeball(Item):
     def __init__(self, name):

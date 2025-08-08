@@ -1,3 +1,4 @@
+import argparse
 import json
 
 import pygame as pg
@@ -46,10 +47,15 @@ def map_properties(obj, path="root", seen=None, filter_types=None, results=None)
     return results
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-n", "--new", action="store_true")
+
+    args = parser.parse_args()
+
     pg.init()
     pg.event.pump()
 
-    game = Game(overwrite=True, save_slot=2, new=True)
+    game = Game(overwrite=True, save_slot=1, new=args.new)
     game.loop()
 
     object_map = map_properties(game, filter_types=[pg.Surface])

@@ -101,18 +101,18 @@ class Game:
             if self.battle:
                 self.battle.load_displays(self)
 
-            self.appearances = game_data.appearances
-
         else:
             # create new player instance
             self.player = Player("Sprites/Player Sprites", position=pg.Vector2(35, 18), scale=self.graphics_scale)
             self.poketech = Poketech(self.displaySize, self.time, scale=self.graphics_scale)
             self.battle = None
-            self.appearances = {}
 
         # ========== DISPLAY INITIALISATION =========
         self.controller = Controller()
         self.pokedex = Pokedex(self) if not game_data else game_data.pokedex
+        if new:
+            self.pokedex.data.loc[[pk.name for pk in self.team], "appearances"] += 1
+
         self.pokedex.load_surfaces()
 
         self.game_display = GameDisplay(self.topSurf.get_size(), self.player, scale=self.graphics_scale)

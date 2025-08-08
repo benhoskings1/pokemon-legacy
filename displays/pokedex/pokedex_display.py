@@ -97,8 +97,8 @@ class PokedexDisplayInfo(SpriteScreen):
 
     def update(self):
         self.refresh()
-        front_image, _, _ = Pokemon.get_images(self.pokedex_display.pokemon_idx, crop=False)
-        self.add_image(front_image, pg.Vector2(8, 32) * self.scale)
+        images= Pokemon.get_images(self.pokedex_display.pokemon_idx, crop=False)
+        self.add_image(images["front"], pg.Vector2(8, 32) * self.scale)
 
         name = oldPokedex.loc[oldPokedex["ID"] == self.pokedex_display.pokemon_idx].index.values[0]
         data = self.pokedex.data.loc[name]
