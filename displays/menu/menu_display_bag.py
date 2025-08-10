@@ -100,14 +100,21 @@ class ItemSetContainer(DisplayContainer):
 
         bag_items = list(self.bag.get_items(item_type=item_type).items())
 
+        bag_items += [(Item(
+            pd.Series({"name": "Close","buy_price": None, "sell_price": None,
+                       "name_item_type": None, "name_battle_item_type":None}, name=100),
+            item_type
+        ), 0)]
+
         offset = max(0, item_idx-4)
 
         sorted_items = sorted(bag_items, key=lambda item: item[0].item_id)[offset:min(offset+7, len(bag_items))]
 
-        # sorted_items += Item(pd.Series({"name": "close", "buy_price": None, "sell_price": None}), item_type)
-
         for idx, (item, count) in enumerate(sorted_items):
-            # print(item.item_id)
+            if item.name == "Close":
+                self.addText(f"CLOSE BAG", pg.Vector2(9, 14 + 16*idx)*self.scale)
+                continue
+
             self.addText(f"No{item.item_id:02}", pg.Vector2(9, 17 + 16*idx)*self.scale, fontOption=FontOption.level)
             self.addText(item.name, pg.Vector2(41, 14 + 16*idx)*self.scale,)
             self.addText("x", pg.Vector2(115, 17 + 16 * idx) * self.scale, )
@@ -150,7 +157,7 @@ class MenuBagDisplay(SpriteScreen):
         self.touch_display.sprites.add(self.pocket_buttons)
         self.update_display()
 
-    def map_state_to_item_type(self):
+    def map_state_to_item_type(self) -> ItemType:
         if self.active_display_state == MenuTeamDisplayStates.HMs_and_TMs:
             return ItemType.tm
         return ItemType(self.active_display_state.name.title())
@@ -177,9 +184,10 @@ class MenuBagDisplay(SpriteScreen):
 
         self.selected_item = self.container.update_image(self.map_state_to_item_type(), self.item_ids[self.active_display_state.value])
         if self.selected_item:
-            self.add_image(
-                self.selected_item.image, pg.Vector2(18, 167)*self.scale, location=BlitLocation.centre, scale=self.scale
-            )
+            if self.selected_item.image:
+                self.add_image(
+                    self.selected_item.image, pg.Vector2(18, 167)*self.scale, location=BlitLocation.centre, scale=self.scale
+                )
 
             self.add_text_2(
                 self.selected_item.description.replace("é", "e"),
@@ -198,15 +206,16 @@ class MenuBagDisplay(SpriteScreen):
 
     def process_input(self, key, controller):
         if key == controller.right or key == controller.left:
+
             self.pocket_buttons[self.active_display_state.value].update_image("regular")
             self.active_display_state = MenuTeamDisplayStates(
                 (self.active_display_state.value + (1 if key == controller.right else - 1)) %
-                len(MenuTeamDisplayStates)
+                (len(MenuTeamDisplayStates) - 1)
             )
 
         elif key == controller.down:
             new_val = min(self.item_ids[self.active_display_state.value] + 1,
-                          max(0, self.item_counts[self.active_display_state.value]-1))
+                          max(0, self.item_counts[self.active_display_state.value]))
             if new_val != self.item_ids[self.active_display_state.value]:
                 self.item_ids[self.active_display_state.value] = new_val
                 self.pokeball_frame_idx = (self.pokeball_frame_idx + 1) % (self.pokeball_frame_count - 1)

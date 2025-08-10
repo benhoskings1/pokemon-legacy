@@ -49,13 +49,14 @@ def map_properties(obj, path="root", seen=None, filter_types=None, results=None)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--new", action="store_true")
+    parser.add_argument("-o", "--overwrite", action="store_false")
 
     args = parser.parse_args()
 
     pg.init()
     pg.event.pump()
 
-    game = Game(overwrite=True, save_slot=1, new=args.new)
+    game = Game(overwrite=args.overwrite, save_slot=1, new=args.new)
     game.loop()
 
     object_map = map_properties(game, filter_types=[pg.Surface])
