@@ -8,7 +8,7 @@ from Map_Files.Map_Objects.Tall_Grass import TallGrass, Obstacle
 from sprite_screen import SpriteScreen
 
 from player import Player
-from trainer import Trainer, TrainerTypes
+from trainer import Trainer, TrainerTypes, AttentionBubble
 
 
 class MapObjects(pg.sprite.Group):
@@ -18,10 +18,13 @@ class MapObjects(pg.sprite.Group):
     def draw(self, surface, player_offset: pg.Vector2=pg.Vector2(0, 0), special_flags: int = 0):
         for obj in self.sprites():
             if isinstance(obj, Trainer):
-                surface.blit(obj.image, obj.rect.topleft - player_offset - pg.Vector2(obj.image.get_size()) / 2)
+                surface.blit(obj.image,
+                             obj.blit_rect.topleft - player_offset - pg.Vector2(obj.image.get_size()) / 2)
+            elif isinstance(obj, AttentionBubble):
+                surface.blit(obj.image,
+                             obj.rect.topleft - player_offset - pg.Vector2(obj.image.get_size()) / 2)
             else:
                 print(f"Object {obj} not implemented yet")
-                ...
 
 
 class TiledMap2(TiledMap, SpriteScreen):
@@ -41,6 +44,8 @@ class TiledMap2(TiledMap, SpriteScreen):
         SpriteScreen.__init__(self, size)
 
         self.scale = scale
+        self.tile_size = self.tilewidth * 2
+
         self.grassObjects = pg.sprite.Group()
         self.obstacles = pg.sprite.Group()
 
@@ -51,16 +56,17 @@ class TiledMap2(TiledMap, SpriteScreen):
         self.x_limits = (8, self.width - 8)
         self.y_limits = (7, self.height - 6)
 
+        # TODO: Update to use scaled version of the objects!
         for obj in self.objects:
             rect = pg.Rect(obj.x, obj.y, obj.width, obj.height)
             if obj.name == "Grass":
-                grass = TallGrass(rect, self.scale, obj.Location)
+                grass = TallGrass(rect, route=obj.Location)
                 self.grassObjects.add(grass)
             elif obj.name == "Obstacle":
-                obstacle = Obstacle(rect, self.scale)
+                obstacle = Obstacle(rect, scale=1)
                 self.obstacles.add(obstacle)
             elif obj.name == "NPC":
-                trainer = Trainer(rect, obj.properties, scale=2)
+                trainer = Trainer(rect, obj.properties, scale=self.scale)
                 self.map_objects.add(trainer)
 
         self.player = player

@@ -345,15 +345,17 @@
   <object id="34" name="Obstacle" x="256" y="1856" width="1536" height="32"/>
  </objectgroup>
  <objectgroup id="8" name="NPCs">
-  <object id="36" name="NPC" x="1120" y="512" width="32" height="32">
+  <object id="36" name="NPC" x="1088" y="576" width="32" height="32">
    <properties>
+    <property name="facing_direction" value="left"/>
     <property name="npc_name" value="Ben"/>
     <property name="npc_type" value="youngster"/>
     <property name="trainer_id" value="0"/>
    </properties>
   </object>
-  <object id="38" name="NPC" x="1184" y="512" width="32" height="32">
+  <object id="38" name="NPC" x="800" y="352" width="32" height="32">
    <properties>
+    <property name="facing_direction" value="down"/>
     <property name="npc_name" value="Natalie"/>
     <property name="npc_type" value="lass"/>
     <property name="trainer_id" value="1"/>

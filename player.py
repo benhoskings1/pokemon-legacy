@@ -42,9 +42,9 @@ class Player(pg.sprite.Sprite):
         self.spriteIdx = 3
         self.facingDirection = Direction.down
 
-        self._leg = True
+        self._leg: bool = True
         self._sprite_sets: dict | None = None
-        self._moving = False
+        self._moving: bool = False
         self.battle_animation = None
 
         self.movement = Movement.walking
@@ -57,7 +57,7 @@ class Player(pg.sprite.Sprite):
         self.blit_rect = self.image.get_rect()
         self.rect = pg.Rect(self.position * tile_size, (tile_size, tile_size))
 
-        self.steps = 0
+        self.steps: int = 0
 
     def __getstate__(self):
         self._clear_surfaces()

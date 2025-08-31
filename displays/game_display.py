@@ -23,13 +23,14 @@ class GameDisplay(SpriteScreen):
         SpriteScreen.__init__(self, size)
 
         self.player = player
-        self.map = TiledMap2("Map_Files/Sinnoh Map.tmx", size, player=player)
+        self.map = TiledMap2("Map_Files/Sinnoh Map.tmx", size, player=player, scale=scale)
 
         self.scale = scale
 
         self.text_box = TextBox(sprite_id="text_box", scale=scale, static=True)
         self.text_box.rect.topleft += pg.Vector2(3, 0) * scale
         self.player.blit_rect.center = self.surface.get_rect().center
+
         self.sprites.add(self.player)
 
     def get_surface(self, show_sprites: bool = True, offset: None | pg.Vector2 = None) -> pg.Surface:
@@ -103,5 +104,3 @@ class GameDisplay(SpriteScreen):
         if not sprite_only:
             self.surface = pg.Surface(self.size, pg.SRCALPHA)
         self.sprite_surface = pg.Surface(self.size, pg.SRCALPHA)
-
-        # self.map.refresh()

@@ -8,14 +8,44 @@ from screen_V2 import Screen, BlitLocation
 from sprite_screen import SpriteScreen
 
 from general.utils import clean_surfaces
+from team import Team
+from pokemon import Pokemon
 
 largeClockFont = ClockFont(1.85)
 smallClockFont = ClockFont(0.8)
 
 
+class PoketechButton(pg.sprite.Sprite):
+    def __init__(self, scale=1.0):
+        pg.sprite.Sprite.__init__(self)
+
+        self.sprite_type = "PoketechButton"
+
+        self.id = "poketech_button"
+
+        self.image = pg.image.load('poketech/assets/button.png')
+
+        if scale != 1.0:
+            self.image = pg.transform.scale(self.image, pg.Vector2(self.image.get_size()) * scale)
+
+        self.rect = self.image.get_rect()
+        self.rect = self.rect.move(pg.Vector2(217, 86) * scale)
+
+    @staticmethod
+    def click_return(self):
+        return None
+
+    def is_clicked(self, pos):
+        if self.rect.collidepoint(pos):
+            return True
+        else:
+            return False
+
+
 class PoketechScreens(Enum):
     clock = 0
     pedometer = 1
+    team = 2
 
 
 class ClockDisplay(SpriteScreen):
@@ -27,6 +57,9 @@ class ClockDisplay(SpriteScreen):
 
         surf = largeClockFont.render_text(self.set_time.strftime("%H:%M"))
         self.add_image(surf, pos=(int(4 * 15 / 8), int(36 * 15 / 8)))
+
+    def update(self):
+        ...
 
     def get_surface(self, show_sprites: bool = True, offset: None | pg.Vector2 = None):
         current_time = datetime.datetime.now()
@@ -46,28 +79,55 @@ class ClockDisplay(SpriteScreen):
 
 
 class PedometerDisplay(SpriteScreen):
-    def __init__(self, size, scale=1):
+    def __init__(self, size, scale: float = 1.0):
         SpriteScreen.__init__(self, size)
         self.load_image("poketech/assets/pedometer_background.png", base=True, scale=scale)
 
         self.reset_button = ...
 
+        self.scale = scale
+
     def update(self, steps):
         self.refresh()
         surf = smallClockFont.render_text(str(steps))
-        self.add_image(surf, pos=(int(96 * 15 / 8), int(48 * 15 / 8)), location=BlitLocation.centre)
+        self.add_image(surf, pos=pg.Vector2(96, 48)*self.scale, location=BlitLocation.centre)
 
+
+class TeamDisplay(SpriteScreen):
+    PK_POSITIONS = [
+        (47, 28), (142, 28), (47, 81), (142, 81), (47, 129), (142, 129)
+    ]
+
+    def __init__(self, size, team: Team, scale: float = 1.0):
+        SpriteScreen.__init__(self, size)
+        self.load_image("poketech/assets/blank_background.png", base=True, scale=scale)
+
+        self.team = team
+
+        self.update()
+
+    def update(self):
+        self.refresh()
+        for idx, pk in enumerate(self.team):
+            pk: Pokemon
+            grey_image = pg.transform.grayscale(pk.smallImage)
+            grey_image.set_alpha(150)
+            self.add_image(grey_image, self.PK_POSITIONS[idx])
 
 class Poketech(SpriteScreen):
-    def __init__(self, size, time, scale=1):
+    def __init__(self, size, time, team, scale=1):
         SpriteScreen.__init__(self, size)
         self.load_image("poketech/assets/poketech_base.png", base=True, scale=scale)
 
-        self.active_display = PoketechScreens.clock
+        self._active_display = PoketechScreens.clock
 
         self.displays: None | dict = None
 
         self.time = time
+
+        self.button = None
+
+        self.team = team
 
         self.pedometerSteps = 0
         self.pedometerReset = pg.Rect((int(66 * 15 / 8), int(81 * 15 / 8)), (int(66 * 15 / 8), int(58 * 15 / 8)))
@@ -89,6 +149,11 @@ class Poketech(SpriteScreen):
         self.__dict__.update(state)
         self._load_surfaces()
 
+    def cycle_screens(self):
+        self._active_display = PoketechScreens((self._active_display.value + 1) % len(PoketechScreens))
+
+        self.update_pedometer()
+
     def get_surface(self, show_sprites: bool = True, offset: None | pg.Vector2 = None):
         if show_sprites:
             self.sprites.draw(self)
@@ -97,15 +162,19 @@ class Poketech(SpriteScreen):
         display_surf.blit(self.surface, (0, 0))
         display_surf.blit(self.sprite_surface, (0, 0))
 
-        display_surf.blit(self.displays[self.active_display].get_surface(), pg.Vector2(16, 16)*self.scale)
+        display_surf.blit(self.displays[self._active_display].get_surface(), pg.Vector2(16, 16) * self.scale)
 
         return display_surf
 
     def update_pedometer(self):
-        ...
+        if self._active_display != PoketechScreens.pedometer:
+            return
+        self.displays[PoketechScreens.pedometer].update(self.pedometerSteps)
 
     def _clear_surfaces(self):
         self.displays = None
+
+        self.button = None
 
         self.base_surface = None
         self.surface = None
@@ -124,6 +193,10 @@ class Poketech(SpriteScreen):
         self.displays = {
             PoketechScreens.clock: ClockDisplay(self.size, self.scale),
             PoketechScreens.pedometer: PedometerDisplay(self.size, self.scale),
+            PoketechScreens.team: TeamDisplay(self.size, self.team, scale=self.scale),
         }
+
+        self.button = PoketechButton(scale=self.scale)
+
 
 

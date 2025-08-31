@@ -6,7 +6,7 @@ White = pg.Color(255, 255, 255)
 
 
 class TallGrass(pg.sprite.Sprite):
-    def __init__(self, rect, scale, route=None):
+    def __init__(self, rect, scale=1, route=None):
         pg.sprite.Sprite.__init__(self)
         size = pg.Vector2(rect.size) * scale
         pos = pg.Vector2(rect.topleft) * scale

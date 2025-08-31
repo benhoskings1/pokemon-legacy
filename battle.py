@@ -58,6 +58,8 @@ class Battle:
         self.friendly: Pokemon = self.friendly_team.get_active_pokemon()
         self.foe: Pokemon = self.foe_team[0]
 
+        self.played_pokemon: set[Pokemon] = {self.friendly}
+
         self.screenSize = pg.Vector2(game.topSurf.get_size())
 
         self.environment = pickle_data.environment if pickle_data else environment
@@ -183,6 +185,7 @@ class Battle:
                 self.battle_display.bounce_friendly_stat = False
 
                 if battle_attack.animation:
+                    print(battle_attack.frame_count)
                     for frame in range(battle_attack.frame_count):
                         battle_attack.frame_idx = frame
                         battle_attack.update()
@@ -297,7 +300,6 @@ class Battle:
                     descriptor = f"won't go any {'higher' if change > 0 else 'lower'}"
 
                 self.display_message(str.format("{}{}'s {} {}", start, modified.name, modify[1], descriptor), 2000)
-                # self.displayMessage(, 10)
                 direction = "raise" if change > 0 else "lower"
                 self.battle_display.render_pokemon_animation(self.game.topSurf, target, f"stat_{direction}", duration=2000)
 
@@ -339,22 +341,24 @@ class Battle:
         self.ko_animation(1500, self.foe)
 
         frames, duration = 100, 1500
-        exp_gain = round(self.foe.get_faint_xp())
-        self.display_message(f"{self.friendly.name} gained {exp_gain} Exp.", duration=2000)
-        for frame in range(frames):
-            self.friendly.exp += exp_gain / frames
-            self.battle_display.render_pokemon_details()
-            self.update_upper_screen()
-            pg.display.flip()
-            pg.time.delay(int(duration / frames))
-            if self.friendly.exp >= self.friendly.level_up_exp:
-                self.level_up_friendly(1000)
-                new_moves = self.friendly.get_new_moves()
-                if new_moves:
-                    for move in new_moves:
-                        self.learn_move(move)
+        exp_gain = round(self.foe.get_faint_xp() / len(self.played_pokemon))
 
-        self.friendly.exp = round(self.friendly.exp)
+        for pk in self.played_pokemon:
+            self.display_message(f"{pk.name} gained {exp_gain} Exp.", duration=2000)
+            for frame in range(frames):
+                pk.exp += exp_gain / frames
+                self.battle_display.render_pokemon_details()
+                self.update_upper_screen()
+                pg.display.flip()
+                pg.time.delay(int(duration / frames))
+                if pk.exp >= pk.level_up_exp:
+                    self.level_up_friendly(pk, 1000)
+                    new_moves = pk.get_new_moves()
+                    if new_moves:
+                        for move in new_moves:
+                            self.learn_move(move)
+
+            pk.exp = round(pk.exp)
 
         if self.foe_team.all_koed:
             return BattleOutcome.foe_ko
@@ -373,15 +377,14 @@ class Battle:
         pg.display.flip()
         self.ko_animation(1500, self.friendly)
 
-    def level_up_friendly(self, duration=1000):
+    def level_up_friendly(self, pokemon: Pokemon, duration=1000):
 
-        prev_stats = self.friendly.stats
-        self.friendly.level_up()
-        new_stats = self.friendly.stats
-        self.friendly.health += new_stats.health - prev_stats.health
+        prev_stats = pokemon.stats
+        pokemon.level_up()
+        new_stats = pokemon.stats
+        pokemon.health += new_stats.health - prev_stats.health
 
-        self.display_message(f"{self.friendly.name} grew to Lv. {self.friendly.level}!", duration=duration)
-        # stat_container = self.battle_display.screens["stats"].get_object("friendly_stats")
+        self.display_message(f"{pokemon.name} grew to Lv. {pokemon.level}!", duration=duration)
 
         for old_stats in [prev_stats, None]:
             level_up_box = LevelUpBox("level_up", self.game.graphics_scale, new_stats=new_stats, old_stats=old_stats)
@@ -670,7 +673,6 @@ class Battle:
 
     def tag_in_teammate(self, teammate: Pokemon):
         self.display_message(f"{self.active_pokemon[0].name} switch out", duration=1000)
-        # self.battle_display.update_display_text()
         tag_in = BattleTagIn(animation_size=self.screenSize)
         self.battle_display.bounce_friendly_stat = False
         self.friendly.visible = False
@@ -688,6 +690,10 @@ class Battle:
             self.battle_display.screens["animations"].refresh()
 
         self.friendly_team.swap_pokemon(self.friendly, teammate)
+
+        # add to list so that we can assign exp
+        self.played_pokemon.add(teammate)
+
         self.touch_displays[TouchDisplayStates.team].load_pk_containers()
 
         self.friendly = teammate
@@ -835,6 +841,7 @@ class Battle:
         # clear up pk stats
         for pk in self.friendly_team:
             pk.reset_stat_stages()
+            pk.visible = False
 
         self.game.bottomSurf.blit(self.lowerScreenBase, (0, 0))
         pg.display.flip()
@@ -872,7 +879,7 @@ if __name__ == '__main__':
     with open("test_data/bag/test_bag.json", "r") as read_file:
         bag_data = json.load(read_file)
 
-    demo_game = Game(scale=1, overwrite=False, new=True)
+    demo_game = Game(overwrite=False, new=True)
     print("game loaded")
 
     demo_game.bag = BagV2(bag_data)

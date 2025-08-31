@@ -129,7 +129,7 @@ class PokemonInfoContainer(DisplayContainer):
             scale=scale
         )
 
-        labels = ["pokedex No.", "Name", "Type", "OT", "ID No.", "Exp. Points", "", "To Next Lv."]
+        labels = ["Pokedex No.", "Name", "Type", "OT", "ID No.", "Exp. Points", "", "To Next Lv."]
         for idx, label in enumerate(labels):
             self.add_text_2(
                 label, pg.Rect(pg.Vector2(8, 13 + 16 * idx) * self.scale, pg.Vector2(80, 12) * self.scale),
@@ -235,7 +235,7 @@ class PokemonMovesContainer(DisplayContainer):
             # add pp values
             self.addText("PP", pg.Vector2(81, 21 + 32*idx)*self.scale,)
             self.addText(
-                f"{move.PP}/{move.maxPP}", pg.Vector2(124, 11 + 32*idx)*self.scale, location=BlitLocation.midTop,
+                f"{move.PP}/{move.maxPP}", pg.Vector2(124, 21 + 32*idx)*self.scale, location=BlitLocation.midTop,
             )
 
 

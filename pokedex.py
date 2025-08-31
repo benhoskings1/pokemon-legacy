@@ -37,7 +37,7 @@ class Pokedex:
         return seen_pks["Local_Num"].iloc[0] if len(seen_pks) > 0 else None
 
     def update_display(self, flip=True):
-        self.game.topSurf.blit(self.main_display.active_display.get_surface(), (0, 0))
+        self.game.topSurf.blit(self.main_display._active_display.get_surface(), (0, 0))
 
         # self.game.bottomSurf.blit(self.poketech.getSurface(), (0, 0))
         if flip:
