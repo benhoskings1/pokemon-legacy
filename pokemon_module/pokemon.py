@@ -29,12 +29,12 @@ editor = ImageEditor()
 
 
 class StatusEffect(Enum):
-    Burned = "Burned"
-    Frozen = "Frozen"
-    Paralysed = "Paralysed"
-    Poisoned = "Poisoned"
-    Sleeping = "Sleeping"
-    Confusion = "Confusion"
+    Burned = 0
+    Frozen = 1
+    Paralysed = 2
+    Poisoned = 3
+    Sleeping = 4
+    Confusion = 5
 
 
 class Stats:
@@ -180,7 +180,7 @@ class Pokemon(pg.sprite.Sprite):
     def __init__(self, name, level=None, exp=None, moves=None, health=None, status=None,
                  EVs=None, IVs=None, gender=None, nature=None, ability_name=None, stat_stages=None,
                  friendly=False, shiny=None, visible=False, catch_location=None, catch_level=None,
-                 catch_date=None):
+                 catch_date=None, animations=None):
         # ===== Load Default Data ======
         data = pokedex.loc[name]
         oldData = oldPokedex.loc[name]
@@ -249,7 +249,7 @@ class Pokemon(pg.sprite.Sprite):
         self.animation = None
         self.small_animation = None
 
-        self.load_images()
+        self.load_images(animations=animations)
 
         self.displayImage = self.image.copy()
         self.sprite_mask = pg.mask.from_surface(self.image)
@@ -492,7 +492,7 @@ class Pokemon(pg.sprite.Sprite):
         for move in self.moves:
             move.PP = move.maxPP
 
-    # ========== GET JSON SAVE DATA  =============
+    # ========== PICKLE DATA  =============
     def get_json_data(self) -> dict[str, Any]:
         status = self.status.value if self.status else None
 

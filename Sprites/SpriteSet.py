@@ -50,6 +50,9 @@ class SpriteSet2:
 
             self.sprites.append(surf)
 
+    def __getitem__(self, idx):
+        return self.sprites[idx]
+
     def scaleSprites(self, scale):
         for (idx, surf) in enumerate(self.sprites):
             scaledImage = pg.transform.scale(surf, pg.Vector2(surf.get_size()) * scale)

@@ -15,7 +15,6 @@ from displays.load_display import LoadDisplay
 from general.Animations import createAnimation
 from general.utils import *
 from general.Controller import Controller
-from general.Direction import Direction
 from general.Time import Time
 from general.Route import Route
 
@@ -24,8 +23,12 @@ from displays.game_display import GameDisplay, GameDisplayStates
 from displays.menu.menu_display_team import MenuTeamDisplay
 from displays.menu.menu_display_bag import MenuBagDisplay
 
-from player import Player, Movement
+
+from trainer import Trainer, Player2, Movement, Direction
 from pokemon import Pokemon
+
+from pokemon_module.pokemon_generator import PokemonGenerator
+
 from poketech.poketech import Poketech
 from team import Team
 
@@ -68,17 +71,18 @@ class Game:
             team_data = json.load(read_file)
         self.team = Team(team_data)
 
-        for pk in self.team.pokemon:
+        for pk in self.team:
             if not (pk.name in self.animations.keys()):
                 self.loadDisplay.loadTeam(pk.name)
                 top, bottom = self.loadDisplay.getScreens()
                 self.topSurf.blit(top, (0, 0))
                 self.bottomSurf.blit(bottom, (0, 0))
                 pg.display.flip()
-                # print("Creating ", repr(pk))
+
                 self.animations[pk.name] = createAnimation(pk.name)
                 animations = self.animations[pk.name]
                 pk.load_images(animations)
+
             else:
                 pk.load_images(self.animations[pk.name])
 
@@ -102,9 +106,8 @@ class Game:
                 self.battle.load_displays(self)
 
         else:
-            # create new player instance
-            self.player = Player("Sprites/Player Sprites", position=pg.Vector2(35, 18), scale=self.graphics_scale)
-            self.poketech = Poketech(self.displaySize, self.time, scale=self.graphics_scale)
+            self.player = Player2(position=pg.Vector2(31, 14), team=self.team, scale=self.graphics_scale)
+            self.poketech = Poketech(self.displaySize, self.time, team=self.team, scale=self.graphics_scale)
             self.battle = None
 
         # ========== DISPLAY INITIALISATION =========
@@ -176,8 +179,9 @@ class Game:
             return Time.night
 
     @staticmethod
-    def create_pokemon(name, friendly=False, level=None, exp=None, EVs=None, IVs=None, shiny=None, ):
-        return Pokemon(name, level=level, exp=exp, EVs=EVs, IVs=IVs, friendly=friendly, shiny=shiny)
+    def create_pokemon(name, friendly=False, level=None, exp=None, evs=None, ivs=None, shiny=None,):
+        # TODO: create generator object that holds animations in memory
+        return Pokemon(name, level=level, exp=exp, EVs=evs, IVs=ivs, friendly=friendly, shiny=shiny)
 
     def load_displays(self):
         self.window = pg.display.set_mode(self.displaySize)
@@ -220,19 +224,25 @@ class Game:
             pg.display.flip()
 
     def update_display(self, flip=True):
-
+        """ update the game screen """
         self.game_display.refresh()
         self.topSurf.blit(self.game_display.get_surface(), (0, 0))
         self.bottomSurf.blit(self.poketech.get_surface(), (0, 0))
         if flip:
             pg.display.flip()
 
-    def move_player(self, direction, detect_grass=True):
+    def move_player(self, direction, detect_grass=True) -> bool:
+        """ move the player
+
+        :param direction: the direction to move the player
+        :param detect_grass: whether to detect grass or not
+        :return: bool
+        """
         self.player.update()
 
         moved = False
 
-        if self.player.facingDirection == direction:
+        if self.player.facing_direction == direction:
             if not self.check_collision(direction):
                 moved = True
                 # shift the map
@@ -244,20 +254,79 @@ class Game:
         self.player.update()
         self.update_display()
         if moved:
-            if detect_grass:
-                self.detect_grass_collision()
+
             self.player.steps += 1
             self.poketech.pedometerSteps += 1
             self.poketech.update_pedometer()
 
-        self.player.facingDirection = direction
+            if detect_grass:
+                self.detect_grass_collision()
+
+            trainer = self.player.rect.collideobjects(self.game_display.map.map_objects.sprites(),
+                                                        key=lambda o: o.vision_rect)
+            if trainer and not trainer.battled:
+                # calculate steps towards player!
+                trainer: Trainer
+
+                trainer_pos = pg.Vector2(trainer.position)
+                player_pos = pg.Vector2(self.player.position)
+
+                move_count = player_pos.distance_to(trainer_pos)
+
+                self.game_display.map.map_objects.add(trainer.attention_bubble)
+                self.game_display.map.render(self.game_display.player.position)
+                self.update_display()
+                pg.time.delay(1000)
+                self.game_display.map.map_objects.remove(trainer.attention_bubble)
+
+                for i in range(round(move_count - 1)):
+                    self.move_trainer(trainer, trainer.facing_direction, 200)
+                    trainer._leg = not trainer._leg
+
+                self.display_message("May I trouble you for a battle please?", 2000)
+                self.wait_for_key(break_on_timeout=False)
+                self.start_battle(foe_team=trainer.team, trainer=trainer)
+                trainer.battled = True
+                self.update_display()
+
+        self.player.facing_direction = direction
         self.player._leg = not self.player._leg
 
         if not moved:
             # add an optional delay here
-            pass
+            return False
 
         return moved
+
+    def move_trainer(self, trainer, direction, duration, frames=20):
+        """ move a trainer to a new position """
+        trainer.update()
+
+        # trainer._moving = True
+        start_rect = trainer.rect
+        trainer._moving = True
+        for frame_idx in range(frames):
+            trainer.rect = start_rect.move(direction.value * self.game_display.map.tileheight * frame_idx / frames)
+            trainer.blit_rect = trainer.rect.copy().move(4, 0)
+
+            self.game_display.map.render(self.player.position)
+            self.update_display()
+            pg.time.wait(round(duration / frames))
+
+        trainer._moving = False
+
+        # set back to integer values
+        trainer.rect = start_rect.move(direction.value * self.game_display.map.tileheight)
+        trainer.position += direction.value
+        self.game_display.map.render(self.player.position)
+        self.update_display()
+
+    def check_trainer_collision(self) -> None | Trainer:
+        """ Return a trainer if the player is in within their collision rect """
+
+        trainers = [trainer for trainer in self.game_display.map.map_objects if isinstance(trainer, Trainer)]
+
+        return trainers[0] if trainers else None
 
     def check_collision(self, direction):
         new_rect = self.player.rect.move(direction.value * self.game_display.map.tilewidth)
@@ -303,6 +372,9 @@ class Game:
             self.battle = None
             self.log.add_event(GameEvent(name=f"battle completed with outcome {outcome}", event_type=GameEventType.game))
 
+        if trainer is not None:
+            trainer.battled = True
+
     def battle_intro(self, time_delay):
         black_surf = pg.Surface(self.topSurf.get_size())
         black_surf.fill(Colours.darkGrey.value)
@@ -321,7 +393,8 @@ class Game:
         while True:
             event = pg.event.wait()
             if event.type == pg.QUIT:
-                ...
+                self.save_and_exit()
+
             elif event.type == pg.KEYDOWN:
                 if event.key == key:
                     return True
@@ -367,6 +440,7 @@ class Game:
             pg.time.delay(25)  # set the debounce-time for keys
             keys = pg.key.get_pressed()
             mouse = pg.mouse.get_pressed()
+
             if keys[self.controller.up]:
                 self.player.spriteIdx = 0
                 self.move_player(Direction.up)
@@ -397,7 +471,11 @@ class Game:
                     self.update_display()
 
             if any(mouse):
-                # self.poketech.interact(pg.mouse.get_pos())
+                relative_pos = pg.Vector2(pg.mouse.get_pos()) - pg.Vector2(0, self.topSurf.get_size()[1])
+
+                if self.poketech.button.is_clicked(relative_pos):
+                    self.poketech.cycle_screens()
+
                 self.update_display()
                 pg.time.delay(100)
 
@@ -421,7 +499,7 @@ class Game:
 
                     elif event.key == self.controller.a:
                         trainer = self.check_collision(direction=Direction.up)
-                        if trainer and not trainer.battled and self.player.facingDirection == Direction.up:
+                        if trainer and not trainer.battled and self.player.facing_direction == Direction.up:
                             self.log.add_event(GameEvent(f"Trainer battle with {trainer}", event_type=GameEventType.game))
                             # add display text box
 
@@ -430,6 +508,7 @@ class Game:
                             self.wait_for_key(break_on_timeout=False)
                             self.start_battle(foe_team=trainer.team, trainer=trainer)
                             trainer.battled = True
+                            self.update_display()
 
         if self.overwrite:
             self.save()

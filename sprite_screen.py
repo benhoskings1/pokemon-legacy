@@ -1,7 +1,8 @@
 import pygame as pg
 from screen_V2 import Screen, BlitLocation
 
-from player import Player
+# from player import Player
+from trainer import Player2, Trainer
 from pokemon import Pokemon, PokemonSprite
 
 
@@ -51,7 +52,7 @@ class GameObjects(pg.sprite.Group):
 
     def draw(self, screen: Screen, bgsurf=None, special_flags: int = 0):
         for obj in self.sprites():
-            if isinstance(obj, Player):
+            if isinstance(obj, Trainer):
                 screen.add_surf(obj.image, pos=obj.blit_rect.topleft, sprite=True)
             elif isinstance(obj, Pokemon):
                 if obj.visible:

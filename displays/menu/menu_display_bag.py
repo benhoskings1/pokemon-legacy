@@ -137,9 +137,7 @@ class MenuBagDisplay(SpriteScreen):
 
         self.active_display_state = MenuTeamDisplayStates.items
         self.item_ids = [0 for _ in MenuTeamDisplayStates]
-        self.item_counts = [
-            len(self.game.bag.get_items(item_type=item_type)) for item_type in ItemType
-        ]
+        self.item_counts = [len(self.game.bag.get_items(item_type=item_type)) for item_type in ItemType]
 
         self.selected_item = None
 
