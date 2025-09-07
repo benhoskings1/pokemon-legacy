@@ -107,7 +107,7 @@ class Game:
 
         else:
             self.player = Player2(position=pg.Vector2(31, 14), team=self.team, scale=self.graphics_scale)
-            self.poketech = Poketech(self.displaySize, self.time, team=self.team, scale=self.graphics_scale)
+            self.poketech = Poketech(self.topSurf.get_size(), self.time, team=self.team, scale=self.graphics_scale)
             self.battle = None
 
         # ========== DISPLAY INITIALISATION =========
@@ -474,7 +474,7 @@ class Game:
                 relative_pos = pg.Vector2(pg.mouse.get_pos()) - pg.Vector2(0, self.topSurf.get_size()[1])
 
                 if self.poketech.button.is_clicked(relative_pos):
-                    self.poketech.cycle_screens()
+                    self.poketech.cycle_screens(self.bottomSurf)
 
                 self.update_display()
                 pg.time.delay(100)
