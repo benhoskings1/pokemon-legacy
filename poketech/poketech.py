@@ -103,6 +103,7 @@ class TeamDisplay(SpriteScreen):
         self.load_image("poketech/assets/blank_background.png", base=True, scale=scale)
 
         self.team = team
+        self.scale = scale
 
         self.update()
 
@@ -111,8 +112,9 @@ class TeamDisplay(SpriteScreen):
         for idx, pk in enumerate(self.team):
             pk: Pokemon
             grey_image = pg.transform.grayscale(pk.smallImage)
+            grey_image = pg.transform.scale_by(grey_image, self.scale)
             grey_image.set_alpha(150)
-            self.add_image(grey_image, self.PK_POSITIONS[idx])
+            self.add_image(grey_image, pg.Vector2(self.PK_POSITIONS[idx]) * self.scale, location=BlitLocation.centre)
 
 class Poketech(SpriteScreen):
     def __init__(self, size, time, team, scale=1):

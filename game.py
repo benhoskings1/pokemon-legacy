@@ -179,7 +179,8 @@ class Game:
             return Time.night
 
     @staticmethod
-    def create_pokemon(name, friendly=False, level=None, exp=None, evs=None, ivs=None, shiny=None, ):
+    def create_pokemon(name, friendly=False, level=None, exp=None, evs=None, ivs=None, shiny=None,):
+        # TODO: create generator object that holds animations in memory
         return Pokemon(name, level=level, exp=exp, EVs=evs, IVs=ivs, friendly=friendly, shiny=shiny)
 
     def load_displays(self):
