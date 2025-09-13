@@ -825,6 +825,8 @@ class Battle:
             player_sprite.image = self.game.player.battle_animation.frames[0]
             self.game.player.reset_battle_sprite()
 
+            # TODO: add pokeball animation
+
         else:
             print("no battle_animation for the player")
 

@@ -155,11 +155,13 @@ class Screen:
 
         size = pg.Vector2(image.get_size())
         if location == BlitLocation.centre:
-
             surf.blit(image, pos - size / 2)
         elif location == BlitLocation.midBottom:
             newPos = pg.Vector2(pos.x - (size.x / 2), pos.y - size.y)
             surf.blit(image, newPos)
+        elif location == BlitLocation.midTop:
+            new_pos = pg.Vector2(pos.x - (size.x / 2), pos.y)
+            surf.blit(image, new_pos)
         else:
             surf.blit(image, pos)
 

@@ -351,6 +351,10 @@ class Pokemon(pg.sprite.Sprite):
     def image(self, img: pg.Surface) -> None:
         self.images["front"] = img
 
+    @property
+    def health_ratio(self) -> float:
+        return self.health / self.stats.health
+
     def _get_move_damage(self, move: Move2, target, ignore_modifiers=False) -> float:
         """ Return the damage that the move will do to the target"""
 

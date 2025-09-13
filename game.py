@@ -107,7 +107,7 @@ class Game:
 
         else:
             self.player = Player2(position=pg.Vector2(31, 14), team=self.team, scale=self.graphics_scale)
-            self.poketech = Poketech(self.displaySize, self.time, team=self.team, scale=self.graphics_scale)
+            self.poketech = Poketech(self.topSurf.get_size(), self.time, team=self.team, scale=self.graphics_scale)
             self.battle = None
 
         # ========== DISPLAY INITIALISATION =========
@@ -223,7 +223,7 @@ class Game:
             self.bottomSurf.blit(black_surf, (0, 0))
             pg.display.flip()
 
-    def update_display(self, flip=True):
+    def update_display(self, flip=True, cover_lower=False, cover_upper=False):
         """ update the game screen """
         self.game_display.refresh()
         self.topSurf.blit(self.game_display.get_surface(), (0, 0))
@@ -385,6 +385,30 @@ class Game:
             self.update_display()
             pg.time.delay(time_delay)
 
+            if count == 0:
+                self.bottomSurf.blit(black_surf, (0, 0))
+
+        current_game_display = self.game_display.get_surface()
+        left_cut, right_cut = current_game_display, current_game_display.copy()
+
+        # create stripy left/right surfaces
+        for i in range(20):
+            bar_rect = pg.Rect(0, i * 10 * self.graphics_scale, current_game_display.get_width(), 5 * self.graphics_scale)
+            pg.draw.rect(right_cut, pg.Color(0, 0, 0, 0), bar_rect)
+            bar_rect = bar_rect.move(0, 5 * self.graphics_scale)
+            pg.draw.rect(left_cut, pg.Color(0, 0, 0, 0), bar_rect)
+
+        max_frames = 30
+        for frame in range(max_frames):
+            black_surf.fill(Colours.black.value)
+            offset = (frame+1) * self.game_display.size.x / max_frames
+            black_surf.blit(left_cut, (-offset, 0))
+            black_surf.blit(right_cut, (offset, 0))
+            self.topSurf.blit(black_surf, (0, 0))
+
+            pg.display.flip()
+            pg.time.delay(20)
+
     def wait_for_key(self, key=None, break_on_timeout=True) -> bool:
         key = key if key is not None else self.controller.a
 
@@ -474,7 +498,7 @@ class Game:
                 relative_pos = pg.Vector2(pg.mouse.get_pos()) - pg.Vector2(0, self.topSurf.get_size()[1])
 
                 if self.poketech.button.is_clicked(relative_pos):
-                    self.poketech.cycle_screens()
+                    self.poketech.cycle_screens(self.bottomSurf)
 
                 self.update_display()
                 pg.time.delay(100)
