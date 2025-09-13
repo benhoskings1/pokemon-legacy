@@ -179,12 +179,7 @@ class Poketech(SpriteScreen):
         self.__dict__.update(state)
         self._load_surfaces()
 
-    def cycle_screens(self, window):
-        self.cycle_animation(window)
-        # self._active_display = PoketechScreens((self._active_display.value + 1) % len(PoketechScreens))
-        self.update_pedometer()
-
-    def cycle_animation(self, window, duration=1000, frames=50):
+    def cycle_screens(self, window, duration=800, frames=50):
         def get_coverage_ratio(frame, frame_count):
             if frame < frame_count / 2:
                 return frame / (frame_count / 2)
@@ -211,6 +206,7 @@ class Poketech(SpriteScreen):
 
             if frame == frames / 2:
                 self._active_display = PoketechScreens((self._active_display.value + 1) % len(PoketechScreens))
+                self.update_pedometer()
 
 
     def get_surface(self, show_sprites: bool = True, offset: None | pg.Vector2 = None):
@@ -252,11 +248,8 @@ class Poketech(SpriteScreen):
         # poketech init
         self.displays = {
             PoketechScreens.clock: ClockDisplay(self.app_rect.size, self.scale),
-            PoketechScreens.pedometer: PedometerDisplay(self.size, self.scale),
-            PoketechScreens.team: TeamDisplay(self.size, self.team, scale=self.scale),
+            PoketechScreens.pedometer: PedometerDisplay(self.app_rect.size, self.scale),
+            PoketechScreens.team: TeamDisplay(self.app_rect.size, self.team, scale=self.scale),
         }
 
         self.button = PoketechButton(scale=self.scale)
-
-
-
