@@ -1,5 +1,5 @@
 import pygame as pg
-
+from trainer import Direction
 
 class Controller:
     def __init__(self, a=pg.K_x, b=pg.K_z, x=pg.K_s, y=pg.K_a,
@@ -14,3 +14,12 @@ class Controller:
         self.right = right
 
         self.keys = [a, b, x, up, down, left, right]
+
+        self.move_keys = [up, down, left, right]
+
+        self.direction_key_bindings = {
+            self.down: Direction.down,
+            self.up: Direction.up,
+            self.left: Direction.left,
+            self.right: Direction.right
+        }

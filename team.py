@@ -57,11 +57,18 @@ class Team:
         return self[idx], idx
 
     def swap_pokemon(self, pk_1, pk_2):
+        """ Swaps the team position of the two pokemon"""
         idx_1, idx_2 = self.get_index(pk_1), self.get_index(pk_2)
         if idx_1 is not None and idx_2 is not None:
             self[idx_1], self[idx_2] = pk_2, pk_1
 
     def set_invisible(self):
+        """ Set all pokemon to invisible """
         for pk in self.pokemon:
             pk.visible = False
+
+    def restore(self):
+        """ Restore all pokemon in team """
+        for pk in self.pokemon:
+            pk.restore()
 

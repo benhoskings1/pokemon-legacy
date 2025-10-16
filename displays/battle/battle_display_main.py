@@ -1,6 +1,4 @@
-import os
-import time
-from math import floor, ceil
+from math import floor
 
 from PIL import Image
 import pygame as pg
@@ -9,8 +7,8 @@ from Image_Processing.ImageEditor import ImageEditor
 
 from general.Environment import Environment
 from general.utils import Colours, create_display_bar
-from screen_V2 import Screen, BlitLocation, FontOption
-from sprite_screen import SpriteScreen, PokeballCatchAnimation
+from graphics.screen_V2 import Screen, BlitLocation, FontOption
+from graphics.sprite_screen import SpriteScreen, PokeballCatchAnimation
 from pokemon import Pokemon
 
 

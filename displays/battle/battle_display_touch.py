@@ -1,13 +1,9 @@
 import os
-import sys
 import time
 
-from pygame import Surface
-
-import pokemon
-from screen_V2 import Colours, FontOption, Screen, BlitLocation
-from sprite_screen import SpriteScreen, PokeballCatchAnimation, DisplayContainer
-from pokemon import Pokemon, PokemonSpriteSmall
+from graphics.screen_V2 import Colours, FontOption, BlitLocation
+from graphics.sprite_screen import SpriteScreen, DisplayContainer
+from pokemon import PokemonSpriteSmall
 import pygame as pg
 from enum import Enum
 

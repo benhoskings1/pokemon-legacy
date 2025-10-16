@@ -1,8 +1,8 @@
 from enum import Enum
 import pygame as pg
 
-from sprite_screen import SpriteScreen
-from Map_Files.TiledMap import TiledMap2
+from graphics.sprite_screen import SpriteScreen
+from maps.game_map import GameMap
 from displays.battle.battle_display_main import TextBox
 from displays.menu.menu_display_popup import MenuDisplayPopup
 
@@ -18,12 +18,13 @@ class GameDisplayStates(Enum):
 
 
 class GameDisplay(SpriteScreen):
-    def __init__(self, size, player, scale: int | float = 1):
+    def __init__(self, size, player, window, scale: int | float = 1):
         # ==== INIT ====
         SpriteScreen.__init__(self, size)
 
         self.player = player
-        self.map = TiledMap2("Map_Files/Sinnoh Map.tmx", size, player=player, scale=scale)
+        self.map = GameMap("Map_Files/Sinnoh Map.tmx", size, player=player, window=window, map_scale=1,
+                           obj_scale=1)
 
         self.scale = scale
 
@@ -31,37 +32,23 @@ class GameDisplay(SpriteScreen):
         self.text_box.rect.topleft += pg.Vector2(3, 0) * scale
         self.player.blit_rect.center = self.surface.get_rect().center
 
-        self.sprites.add(self.player)
+        # TODO: transition player into map for layered rendering :)
+        # self.sprites.add(self.player)
 
-    def get_surface(self, show_sprites: bool = True, offset: None | pg.Vector2 = None) -> pg.Surface:
+    def get_surface(self, show_sprites: bool = False, offset: None | pg.Vector2 = None) -> pg.Surface:
         if self.power_off:
             return self.power_off_surface
 
         if show_sprites:
             self.sprites.draw(self)
 
-        blit_pos = pg.Vector2(-64, -64) if offset is None else pg.Vector2(-64, -64) - offset
-        self.add_image(self.map.get_surface(), blit_pos)
+        self.add_image(self.map.get_surface(), (0, 0))
 
         display_surf = self.base_surface.copy()
         display_surf.blit(self.surface, (0, 0))
         display_surf.blit(self.sprite_surface, (0, 0))
 
         return display_surf
-
-    def move_animation(self, window, direction, frames=20, duration=500):
-        self.refresh()
-
-        start_pos = self.player.position
-        for frame in range(frames):
-            window.blit(self.get_surface(offset=(direction.value * self.map.tilewidth) / frames * frame), (0, 0))
-            pg.display.flip()
-            pg.time.delay(int(duration / frames))
-
-        self.player.position = start_pos + direction.value
-        self.player.rect.topleft = self.player.position * self.map.tilewidth
-
-        self.map.render(self.player.position)
 
     def update_display_text(self, text, max_chars=None):
         if self.text_box not in self.sprites:

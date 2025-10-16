@@ -1,9 +1,9 @@
 import pygame as pg
-from screen_V2 import Screen, BlitLocation
+from graphics.screen_V2 import Screen
 
 # from player import Player
-from trainer import Player2, Trainer
-from pokemon import Pokemon, PokemonSprite
+from trainer import Trainer
+from pokemon import Pokemon
 
 
 class PokeballCatchAnimation(pg.sprite.Sprite):

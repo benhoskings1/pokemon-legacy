@@ -10,9 +10,15 @@ from Sprites.SpriteSet import SpriteSet2
 from battle_animation import BattleAnimation
 
 
+class CharacterTypes(Enum):
+    player = 0
+    npc = 1
+    trainer = 2
+
 class TrainerTypes(Enum):
     player_male = "player_male"
     player_female = "player_female"
+    pokecenter_lady = "pokecenter_lady"
     barry = "barry"
     cheryl = "cheryl"
     riley = "riley"
@@ -44,12 +50,10 @@ class AttentionBubble(pg.sprite.Sprite):
 
         self.rect = self.image.get_rect()
 
+        self.position = pg.Vector2(0, 100)
 
-class Trainer(pg.sprite.Sprite):
-    """
-    Returns a Trainer Object. 
-    """
 
+class NPC(pg.sprite.Sprite):
     # load in the sprite surfaces
     npc_parent_surf = pg.image.load('assets/sprites/trainers/all_npcs.png')
     trainer_front_parent_surf = pg.image.load('assets/sprites/trainers/trainer_front_images.png')
@@ -59,7 +63,141 @@ class Trainer(pg.sprite.Sprite):
         TrainerTypes.player_male: (0, 0),
         TrainerTypes.youngster: (1, 1),
         TrainerTypes.lass: (9, 2),
+        TrainerTypes.pokecenter_lady: (6, 7),
     }
+
+    bag_colour_mapping = {
+        TrainerTypes.youngster: pg.Color((32, 128, 96, 255)),
+        TrainerTypes.pokecenter_lady: pg.Color((64, 128, 80, 255)),
+        TrainerTypes.lass: pg.Color((32, 128, 96, 255)),
+    }
+
+    direction_dict = {
+        Direction.up: 0,
+        Direction.down: 3,
+        Direction.left: 6,
+        Direction.right: 9,
+    }
+
+    def __init__(self, properties: dict=None, scale: float = 1.0):
+        pg.sprite.Sprite.__init__(self)
+
+        self.scale = scale
+
+        self.trainer_type: TrainerTypes = TrainerTypes[properties["npc_type"]]
+        self.name: str = "" if not properties else properties["npc_name"]
+
+        self._sprite_sets: dict[Movement, list[pg.Surface]]
+        self._leg: bool = True
+        self._moving: bool = False
+
+        if properties and "facing_direction" in properties:
+            self.facing_direction = Direction[properties["facing_direction"]]
+        else:
+            self.facing_direction = Direction.down
+
+        self.movement: Movement = Movement.walking
+
+        self.map_positions = {}
+
+        self._load_surfaces()
+
+    @property
+    def _sprite_idx(self):
+        return self.direction_dict[self.facing_direction]
+
+    @property
+    def sprites(self):
+        sprites = self._sprite_sets[self.movement]
+        return sprites.sprites if isinstance(sprites, SpriteSet2) else sprites
+
+    @property
+    def image(self) -> pg.Surface | None:
+        return self.sprites[
+            self._sprite_idx + (0 if not self._moving else (1 if self._leg else 2))
+        ] if self.sprites is not None else None
+
+    @property
+    def map_rects(self):
+        return {map_: pg.Rect(
+            pg.Vector2(pos.x * map_.tilewidth, pos.y * map_.tileheight),
+            map_.tile_size) for map_, pos in self.map_positions.items()
+        }
+
+    @classmethod
+    def get_npc_frames(
+            cls,
+            trainer_type: TrainerTypes,
+            bg_colour: None | pg.Color = None,
+            order_frames: bool = True,
+            scale: int | float = 1.0
+    ):
+        """
+        Loads each frame for an NPC walking
+
+        :param trainer_type:
+        :param bg_colour:
+        :param order_frames:
+        :param scale: value to scale the surface by
+        :return: frames
+        """
+        trainer_block_size = pg.Vector2(96, 128)
+        frame_size = pg.Vector2(32, 32)
+        block_location = cls.trainer_sprite_mapping[trainer_type]
+        block_rect = pg.Rect((trainer_block_size.x * block_location[0],
+                              trainer_block_size.y * block_location[1]),
+                             trainer_block_size)
+
+        frames: list[pg.Surface] = []
+        for frame_idx in range(12):
+            y, x = divmod(frame_idx, 3)
+            frame_rect = pg.Rect((x * frame_size.x, y * frame_size.y), frame_size)
+            frame_rect.topleft += pg.Vector2(block_rect.topleft)
+            frame = cls.npc_parent_surf.subsurface(frame_rect).copy()
+
+            if bg_colour is not None:
+                frame = frame.convert_alpha()
+                px_array = pg.PixelArray(frame)
+                px_array.replace(bg_colour, pg.Color(0, 0, 0, 0), distance=0.05)
+                px_array.close()
+
+            else:
+                if frame_idx == 0:
+                    frame = frame.convert_alpha()
+                    print(f"consider mapping {trainer_type}: pg.Color({frame.get_at([0, 0])}),")
+
+            if scale != 1.0:
+                frame = pg.transform.scale(frame, frame_size * scale)
+
+            frames.append(frame)
+
+        if order_frames:
+            new_order = [0, 2, 10, 5, 11, 8, 6, 3, 9, 1, 4, 7]
+            return [frames[i] for i in new_order]
+
+        return frames
+
+    def _load_surfaces(self):
+        if self.trainer_type in self.bag_colour_mapping:
+            bg_colour = self.bag_colour_mapping[self.trainer_type]
+        else:
+            bg_colour = None
+
+        self._sprite_sets = {Movement.walking: self.get_npc_frames(
+            self.trainer_type, bg_colour=bg_colour, scale=self.scale
+        )}
+
+    def _clear_surfaces(self):
+        self._sprite_sets = None
+
+    def __repr__(self):
+        return f"NPC('{self.trainer_type.name.title()} {self.name.title()}')"
+
+
+class Trainer(NPC):
+    """
+    Returns a Trainer Object. 
+    """
 
     battle_font_mapping = {
         TrainerTypes.player_male: (0, 0),
@@ -75,35 +213,19 @@ class Trainer(pg.sprite.Sprite):
         TrainerTypes.riley: (0, 2),
     }
 
-    bag_colour_mapping = {
-        TrainerTypes.youngster: pg.Color((32, 128, 96, 255)),
-        TrainerTypes.lass: pg.Color((32, 128, 96, 255)),
-    }
-
     with open("game_data/trainer_teams.json") as f:
         trainer_data = json.load(f)
 
     def __init__(self, rect: pg.Rect, properties: dict=None, team: None | Team=None, is_player=False, scale: float = 1.0):
-        pg.sprite.Sprite.__init__(self)
         """
-        Trainer Class 
+        Trainer Class
         """
 
-        self.is_player = is_player
-        self.scale = scale
+        NPC.__init__(self, properties, scale)
 
-        self.trainer_type: TrainerTypes = TrainerTypes[properties["npc_type"]]
-        self.name: str = "" if not properties else properties["npc_name"]
         self.trainer_id = properties["trainer_id"]
 
-        self._sprite_sets: dict[Movement, list[pg.Surface]]
-        # self._sprite_idx: int = 5
-        self._leg: bool = True
-        self._moving: bool = False
-        # print(properties)
-
-        self.facing_direction: Direction = Direction[properties["facing_direction"]]
-        self.movement: Movement = Movement.walking
+        self.is_player = is_player
 
         self.battle_sprite = pg.sprite.Sprite()
 
@@ -114,7 +236,7 @@ class Trainer(pg.sprite.Sprite):
         self.map_location = ...
         self.rect: pg.Rect = rect
 
-        self.position = pg.Vector2(self.rect.topleft) / 32
+        # dict to hold trainer position and blit rect on each map
 
         self.battled = False
         self.attention_bubble = None
@@ -131,28 +253,6 @@ class Trainer(pg.sprite.Sprite):
     def __setstate__(self, state):
         self.__dict__.update(state)
         self._load_surfaces()
-
-    @property
-    def _sprite_idx(self):
-        direction_dict = {
-            Direction.up: 0,
-            Direction.down: 3,
-            Direction.left: 6,
-            Direction.right: 9,
-        }
-
-        return direction_dict[self.facing_direction]
-
-    @property
-    def sprites(self):
-        sprites = self._sprite_sets[self.movement]
-        return sprites.sprites if isinstance(sprites, SpriteSet2) else sprites
-
-    @property
-    def image(self) -> pg.Surface | None:
-        return self.sprites[
-            self._sprite_idx + (0 if not self._moving else (1 if self._leg else 2))
-        ] if self.sprites is not None else None
 
     @property
     def vision_rect(self):
@@ -185,47 +285,6 @@ class Trainer(pg.sprite.Sprite):
         return pg.Rect(topleft, size)
 
     @classmethod
-    def get_npc_frames(cls, trainer_type: TrainerTypes, bg_colour: None | pg.Color = None, order_frames: bool = True,
-                       scale: int | float = 1.0):
-        """
-        Loads each frame for an NPC walking
-
-        :param trainer_type:
-        :param bg_colour:
-        :param scale: value to scale the surface by
-        :return: frames
-        """
-        trainer_block_size = pg.Vector2(96, 128)
-        frame_size = pg.Vector2(32, 32)
-        block_location = cls.trainer_sprite_mapping[trainer_type]
-        block_rect = pg.Rect((trainer_block_size.x * block_location[0],
-                              trainer_block_size.y * block_location[1]),
-                             trainer_block_size)
-
-        frames: list[pg.Surface] = []
-        for frame in range(12):
-            y, x = divmod(frame, 3)
-            frame_rect = pg.Rect((x * frame_size.x, y * frame_size.y), frame_size)
-            frame_rect.topleft += pg.Vector2(block_rect.topleft)
-            frame = cls.npc_parent_surf.subsurface(frame_rect).copy()
-            if bg_colour is not None:
-                frame = frame.convert_alpha()
-                px_array = pg.PixelArray(frame)
-                px_array.replace(bg_colour, pg.Color(0, 0, 0, 0), distance=0.05)
-                px_array.close()
-
-            if scale != 1.0:
-                frame = pg.transform.scale(frame, frame_size * scale)
-
-            frames.append(frame)
-
-        if order_frames:
-            new_order = [0, 2, 10, 5, 11, 8, 6, 3, 9, 1, 4, 7]
-            return [frames[i] for i in new_order]
-
-        return frames
-
-    @classmethod
     def get_battle_front(cls, trainer_type: TrainerTypes, bg_colour=None, scale=1) -> pg.Surface:
         block_size, border_size = pg.Vector2(80, 80), pg.Vector2(1, 18)
         block_location = cls.battle_font_mapping[trainer_type]
@@ -247,8 +306,13 @@ class Trainer(pg.sprite.Sprite):
         return pg.transform.scale(image, pg.Vector2(image.get_size()) * scale) if scale != 1.0 else image
 
     def _load_surfaces(self):
+        if self.trainer_type in self.bag_colour_mapping:
+            bg_colour = self.bag_colour_mapping[self.trainer_type]
+        else:
+            bg_colour = None
+
         self._sprite_sets = {Movement.walking: self.get_npc_frames(
-            self.trainer_type, self.bag_colour_mapping[self.trainer_type], scale=self.scale
+            self.trainer_type, bg_colour=bg_colour, scale=self.scale
         )}
 
         self.battle_sprite.image = self.get_battle_front(
@@ -285,7 +349,7 @@ class Player2(Trainer):
         if not isinstance(position, pg.Vector2):
             position = pg.Vector2(position)
 
-        player_rect = pg.Rect(position * 32, (32, 32))
+        player_rect = pg.Rect(position * 32 * scale, pg.Vector2(32, 32) * scale)
 
         self.sprite_path = "Sprites/Player Sprites"
         Trainer.__init__(self, player_rect, properties=properties, team=team, is_player=True, scale=scale)
@@ -298,6 +362,9 @@ class Player2(Trainer):
         self.reset_battle_sprite()
 
         self.steps = 0
+
+    def __repr__(self):
+        return f"Player {self.trainer_type.name} at {self.map_rects}"
 
     @classmethod
     def get_battle_back(cls, trainer_type, bg_colour=None, scale: float = 1.0):

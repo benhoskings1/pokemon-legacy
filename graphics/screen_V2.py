@@ -22,18 +22,6 @@ class Colours(Enum):
     light_blue = pg.Color("#4f86a5")
 
 
-class BlitLocation(Enum):
-    topLeft = pg.Vector2(0, 0)
-    midTop = pg.Vector2(-0.5, 0)
-    topRight = pg.Vector2(-1, 0)
-    bottomLeft = 3
-    midBottom = 4
-    bottomRight = 5
-    midLeft = 6
-    midRight = 7
-    centre = 8
-
-
 class BlitPosition(Enum):
     topLeft = 0
     midTop = 1
