@@ -6,10 +6,12 @@ import numpy as np
 from Image_Processing.ImageEditor import ImageEditor
 
 from general.Environment import Environment
-from general.utils import Colours, create_display_bar
-from graphics.screen_V2 import Screen, BlitLocation, FontOption
+from general.utils import Colours, create_display_bar, BlitLocation
+from graphics.screen_V2 import Screen, FontOption
 from graphics.sprite_screen import SpriteScreen, PokeballCatchAnimation
 from pokemon import Pokemon
+
+import time
 
 
 editor = ImageEditor()

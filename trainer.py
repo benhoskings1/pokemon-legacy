@@ -6,6 +6,7 @@ import json
 
 from team import Team
 from Sprites.SpriteSet import SpriteSet2
+from maps.game_obejct import GameObject
 
 from battle_animation import BattleAnimation
 
@@ -53,7 +54,7 @@ class AttentionBubble(pg.sprite.Sprite):
         self.position = pg.Vector2(0, 100)
 
 
-class NPC(pg.sprite.Sprite):
+class NPC(GameObject):
     # load in the sprite surfaces
     npc_parent_surf = pg.image.load('assets/sprites/trainers/all_npcs.png')
     trainer_front_parent_surf = pg.image.load('assets/sprites/trainers/trainer_front_images.png')
@@ -79,8 +80,8 @@ class NPC(pg.sprite.Sprite):
         Direction.right: 9,
     }
 
-    def __init__(self, properties: dict=None, scale: float = 1.0):
-        pg.sprite.Sprite.__init__(self)
+    def __init__(self, properties: dict = None, scale: float = 1.0):
+        GameObject.__init__(self, pg.Rect(0, 0, 800, 800), obj_id=0, solid=True, scale=scale, custom_image=True)
 
         self.scale = scale
 

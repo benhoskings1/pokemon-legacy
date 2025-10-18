@@ -6,33 +6,21 @@ from general.utils import Colours
 from player import Player
 from trainer import Trainer, TrainerTypes, AttentionBubble
 
-from maps.tiled_map import TiledMap2, Obstacle, MapObjects
+from maps.tiled_map import TiledMap2, GameObject
 from maps.pokecenter import PokeCenter
 
 
-class EntryTile(pg.sprite.Sprite):
-    def __init__(self, rect: pg.Rect, obj_id: int, scale=1):
-        pg.sprite.Sprite.__init__(self)
-        size = pg.Vector2(rect.size) * scale
-        pos = pg.Vector2(rect.topleft) * scale
-        self.obj_id = obj_id
-        self.rect = pg.Rect(pos, size)
-        self.surf = pg.Surface(self.rect.size, pg.SRCALPHA)
+class EntryTile(GameObject):
+    def __init__(self, rect: pg.Rect, obj_id: int, scale=1.0):
+        GameObject.__init__(self, rect, obj_id, solid=False, scale=scale)
 
 
-class TallGrass(pg.sprite.Sprite):
+class TallGrass(GameObject):
     def __init__(self, rect, scale: int | float = 1.0, route=None):
-        pg.sprite.Sprite.__init__(self)
-        size = pg.Vector2(rect.size) * scale
-        pos = pg.Vector2(rect.topleft) * scale
-        self.rect = pg.Rect(pos, size)
-        self.surf = pg.Surface(self.rect.size)
-        self.surf.fill(Colours.white.value)
+        GameObject.__init__(self, rect, obj_id=0, solid=False, scale=scale)
+
         self.route = route
         self.encounterNum = randint(15, 25)
-
-    def __repr__(self):
-        return f"Tall Grass at {self.rect}"
 
 
 class GameMap(TiledMap2):
@@ -80,7 +68,6 @@ class GameMap(TiledMap2):
                 elif obj.name == "pokecenter":
                     pokecenter = PokeCenter(rect, player=self.player, map_scale=2, obj_scale=2)
                     sprite_group.add(pokecenter)
-
 
     def object_interaction(self, sprite: pg.sprite.Sprite):
         if isinstance(sprite, PokeCenter):

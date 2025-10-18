@@ -6,21 +6,14 @@ import pygame as pg
 from general.utils import Colours
 from general.controller import Controller
 
-from maps.tiled_map import TiledMap2, Obstacle
-
-from trainer import Direction
+from maps.tiled_map import TiledMap2, GameObject, Obstacle
 
 move_directions = {pg.K_UP: (0, 1), pg.K_DOWN: (0, -1), pg.K_LEFT: (1, 0), pg.K_RIGHT: (-1, 0)}
 
 
-class ExitTile(pg.sprite.Sprite):
+class ExitTile(GameObject):
     def __init__(self, rect: pg.Rect, obj_id: int, scale=1):
-        pg.sprite.Sprite.__init__(self)
-        size = pg.Vector2(rect.size) * scale
-        pos = pg.Vector2(rect.topleft) * scale
-        self.obj_id = obj_id
-        self.rect = pg.Rect(pos, size)
-        self.surf = pg.Surface(self.rect.size, pg.SRCALPHA)
+        GameObject.__init__(self, rect, obj_id, solid=True, scale=scale)
 
 
 class DeskTile(Obstacle):
@@ -40,7 +33,7 @@ tile_object_mapping = {
 }
 
 
-class PokeCenter(TiledMap2, pg.sprite.Sprite):
+class PokeCenter(TiledMap2, GameObject):
     def __init__(self, rect, player, map_scale=1, obj_scale=1, parent_map_scale=1.0):
         size = pg.Vector2(256, 192) * map_scale
 
@@ -49,20 +42,13 @@ class PokeCenter(TiledMap2, pg.sprite.Sprite):
                            player_position=pg.Vector2(8, 14), map_scale=map_scale, object_scale=obj_scale,
                            view_screen_tile_size=pg.Vector2(19, 18))
 
-        pg.sprite.Sprite.__init__(self)
+        GameObject.__init__(self, rect, obj_id=0, solid=False, scale=parent_map_scale)
         self.base_surface.fill(Colours.black.value)
         self.base_image = pg.image.load(path.join("maps/assets/pokecenter_floor_0.png"))
         self.base_image = pg.transform.scale(self.base_image, size)
         self.player = player
 
         self.tile_size = pg.Vector2(16, 13) * map_scale
-
-        self.rect = pg.Rect(pg.Vector2(rect.topleft) * parent_map_scale, pg.Vector2(rect.size) * parent_map_scale)
-
-        self.image = pg.Surface(pg.Vector2(32, 32) * map_scale)
-
-        self.image_offset = -pg.Vector2(self.base_image.get_width()//2,
-                                        self.base_image.get_height()//2 - self.player.rect.height//2)
 
         self.running = True
 
@@ -124,8 +110,11 @@ class PokeCenter(TiledMap2, pg.sprite.Sprite):
                                 controller.direction_key_bindings[event.key],
                                 window=render_surface
                             )
-                            if not self.running:
-                                break
+
+                            # if collision:
+                            #     self.object_interaction(collision)
+                            #     if not self.running:
+                            #         break
 
                             pg.display.flip()
 

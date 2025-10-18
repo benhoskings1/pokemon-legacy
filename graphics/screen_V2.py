@@ -3,7 +3,7 @@ from enum import Enum
 import pygame as pg
 from font.font import LevelFont, Font, FontType
 
-from general.utils import clean_surfaces
+from general.utils import clean_surfaces, BlitLocation
 
 
 class Colours(Enum):

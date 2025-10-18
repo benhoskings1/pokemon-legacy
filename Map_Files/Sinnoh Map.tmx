@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="64" height="64" tilewidth="32" tileheight="32" infinite="0" nextlayerid="10" nextobjectid="45">
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="64" height="64" tilewidth="32" tileheight="32" infinite="0" nextlayerid="10" nextobjectid="45">
  <tileset firstgid="1" source="Sinnoh_Tileset.tsx"/>
  <layer id="1" name="0_base_layer" width="64" height="64" locked="1">
   <data encoding="csv">
@@ -336,12 +336,12 @@
   </object>
  </objectgroup>
  <objectgroup id="7" name="4_obstacle">
-  <object id="25" name="Obstacle" type="obstacle" x="1152" y="256" width="64" height="160"/>
-  <object id="27" name="Obstacle" type="obstacle" x="1248" y="256" width="64" height="160"/>
-  <object id="28" name="Obstacle" type="obstacle" x="1216" y="256" width="32" height="128"/>
-  <object id="29" name="Obstacle" x="224" y="192" width="32" height="1696"/>
+  <object id="25" type="obstacle" x="1152" y="256" width="64" height="160"/>
+  <object id="27" type="obstacle" x="1248" y="256" width="64" height="160"/>
+  <object id="28" type="obstacle" x="1216" y="256" width="32" height="128"/>
+  <object id="29" type="obstacle" x="224" y="192" width="32" height="1696"/>
   <object id="32" name="Obstacle" x="1792" y="192" width="32" height="1696"/>
-  <object id="33" name="Obstacle" type="obstacle" x="256" y="192" width="1536" height="32"/>
+  <object id="33" type="obstacle" x="256" y="192" width="1536" height="32"/>
   <object id="34" name="Obstacle" x="256" y="1856" width="1536" height="32"/>
  </objectgroup>
  <objectgroup id="8" name="4_NPCs">

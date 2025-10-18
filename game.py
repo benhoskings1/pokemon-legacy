@@ -240,25 +240,17 @@ class Game:
         :param detect_grass: whether to detect grass or not
         :return: bool
         """
-        self.player.update()
 
         moved = False
 
         if self.player.facing_direction == direction:
-            map_obj = self.game_display.map.check_collision(self.player, direction)
+            # map_obj = self.game_display.map.check_collision(self.player, direction)
 
-            if not map_obj:
-                moved = True
-                # shift the map
-                self.player._moving = True
-                self.game_display.map.move_player(direction, self.topSurf)
-                self.player._moving = False
+            map_obj, moved = self.game_display.map.move_player(direction, self.topSurf)
 
-            elif isinstance(map_obj, PokeCenter):
+            if isinstance(map_obj, PokeCenter):
                 map_obj: PokeCenter
                 map_obj.loop(self.topSurf)
-
-        self.player.update()
 
         if moved:
             self.player.steps += 1
