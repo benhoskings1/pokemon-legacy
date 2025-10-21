@@ -40,6 +40,7 @@ class PokeCenter(TiledMap2, GameObject):
         # TODO: work out why the
         TiledMap2.__init__(self, "maps/pokecenter.tmx", size, player,
                            player_position=pg.Vector2(8, 14), map_scale=map_scale, object_scale=obj_scale,
+                           player_layer="5_player_layer",
                            view_screen_tile_size=pg.Vector2(19, 18))
 
         GameObject.__init__(self, rect, obj_id=0, solid=False, scale=parent_map_scale)

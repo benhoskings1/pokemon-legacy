@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="17" height="16" tilewidth="16" tileheight="12" infinite="0" nextlayerid="6" nextobjectid="24">
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="17" height="16" tilewidth="16" tileheight="12" infinite="0" nextlayerid="7" nextobjectid="24">
  <imagelayer id="2" name="1_base_layer" offsetx="8" offsety="4">
   <image source="assets/pokecenter_floor_0.png" width="256" height="192"/>
  </imagelayer>
@@ -31,4 +31,5 @@
   <object id="18" type="obstacle" x="144" y="180" width="96" height="12"/>
   <object id="19" name="exit" type="exit" x="128" y="180" width="16" height="12"/>
  </objectgroup>
+ <objectgroup id="6" name="5_player_layer"/>
 </map>

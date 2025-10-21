@@ -8,6 +8,7 @@ from datetime import datetime
 
 from bag import BagV2
 from battle import Battle, State, BattleOutcome
+from maps.game_map import TallGrass
 from maps.pokecenter import PokeCenter
 from pokedex import Pokedex
 from game_log.game_log import GameLog, GameEvent, GameEventType
@@ -71,21 +72,6 @@ class Game:
             # Convert JSON file to Python Types
             team_data = json.load(read_file)
         self.team = Team(team_data)
-
-        for pk in self.team:
-            if not (pk.name in self.animations.keys()):
-                self.loadDisplay.loadTeam(pk.name)
-                top, bottom = self.loadDisplay.getScreens()
-                self.topSurf.blit(top, (0, 0))
-                self.bottomSurf.blit(bottom, (0, 0))
-                pg.display.flip()
-
-                self.animations[pk.name] = createAnimation(pk.name)
-                animations = self.animations[pk.name]
-                pk.load_images(animations)
-
-            else:
-                pk.load_images(self.animations[pk.name])
 
         # ==== PICKLE DATA INITIALISATION ====
         game_data = None
@@ -233,7 +219,7 @@ class Game:
         if flip:
             pg.display.flip()
 
-    def move_player(self, direction, detect_grass=True) -> bool:
+    def move_player(self, direction, detect_grass=True, force_battle=False) -> bool:
         """ move the player
 
         :param direction: the direction to move the player
@@ -241,45 +227,45 @@ class Game:
         :return: bool
         """
 
-        moved = False
+        map_obj, moved = self.game_display.map.move_player(direction, self.topSurf)
 
-        if self.player.facing_direction == direction:
-            # map_obj = self.game_display.map.check_collision(self.player, direction)
-
-            map_obj, moved = self.game_display.map.move_player(direction, self.topSurf)
-
-            if isinstance(map_obj, PokeCenter):
-                map_obj: PokeCenter
-                map_obj.loop(self.topSurf)
+        if isinstance(map_obj, PokeCenter):
+            map_obj: PokeCenter
+            map_obj.loop(self.topSurf)
 
         if moved:
             self.player.steps += 1
             self.poketech.pedometerSteps += 1
             self.poketech.update_pedometer()
 
-            if detect_grass:
-                self.detect_grass_collision()
+            if detect_grass and isinstance(map_obj, TallGrass):
+                grass = map_obj
+                num = random.randint(0, (1 if force_battle else 255))
+                if num < grass.encounterNum:
+                    pg.time.delay(100)
+                    self.battle_intro(250)
+                    self.start_battle(route=grass.route)
 
-            trainers = self.game_display.map.get_sprite_types(Trainer)
-            trainer = self.player.rect.collideobjects(trainers, key=lambda o: o.vision_rect)
+            trainer = map_obj if isinstance(map_obj, Trainer) else None
 
             if trainer and not trainer.battled:
                 # calculate steps towards player!
                 trainer: Trainer
 
-                trainer_pos = pg.Vector2(trainer.position)
-                player_pos = pg.Vector2(self.player.position)
+                trainer_pos = pg.Vector2(trainer.map_positions[self.game_display.map])
+                player_pos = pg.Vector2(self.player.map_positions[self.game_display.map])
 
                 move_count = player_pos.distance_to(trainer_pos)
 
-                self.game_display.map.map_objects.add(trainer.attention_bubble)
-                self.game_display.map.render(self.game_display.player.position)
+                upper_obj_layer = self.game_display.map.object_layers[len(self.game_display.map.object_layers) - 1]
+                self.game_display.map.object_layer_sprites[upper_obj_layer.id].add(trainer.attention_bubble)
+                self.game_display.map.render()
                 self.update_display()
                 pg.time.delay(1000)
-                self.game_display.map.map_objects.remove(trainer.attention_bubble)
+                self.game_display.map.object_layer_sprites[upper_obj_layer.id].remove(trainer.attention_bubble)
 
                 for i in range(round(move_count - 1)):
-                    self.move_trainer(trainer, trainer.facing_direction, 200)
+                    self.game_display.map.move_trainer(trainer, trainer.facing_direction, self.topSurf, move_duration=500)
 
                 self.display_message("May I trouble you for a battle please?", 2000)
                 self.wait_for_key(break_on_timeout=False)
@@ -325,21 +311,6 @@ class Game:
         trainers = self.game_display.map.get_sprite_types(Trainer)
 
         return trainers[0] if trainers else None
-
-    def check_collision(self, direction):
-        ...
-        return False
-        # new_rect = self.player.rect.move(direction.value * self.game_display.map.tilewidth)
-        #
-        # ob_collision = new_rect.collideobjects(self.game_display.map.obstacles.sprites(), key=lambda o: o.rect)
-        # if ob_collision:
-        #     return ob_collision
-        #
-        # map_collision = new_rect.collideobjects(self.game_display.map.map_objects.sprites(), key=lambda o: o.rect)
-        # if map_collision:
-        #     return map_collision
-        #
-        # return False
 
     def detect_grass_collision(self, battle=False) -> None:
         collide = self.game_display.map.detect_collision()

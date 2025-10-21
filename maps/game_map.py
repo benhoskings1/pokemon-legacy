@@ -30,7 +30,7 @@ class GameMap(TiledMap2):
             file_path,
             size,
             player,
-            player_position=pg.Vector2(10, 9),
+            player_position=pg.Vector2(31, 14),
             map_scale=map_scale,
             object_scale=obj_scale,
             player_layer="4_NPCs"

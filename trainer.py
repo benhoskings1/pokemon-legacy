@@ -8,13 +8,18 @@ from team import Team
 from Sprites.SpriteSet import SpriteSet2
 from maps.game_obejct import GameObject
 
+from Image_Processing.ImageEditor import ImageEditor
+
 from battle_animation import BattleAnimation
+
+import cv2
 
 
 class CharacterTypes(Enum):
     player = 0
     npc = 1
     trainer = 2
+
 
 class TrainerTypes(Enum):
     player_male = "player_male"
@@ -40,8 +45,9 @@ class Direction(Enum):
 
 
 class AttentionBubble(pg.sprite.Sprite):
-    def __init__(self, scale=1.0):
+    def __init__(self, trainer, scale=1.0):
         pg.sprite.Sprite.__init__(self)
+        self.trainer = trainer
         self.scale = scale
 
         self.image = pg.image.load("assets/sprites/trainers/attention_bubble.png").convert_alpha()
@@ -56,7 +62,9 @@ class AttentionBubble(pg.sprite.Sprite):
 
 class NPC(GameObject):
     # load in the sprite surfaces
-    npc_parent_surf = pg.image.load('assets/sprites/trainers/all_npcs.png')
+    # npc_parent_surf = pg.image.load('assets/sprites/trainers/all_npcs.png')
+    npc_parent_surf_cv2 = cv2.imread('assets/sprites/trainers/all_npcs_2.png', cv2.IMREAD_UNCHANGED)
+
     trainer_front_parent_surf = pg.image.load('assets/sprites/trainers/trainer_front_images.png')
     trainer_back_parent_surf = pg.image.load('assets/sprites/trainers/trainer_front_images.png')
 
@@ -68,9 +76,10 @@ class NPC(GameObject):
     }
 
     bag_colour_mapping = {
-        TrainerTypes.youngster: pg.Color((32, 128, 96, 255)),
-        TrainerTypes.pokecenter_lady: pg.Color((64, 128, 80, 255)),
-        TrainerTypes.lass: pg.Color((32, 128, 96, 255)),
+        TrainerTypes.youngster: [96, 128, 32],
+        # TrainerTypes.youngster: pg.Color((32, 128, 96, 255)),
+        TrainerTypes.pokecenter_lady: pg.Color((80, 128, 64, 255)),
+        TrainerTypes.lass: pg.Color((96, 128, 32, 255)),
     }
 
     direction_dict = {
@@ -80,10 +89,13 @@ class NPC(GameObject):
         Direction.right: 9,
     }
 
-    def __init__(self, properties: dict = None, scale: float = 1.0):
+    editor = ImageEditor()
+
+    def __init__(self, properties: dict = None, scale: float = 1.0, map_scale: int | float = 1.0):
         GameObject.__init__(self, pg.Rect(0, 0, 800, 800), obj_id=0, solid=True, scale=scale, custom_image=True)
 
         self.scale = scale
+        self.map_scale = map_scale
 
         self.trainer_type: TrainerTypes = TrainerTypes[properties["npc_type"]]
         self.name: str = "" if not properties else properties["npc_name"]
@@ -100,8 +112,6 @@ class NPC(GameObject):
         self.movement: Movement = Movement.walking
 
         self.map_positions = {}
-
-        self._load_surfaces()
 
     @property
     def _sprite_idx(self):
@@ -154,13 +164,14 @@ class NPC(GameObject):
             y, x = divmod(frame_idx, 3)
             frame_rect = pg.Rect((x * frame_size.x, y * frame_size.y), frame_size)
             frame_rect.topleft += pg.Vector2(block_rect.topleft)
-            frame = cls.npc_parent_surf.subsurface(frame_rect).copy()
+            frame = cls.npc_parent_surf_cv2[frame_rect.top:frame_rect.bottom, frame_rect.left:frame_rect.right, :]
 
             if bg_colour is not None:
-                frame = frame.convert_alpha()
-                px_array = pg.PixelArray(frame)
-                px_array.replace(bg_colour, pg.Color(0, 0, 0, 0), distance=0.05)
-                px_array.close()
+                cls.editor.loadData(frame)
+                cls.editor.transparent_where_color(bg_colour[:3], overwrite=True)
+                cls.editor.crop_transparent_borders(overwrite=True)
+
+                frame = cls.editor.createSurface()
 
             else:
                 if frame_idx == 0:
@@ -168,7 +179,7 @@ class NPC(GameObject):
                     print(f"consider mapping {trainer_type}: pg.Color({frame.get_at([0, 0])}),")
 
             if scale != 1.0:
-                frame = pg.transform.scale(frame, frame_size * scale)
+                frame = pg.transform.scale(frame, pg.Vector2(frame.get_size()) * scale)
 
             frames.append(frame)
 
@@ -192,7 +203,7 @@ class NPC(GameObject):
         self._sprite_sets = None
 
     def __repr__(self):
-        return f"NPC('{self.trainer_type.name.title()} {self.name.title()}')"
+        return f"NPC('{self.trainer_type.name.title()} {self.name.title()}. {self.map_positions} {self.map_rects}')"
 
 
 class Trainer(NPC):
@@ -217,7 +228,7 @@ class Trainer(NPC):
     with open("game_data/trainer_teams.json") as f:
         trainer_data = json.load(f)
 
-    def __init__(self, rect: pg.Rect, properties: dict=None, team: None | Team=None, is_player=False, scale: float = 1.0):
+    def __init__(self, properties: dict=None, team: None | Team=None, is_player=False, scale: float = 1.0):
         """
         Trainer Class
         """
@@ -235,7 +246,6 @@ class Trainer(NPC):
 
         # display config
         self.map_location = ...
-        self.rect: pg.Rect = rect
 
         # dict to hold trainer position and blit rect on each map
 
@@ -255,9 +265,8 @@ class Trainer(NPC):
         self.__dict__.update(state)
         self._load_surfaces()
 
-    @property
-    def vision_rect(self):
-        return self._get_vision_rect(self.rect, self.facing_direction)
+    def get_vision_rect(self, _map):
+        return self._get_vision_rect(self.map_rects[_map], self.facing_direction)
 
     @staticmethod
     def _get_vision_rect(sprite_rect: pg.Rect, facing_direction: Direction, view_dist: int = 3) -> pg.Rect:
@@ -323,7 +332,7 @@ class Trainer(NPC):
 
         self.blit_rect = self.rect.copy().move(4, 0)
 
-        self.attention_bubble = AttentionBubble(scale=self.scale)
+        self.attention_bubble = AttentionBubble(self, scale=self.scale)
         self.attention_bubble.rect.midbottom = self.rect.midtop
 
     def _clear_surfaces(self):
@@ -350,10 +359,10 @@ class Player2(Trainer):
         if not isinstance(position, pg.Vector2):
             position = pg.Vector2(position)
 
-        player_rect = pg.Rect(position * 32 * scale, pg.Vector2(32, 32) * scale)
+        # player_rect = pg.Rect(position * 32 * scale, pg.Vector2(32, 32) * scale)
 
         self.sprite_path = "Sprites/Player Sprites"
-        Trainer.__init__(self, player_rect, properties=properties, team=team, is_player=True, scale=scale)
+        Trainer.__init__(self, properties=properties, team=team, is_player=True, scale=scale)
 
         back_frames = self.get_battle_back(self.trainer_type, scale=scale, bg_colour=(147, 187, 236, 255))
 

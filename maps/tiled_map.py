@@ -3,13 +3,13 @@ import os
 import pygame
 import pygame as pg
 import pytmx
-from pytmx import TiledMap
+from pytmx import TiledMap, TiledObject
 from pytmx.util_pygame import pygame_image_loader
 
 from general.utils import Colours, BlitLocation
 from graphics.sprite_screen import SpriteScreen
 
-from trainer import NPC, Trainer, Player2, Direction, Movement
+from trainer import NPC, Trainer, Player2, Direction, Movement, AttentionBubble
 from displays.battle.battle_display_main import TextBox
 
 from math import floor, ceil
@@ -50,11 +50,13 @@ class TiledMap2(TiledMap, SpriteScreen):
         kwargs = {"pixelalpha": True, "image_loader": pygame_image_loader}
         TiledMap.__init__(self, file_path, *args, **kwargs)
 
-        self.layers = sorted(self.layers, key=lambda l: l.name)
+        self.layers = sorted(self.layers, key=lambda layer: layer.name)
 
         self.object_layers = [
             layer for layer in self.layers if isinstance(layer, pytmx.TiledObjectGroup)
         ]
+
+        self.tile_size_og = pg.Vector2(self.tilewidth, self.tileheight)
 
         self.tilewidth *= map_scale
         self.tileheight *= map_scale
@@ -96,7 +98,7 @@ class TiledMap2(TiledMap, SpriteScreen):
         player.map_positions.update({self: player_position})
         add_layer = None
         if player_layer:
-            add_layer = next((i for i, obj in enumerate(self.object_layers) if obj.name == player_layer), None)
+            add_layer = next((obj for obj in self.object_layers if obj.name == player_layer), None)
 
         if not player_layer or not add_layer:
             add_layer = self.object_layers[0]
@@ -171,7 +173,7 @@ class TiledMap2(TiledMap, SpriteScreen):
 
         return obj_collision, True
 
-    def trainer_move_animation(self, trainer: Trainer, direction: Direction, window: pg.Surface, frames: int = 20, duration: int = 200):
+    def trainer_move_animation(self, trainer: Trainer, direction: Direction, window: pg.Surface, frames: int = 5, duration: int = 200):
         """
         Moves the specified trainer in a given direction. If the trainer is a player, move the map
         else, move the trainer.
@@ -203,26 +205,22 @@ class TiledMap2(TiledMap, SpriteScreen):
             self.render()
 
         else:
-            trainer.update()
-
             # trainer._moving = True
-            start_rect = trainer.rect
+            start_pos = trainer.map_positions[self]
             trainer._moving = True
             for frame_idx in range(frames):
-                trainer.rect = start_rect.move(direction.value * self.tileheight * frame_idx / frames)
-                # trainer.blit_rect = trainer.rect.copy().move(4, 0)
+                trainer.map_positions[self] = start_pos + direction.value * frame_idx / frames
 
                 self.render()
                 window.blit(self.get_surface(), (0, 0))
                 pg.display.flip()
-
                 pg.time.wait(round(duration / frames))
 
             trainer._moving = False
 
             # set back to integer values
-            trainer.rect = start_rect.move(direction.value * self.tileheight)
-            trainer.position += direction.value
+            trainer.map_positions[self] = start_pos + direction.value
+            # trainer.position += direction.value
             self.render()
 
         window.blit(self.get_surface(), (0, 0))
@@ -241,10 +239,23 @@ class TiledMap2(TiledMap, SpriteScreen):
             for obj in layer:
                 rect = pg.Rect(obj.x, obj.y, obj.width, obj.height)
                 if obj.type == "npc":
-                    if obj.npc_type != "trainer":
-                        npc = NPC(obj.properties, scale=2)
-                        npc.map_positions[self] = pg.Vector2(rect.x / self.tilewidth, rect.y / self.tileheight)
-                        sprite_group.add(npc)
+                    npc = NPC(obj.properties, scale=2)
+                    npc.map_positions[self] = pg.Vector2(
+                        round(rect.x / self.tile_size_og.x),
+                        round(rect.y / self.tile_size_og.y)
+                    )
+                    npc._load_surfaces()
+                    sprite_group.add(npc)
+
+                elif obj.type == "trainer":
+                    trainer = Trainer(obj.properties, scale=2)
+                    trainer.map_positions[self] = pg.Vector2(
+                        round(rect.x / self.tile_size_og.x),
+                        round(rect.y / self.tile_size_og.y)
+                    )
+
+                    trainer._load_surfaces()
+                    sprite_group.add(trainer)
 
                 elif obj.type == "obstacle":
                     obstacle = Obstacle(rect, obj_id=obj.id, scale=self.map_scale)
@@ -254,9 +265,16 @@ class TiledMap2(TiledMap, SpriteScreen):
 
     def move_player(self, direction: Direction, window):
         """ Moves the player by a given direction """
-        return self.move_trainer(self.player, direction, window)
+        collision, moved = self.move_trainer(self.player, direction, window)
 
-    def render(self, grid_lines=False, start_pos=None):
+        trainers = self.get_sprite_types(Trainer)
+        trainer = self.player.map_rects[self].collideobjects(trainers, key=lambda o: o.get_vision_rect(self))
+        if trainer is not None:
+            collision = trainer
+
+        return collision, moved
+
+    def render(self, grid_lines=False, start_pos=None, verbose=False):
         """
         Renders the map
 
@@ -280,6 +298,8 @@ class TiledMap2(TiledMap, SpriteScreen):
         )
         # ====== render static ======
         for layer in self.layers:
+            if verbose:
+                print(f"rendering layer {layer}")
             if isinstance(layer, pytmx.TiledImageLayer):
                 source = getattr(layer, 'source', None)
                 if source:
@@ -296,7 +316,8 @@ class TiledMap2(TiledMap, SpriteScreen):
                     self.render_surface.load_image(
                         path,
                         pos=-pos,
-                        scale=self.map_scale
+                        scale=self.map_scale,
+                        base=True
                     )
 
             elif isinstance(layer, pytmx.TiledTileLayer):
@@ -415,6 +436,17 @@ class MapObjects(pg.sprite.Group):
                 im_size = pg.Vector2(obj.image.get_size())
                 npc_offset = pg.Vector2((im_size.x - self.tile_size.x) / 2, im_size.y - self.tile_size.y)
                 _map.render_surface.add_surf(obj.image, obj.map_rects[_map].topleft - player_offset - npc_offset)
+
+                player_rect = obj.map_rects[_map].move(-player_offset.x, -player_offset.y)
+                pg.draw.rect(_map.render_surface.surface, Colours.green.value, player_rect, width=1)
+
+            elif isinstance(obj, AttentionBubble):
+                im_size = pg.Vector2(obj.trainer.image.get_size())
+                npc_offset = pg.Vector2((im_size.x - self.tile_size.x) / 2, im_size.y - self.tile_size.y)
+
+                trainer_rect = obj.trainer.map_rects[_map].move(-npc_offset)
+                obj.rect.midbottom = trainer_rect.midtop
+                _map.render_surface.add_surf(obj.image, obj.rect.topleft - player_offset)
 
             else:
                 if getattr(obj, "image", None) is not None:

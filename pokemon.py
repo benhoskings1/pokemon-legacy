@@ -1,5 +1,6 @@
 import datetime
 import pickle
+import time
 from enum import Enum
 from typing import Any
 
@@ -473,8 +474,9 @@ class Pokemon(pg.sprite.Sprite):
 
         self.images = None
 
-    def load_images(self, animations: None | Animations = None):
+    def load_images(self, animations: None | Animations = None, verbose=True):
         """ Load images """
+        t1 = time.monotonic()
         self.images = self.get_images(self.ID, crop=True, shiny=self.shiny)
 
         self.smallImage = self.images["small"]
@@ -485,6 +487,9 @@ class Pokemon(pg.sprite.Sprite):
         self.animation = animations.front
 
         self.sprite = PokemonSprite(self.ID, self.shiny, friendly=self.friendly)
+
+        if verbose:
+            print(f"Loaded {self.name} in {time.monotonic() - t1} seconds")
 
     def reset_stat_stages(self) -> None:
         self.statStages = StatStages()
