@@ -2,7 +2,7 @@ from math import ceil
 
 import pygame as pg
 
-from screen_V2 import Screen, BlitLocation
+from graphics.screen_V2 import Screen, BlitLocation
 
 
 class LoadDisplay:

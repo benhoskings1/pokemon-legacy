@@ -1,4 +1,5 @@
 import os
+import time
 
 import numpy as np
 import pandas as pd
@@ -34,7 +35,8 @@ def createAnimation(name):
     return None
 
 
-def getImageAnimation(path):
+def getImageAnimation(path, verbose=False):
+    t1 = time.monotonic()
     imageAnimation = Image.open(path)
     animation = []
     for frame in range(imageAnimation.n_frames):
@@ -46,6 +48,8 @@ def getImageAnimation(path):
         surf = editor.createSurface(bgr=False)
         animation.append(surf)
 
+    if verbose:
+        print(f"Animation: {time.monotonic() - t1}s")
     return animation
 
 

@@ -3,12 +3,11 @@ from enum import Enum
 
 import pygame as pg
 
-import team
 from general.Move import Move2
 from pokemon import Pokemon
 from general.utils import Colours, create_display_bar
-from screen_V2 import FontOption, BlitLocation
-from sprite_screen import SpriteScreen, DisplayContainer, GameObjects
+from graphics.screen_V2 import FontOption, BlitLocation
+from graphics.sprite_screen import SpriteScreen, DisplayContainer
 from pokemon import PokemonSpriteSmall
 
 CONTAINER_POSITIONS = [(1, 3), (129, 12), (1, 52), (129, 60), (1, 100), (129, 108)]

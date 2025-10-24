@@ -1,16 +1,15 @@
 import os
 import re
-from os import close
 
 import pandas as pd
 import pygame as pg
 from enum import Enum
 
-from screen_V2 import BlitLocation, FontOption
+from graphics.screen_V2 import BlitLocation, FontOption
 from bag import BagV2
 from general.utils import Colours
 from general.Item import ItemType, Item
-from sprite_screen import SpriteScreen, DisplayContainer
+from graphics.sprite_screen import SpriteScreen, DisplayContainer
 
 
 BUTTON_POSITIONS = [(11, 36), (19, 84), (43, 124), (83, 148), (139, 148), (179, 124), (203, 84), (211, 36)]

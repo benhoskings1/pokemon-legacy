@@ -10,10 +10,7 @@ FRAME_REGEX = r".*.png"
 def get_image_frame(file_name):
     """ Extracts the number of the frame string using regex """
     match = re.search(r".*_(\d+).png", file_name)
-    if match:
-        return int(match.group(1))
-    else:
-        return None
+    return int(match.group(1)) if match else None
 
 
 class BattleAnimation:

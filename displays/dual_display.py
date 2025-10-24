@@ -1,4 +1,4 @@
-from sprite_screen import SpriteScreen
+from graphics.sprite_screen import SpriteScreen
 
 
 class DualDisplay:

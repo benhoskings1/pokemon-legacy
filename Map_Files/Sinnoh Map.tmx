@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="64" height="64" tilewidth="32" tileheight="32" infinite="0" nextlayerid="10" nextobjectid="42">
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="64" height="64" tilewidth="32" tileheight="32" infinite="0" nextlayerid="10" nextobjectid="47">
  <tileset firstgid="1" source="Sinnoh_Tileset.tsx"/>
- <layer id="1" name="Base Layer" width="64" height="64" locked="1">
+ <layer id="1" name="0_base_layer" width="64" height="64" locked="1">
   <data encoding="csv">
 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
@@ -69,7 +69,7 @@
 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
 </data>
  </layer>
- <layer id="2" name="Trees and Paths" width="64" height="64">
+ <layer id="2" name="1_trees and Paths" width="64" height="64">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -137,7 +137,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="6" name="Buildings" width="64" height="64" visible="0">
+ <layer id="6" name="2_buildings" width="64" height="64">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -161,7 +161,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,24,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -205,7 +205,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="3" name="Tall Grass" width="64" height="64">
+ <layer id="3" name="3_tall_grass" width="64" height="64">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -273,7 +273,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="4" name="Tall Grass">
+ <objectgroup id="4" name="4_tall_grass">
   <object id="1" name="Grass" x="416" y="384" width="96" height="96">
    <properties>
     <property name="Location" value="Route 201"/>
@@ -335,17 +335,17 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="7" name="Obstacle">
-  <object id="25" name="Obstacle" x="1152" y="256" width="64" height="160"/>
-  <object id="27" name="Obstacle" x="1248" y="256" width="64" height="160"/>
-  <object id="28" name="Obstacle" x="1216" y="256" width="32" height="128"/>
-  <object id="29" name="Obstacle" x="224" y="192" width="32" height="1696"/>
+ <objectgroup id="7" name="4_obstacle">
+  <object id="25" type="obstacle" x="1152" y="288" width="64" height="128"/>
+  <object id="27" type="obstacle" x="1248" y="288" width="64" height="128"/>
+  <object id="28" type="obstacle" x="1216" y="288" width="32" height="96"/>
+  <object id="29" type="obstacle" x="224" y="192" width="32" height="1696"/>
   <object id="32" name="Obstacle" x="1792" y="192" width="32" height="1696"/>
-  <object id="33" name="Obstacle" x="256" y="192" width="1536" height="32"/>
+  <object id="33" type="obstacle" x="256" y="192" width="1536" height="32"/>
   <object id="34" name="Obstacle" x="256" y="1856" width="1536" height="32"/>
  </objectgroup>
- <objectgroup id="8" name="NPCs">
-  <object id="36" name="NPC" x="1088" y="576" width="32" height="32">
+ <objectgroup id="8" name="4_NPCs">
+  <object id="36" name="NPC" type="trainer" x="1088" y="576" width="32" height="32">
    <properties>
     <property name="facing_direction" value="left"/>
     <property name="npc_name" value="Ben"/>
@@ -353,7 +353,7 @@
     <property name="trainer_id" value="0"/>
    </properties>
   </object>
-  <object id="38" name="NPC" x="800" y="352" width="32" height="32">
+  <object id="38" name="Trainer" type="trainer" x="800" y="352" width="32" height="32">
    <properties>
     <property name="facing_direction" value="down"/>
     <property name="npc_name" value="Natalie"/>
@@ -362,7 +362,8 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="9" name="Buildings">
-  <object id="39" name="pokecenter" x="1216" y="384" width="32" height="32"/>
+ <objectgroup id="9" name="4_buildings">
+  <object id="39" name="pokecenter" type="entry_tile" x="1216" y="384" width="32" height="32"/>
+  <object id="45" name="small_house" type="entry_tile" x="1280" y="576" width="32" height="32"/>
  </objectgroup>
 </map>

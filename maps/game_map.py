@@ -1,89 +1,97 @@
+import os.path
+
 import pygame as pg
-import pytmx
-from pytmx import TiledMap
-from pytmx.util_pygame import pygame_image_loader
+from random import randint
 
-from general.utils import Colours
-from Map_Files.Map_Objects.Tall_Grass import TallGrass, Obstacle
-from sprite_screen import SpriteScreen
-
-from player import Player
+from maps.tiled_map import TiledMap2, GameObject
+from maps.pokecenter import PokeCenter
 
 
-class TiledMap2(TiledMap, SpriteScreen):
-    def __init__(self, file_path, size, player, scale=1):
-        """
-        This map dynamically renders the players immediate surroundings, rather than the entire map.
+class EntryTile(GameObject):
+    def __init__(self, rect: pg.Rect, obj_id: int, scale=1.0):
+        GameObject.__init__(self, rect, obj_id, solid=True, scale=scale)
 
-        :param file_path:
-        :param size:
-        :param scale:
-        """
-        args = []
-        kwargs = {"pixelalpha": True, "image_loader": pygame_image_loader}
-        TiledMap.__init__(self, file_path, *args, **kwargs)
 
-        size = pg.Vector2(size[0], size[1]) + 4 * pg.Vector2(self.tilewidth, self.tileheight)
-        SpriteScreen.__init__(self, size)
+class TallGrass(GameObject):
+    def __init__(self, rect, scale: int | float = 1.0, route=None):
+        GameObject.__init__(self, rect, obj_id=0, solid=False, scale=scale)
 
-        self.scale = scale
-        self.grassObjects = pg.sprite.Group()
-        self.obstacles = pg.sprite.Group()
+        self.route = route
+        self.encounterNum = randint(15, 25)
 
-        self.border_limits = pg.Vector2(3, 5)
 
-        self.x_limits = (8, self.width - 8)
-        self.y_limits = (7, self.height - 6)
+class GameMap(TiledMap2):
 
-        for obj in self.objects:
-            rect = pg.Rect(obj.x, obj.y, obj.width, obj.height)
-            if obj.name == "Grass":
-                grass = TallGrass(rect, self.scale, obj.Location)
-                self.grassObjects.add(grass)
-            elif obj.name == "Obstacle":
-                obstacle = Obstacle(rect, self.scale)
-                self.obstacles.add(obstacle)
-            elif obj.name == "NPC":
-                npc = ...
-                print("not yet implemented")
-            else:
-                print(obj.name)
+    start_positions = {
+        "Sinnoh Map.tmx": pg.Vector2(31, 14),
+        "Twinleaf Town.tmx": pg.Vector2(21, 32)
+    }
 
-        self.player = player
-        self.render(self.player.position)
+    def __init__(self, file_path, size, player, window, map_scale=1, obj_scale=1):
 
-    def render(self, player_pos: pg.Vector2, grid_lines=False):
-        self.refresh()
+        if os.path.basename(file_path) in self.start_positions:
+            player_position = self.start_positions[os.path.basename(file_path)]
+        else:
+            player_position = pg.Vector2(31, 14)
+            
+        TiledMap2.__init__(
+            self,
+            file_path,
+            size,
+            player,
+            player_position=player_position,
+            map_scale=map_scale,
+            object_scale=obj_scale,
+            player_layer="4_NPCs"
+        )
 
-        for layer in self.layers:
-            count = 0
-            if isinstance(layer, pytmx.TiledTileLayer):
-                for x, y, gid in layer:
-                    if player_pos.x - 10 <= x <= player_pos.x + 10 and player_pos.y - 6 <= y+1 <= player_pos.y + 11:
-                        tileImage = self.get_tile_image_by_gid(gid)
-                        if tileImage:
-                            (width, height) = tileImage.get_size()
+        # self.load_objects()
+        self.render()
 
-                            pos = (
-                                (self.size / 2)
-                                + pg.Vector2(
-                                    (x - player_pos.x - 0.5) * self.tilewidth,
-                                    (y - player_pos.y + 1) * self.tileheight - height
-                                )
-                            )
-                            self.add_image(tileImage, pos)
-                            if grid_lines:
-                                pg.draw.rect(self.surface, Colours.red.value, pg.Rect(pos, tileImage.get_size()), width=2)
-                        count += 1
-        if grid_lines:
-            pg.draw.line(self.surface, Colours.green.value, self.surface.get_rect().midtop,
-                         self.surface.get_rect().midbottom, width=5)
+        self.window = window
 
-    def detect_collision(self) -> list[pg.sprite.Sprite]:
+    def load_custom_object_layers(self):
+        """ loads the default object layers """
+        for layer in self.object_layers:
+            sprite_group = self.object_layer_sprites[layer.id]
+            for obj in layer:
+                rect = pg.Rect(obj.x, obj.y, obj.width, obj.height)
+                if obj.type == "entry_tile":
+                    pokecenter = PokeCenter(rect, player=self.player, map_scale=2, obj_scale=2)
+                    sprite_group.add(pokecenter)
+
+            self.object_layer_sprites[layer.id] = sprite_group
+
+    def load_objects(self):
+        # load all default objects
+        super().load_objects()
+
+        for layer in self.object_layers:
+            sprite_group = self.object_layer_sprites[layer.id]
+            for obj in layer:
+                rect = pg.Rect(obj.x, obj.y, obj.width, obj.height)
+                if obj.name == "Grass":
+                    grass = TallGrass(rect, route=obj.Location, scale=self.map_scale)
+                    sprite_group.add(grass)
+
+                elif obj.name == "pokecenter":
+                    pokecenter = PokeCenter(rect, player=self.player, map_scale=2, obj_scale=2)
+                    sprite_group.add(pokecenter)
+
+    def object_interaction(self, sprite: pg.sprite.Sprite):
+        if isinstance(sprite, PokeCenter):
+            sprite: PokeCenter
+            sprite.loop(self.window)
+
+        return None
+
+    def detect_collision(self) -> pg.sprite.Sprite:
         """
         Detects collisions between the player and the grass objects.
         """
-        return pg.sprite.spritecollide(self.player, self.grassObjects, dokill=False)
+        player_rect = self.player.map_rects[self]
+        collisions = player_rect.collideobjects(self.grassObjects.sprites(), key=lambda o: o.rect)
+        return collisions
 
 
 if __name__ == '__main__':
@@ -97,16 +105,16 @@ if __name__ == '__main__':
     pg.display.set_caption('Map Files')
     pg.event.pump()
 
-    player = Player("Sprites/Player Sprites", position=pg.Vector2(14, 13))
-
-    sinnoh_map = TiledMap2('Map_Files/Sinnoh Map.tmx', displaySize, player=player)
-    sinnoh_map.render(player.position)
-    while True:
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                pg.quit()
-            elif event.type == pg.KEYDOWN:
-                ...
-
-        window.blit(sinnoh_map.get_surface(), (32, 32))
-        pg.display.flip()
+    # player = Player("Sprites/Player Sprites", position=pg.Vector2(14, 13))
+    #
+    # sinnoh_map = GameMap('pokecenter.tmx', displaySize, player=player)
+    # sinnoh_map.render(player.position)
+    # while True:
+    #     for event in pg.event.get():
+    #         if event.type == pg.QUIT:
+    #             pg.quit()
+    #         elif event.type == pg.KEYDOWN:
+    #             ...
+    #
+    #     window.blit(sinnoh_map.get_surface(), (32, 32))
+    #     pg.display.flip()

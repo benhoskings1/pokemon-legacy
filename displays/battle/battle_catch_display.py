@@ -1,7 +1,6 @@
 import pygame as pg
-from screen_V2 import Screen, BlitLocation
 from pokemon import Pokemon
-from sprite_screen import SpriteScreen, DisplayContainer
+from graphics.sprite_screen import SpriteScreen, DisplayContainer
 
 
 class NameContainer2(DisplayContainer):

@@ -90,6 +90,43 @@ class ImageEditor:
 
         return pixelDataCopy
 
+    def transparent_where_color(self, color: tuple[int, int, int], overwrite=True) -> np.ndarray:
+        """
+        Set alpha=0 where the RGB part of the image matches the given color.
+
+        Args:
+            img (np.ndarray): Input image (RGBA, shape: HxWx4, dtype=uint8).
+            color (tuple[int, int, int]): RGB color to make transparent (R, G, B).
+
+        Returns:
+            np.ndarray: New RGBA image with updated alpha channel.
+        """
+        img = self.pixelData
+
+        # color = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+        if img.shape[2] != 4:
+            raise ValueError("Input image must have 4 channels (RGBA).")
+
+        # Separate RGB and Alpha
+        rgb = img[..., :3]
+        alpha = img[..., 3]
+
+        # Create a mask where RGB matches the target color
+        mask = np.all(rgb == color, axis=-1)
+
+        # Set alpha to 0 where mask is True
+        alpha[mask] = 0
+
+        # Merge back
+        img_out = img.copy()
+        img_out[..., 3] = alpha
+
+        if overwrite:
+            self.pixelData = img_out
+
+        return img_out
+
     def saveImage(self, directory: os.PathLike = None, name=None):
         print(self.fileName)
         if directory:
@@ -167,21 +204,27 @@ class ImageEditor2:
 
 
 if __name__ == "__main__":
-    IMAGE_REGEX = r""
-    move = "bubble"
-    target = "foe"
-    base_dir = '../assets/menu/bag/pocket_buttons/key_items'
+
+    file = "house_small.png"
+
+    editor = ImageEditor(file=file)
+    editor.scaleImage(pg.Vector2(2, 2), overwrite=True)
+    editor.saveImage("test")
+    # IMAGE_REGEX = r""
+    # move = "bubble"
+    # target = "foe"
+    # base_dir = '../assets/menu/bag/pocket_buttons/key_items'
     # base_dir = f"/Users/benhoskings/Desktop/pokemon_sprites/animations/"
-    save_dir = '../assets/menu/bag/pocket_buttons/key_items'
+    # save_dir = '../assets/menu/bag/pocket_buttons/key_items'
 
-    move_dir = os.path.join(base_dir, move, target)
-    files = os.listdir(base_dir)
-    files = sorted([file_name for file_name in files if re.match(IMAGE_REGEX, file_name)])
-    print(files)
+    # move_dir = os.path.join(base_dir, move, target)
+    # files = os.listdir(base_dir)
+    # files = sorted([file_name for file_name in files if re.match(IMAGE_REGEX, file_name)])
+    # print(files)
 
-    for idx, file in enumerate(files):
-
-        editor = ImageEditor(file=os.path.join(base_dir, file))
-        editor.eraseColour([248, 232, 208], overwrite=True)
-        # editor.eraseColour([123, 206, 239], overwrite=True)
-        editor.saveImage(directory=base_dir)
+    # for idx, file in enumerate(files):
+    #
+    #     editor = ImageEditor(file=os.path.join(base_dir, file))
+    #     # editor.eraseColour([248, 232, 208], overwrite=True)
+    #     # editor.eraseColour([123, 206, 239], overwrite=True)
+    #     editor.saveImage(directory=base_dir)
