@@ -18,13 +18,20 @@ class GameDisplayStates(Enum):
 
 
 class GameDisplay(SpriteScreen):
-    def __init__(self, size, player, window, scale: int | float = 1):
+    def __init__(
+            self,
+            size,
+            player,
+            window,
+            scale: int | float = 1,
+            _map: str = "Twinleaf Town.tmx"
+    ):
         # ==== INIT ====
         SpriteScreen.__init__(self, size)
 
         self.player = player
-        self.map = GameMap("Map_Files/Sinnoh Map.tmx", size, player=player, window=window, map_scale=1,
-                           obj_scale=1)
+        self.map = GameMap(f"Map_Files/{_map}", size, player=player, window=window, map_scale=1,
+                            obj_scale=1)
 
         self.scale = scale
 

@@ -16,9 +16,11 @@ class ExitTile(GameObject):
         GameObject.__init__(self, rect, obj_id, solid=True, scale=scale)
 
 
-class DeskTile(Obstacle):
+class DeskTile(GameObject):
     def __init__(self, rect: pg.Rect, obj_id: int, scale=1):
-        Obstacle.__init__(self, rect, obj_id, scale)
+        GameObject.__init__(self, rect, obj_id, solid=True, scale=scale)
+        self.image = pg.Surface(self.rect.size, pg.SRCALPHA)
+        pg.draw.rect(self.image, Colours.blue.value, self.image.get_rect(), 1)
 
 
 class ComputerTile(Obstacle):
@@ -27,8 +29,8 @@ class ComputerTile(Obstacle):
 
 
 tile_object_mapping = {
-    "exit" : ExitTile,
-    "desk" : DeskTile,
+    "exit": ExitTile,
+    "desk": DeskTile,
     "computer": ComputerTile,
 }
 
@@ -37,36 +39,38 @@ class PokeCenter(TiledMap2, GameObject):
     def __init__(self, rect, player, map_scale=1, obj_scale=1, parent_map_scale=1.0):
         size = pg.Vector2(256, 192) * map_scale
 
-        # TODO: work out why the
-        TiledMap2.__init__(self, "maps/pokecenter.tmx", size, player,
-                           player_position=pg.Vector2(8, 14), map_scale=map_scale, object_scale=obj_scale,
-                           player_layer="5_player_layer",
-                           view_screen_tile_size=pg.Vector2(19, 18))
+        GameObject.__init__(self, rect, obj_id=0, solid=True, scale=parent_map_scale)
 
-        GameObject.__init__(self, rect, obj_id=0, solid=False, scale=parent_map_scale)
+        TiledMap2.__init__(
+            self,
+            "maps/pokecenter.tmx",
+            size,
+            player,
+            player_position=pg.Vector2(8, 14),
+            map_scale=map_scale,
+            object_scale=obj_scale,
+            player_layer="5_player_layer",
+            view_screen_tile_size=pg.Vector2(19, 18)
+        )
+
         self.base_surface.fill(Colours.black.value)
-        self.base_image = pg.image.load(path.join("maps/assets/pokecenter_floor_0.png"))
-        self.base_image = pg.transform.scale(self.base_image, size)
-        self.player = player
-
-        self.tile_size = pg.Vector2(16, 13) * map_scale
-
-        self.running = True
+        self.running = False
 
     def __repr__(self):
-        return f"PokeCenter(rect:, {self.map_scale})"
+        return f"PokeCenter()"
 
     def load_objects(self):
         # load default objects
         super().load_objects()
 
-        # TODO: Update to use scaled version of the objects!
-        for obj in self.objects:
-            rect = pg.Rect(obj.x, obj.y, obj.width, obj.height)
+        for layer in self.object_layers:
+            sprite_group = self.object_layer_sprites[layer.id]
+            for obj in layer:
+                rect = pg.Rect(obj.x, obj.y, obj.width, obj.height)
 
-            if obj.type in tile_object_mapping:
-                obj_tile = tile_object_mapping[obj.type](rect, obj.id, scale=self.map_scale)
-                self.obstacles.add(obj_tile)
+                if obj.type in tile_object_mapping:
+                    obj_tile = tile_object_mapping[obj.type](rect, obj.id, scale=self.map_scale)
+                    sprite_group.add(obj_tile)
 
     def object_interaction(self, sprite: pg.sprite.Sprite):
         """ hook for automatic object interactions """
@@ -107,15 +111,15 @@ class PokeCenter(TiledMap2, GameObject):
                         player_moving = True
 
                         while player_moving:
-                            collision = self.move_player(
+                            collision, moved = self.move_player(
                                 controller.direction_key_bindings[event.key],
                                 window=render_surface
                             )
 
-                            # if collision:
-                            #     self.object_interaction(collision)
-                            #     if not self.running:
-                            #         break
+                            if collision:
+                                self.object_interaction(collision)
+                                if not self.running:
+                                    break
 
                             pg.display.flip()
 
@@ -127,6 +131,7 @@ class PokeCenter(TiledMap2, GameObject):
                         obj_collision = self.check_collision(self.player, self.player.facing_direction)
 
                         if obj_collision:
+                            print(obj_collision)
                             self.intentional_interaction(obj_collision, render_surface)
 
     # def move_trainer(self, trainer, direction, window, move_duration=2000):
@@ -134,23 +139,24 @@ class PokeCenter(TiledMap2, GameObject):
 
 
 if __name__ == '__main__':
-    from player import Player
-
-    pg.init()
-
-    player = Player("Sprites/Player Sprites")
-    center = PokeCenter(pg.Rect(100, 100, 100, 100), player, 2)
-
-    pg.init()
-    display = pg.display.set_mode((512, 384))
-
-    while True:
-        for event in pg.event.get():
-            if event.type == pg.KEYDOWN:
-                if event.key in move_directions:
-                    player.position += move_directions[event.key]
-
-                display.fill((0, 0, 0))
-                center.render(player.position)
-                display.blit(center.get_surface(), (0, 0))
-                pg.display.flip()
+    ...
+    # from player import Player
+    #
+    # pg.init()
+    #
+    # player = Player("Sprites/Player Sprites")
+    # center = PokeCenter(pg.Rect(100, 100, 100, 100), player, 2)
+    #
+    # pg.init()
+    # display = pg.display.set_mode((512, 384))
+    #
+    # while True:
+    #     for event in pg.event.get():
+    #         if event.type == pg.KEYDOWN:
+    #             if event.key in move_directions:
+    #                 player.position += move_directions[event.key]
+    #
+    #             display.fill((0, 0, 0))
+    #             center.render(player.position)
+    #             display.blit(center.get_surface(), (0, 0))
+    #             pg.display.flip()

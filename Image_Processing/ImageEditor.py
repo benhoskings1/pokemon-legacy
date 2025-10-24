@@ -204,21 +204,27 @@ class ImageEditor2:
 
 
 if __name__ == "__main__":
-    IMAGE_REGEX = r""
-    move = "bubble"
-    target = "foe"
-    base_dir = '../assets/menu/bag/pocket_buttons/key_items'
+
+    file = "house_small.png"
+
+    editor = ImageEditor(file=file)
+    editor.scaleImage(pg.Vector2(2, 2), overwrite=True)
+    editor.saveImage("test")
+    # IMAGE_REGEX = r""
+    # move = "bubble"
+    # target = "foe"
+    # base_dir = '../assets/menu/bag/pocket_buttons/key_items'
     # base_dir = f"/Users/benhoskings/Desktop/pokemon_sprites/animations/"
-    save_dir = '../assets/menu/bag/pocket_buttons/key_items'
+    # save_dir = '../assets/menu/bag/pocket_buttons/key_items'
 
-    move_dir = os.path.join(base_dir, move, target)
-    files = os.listdir(base_dir)
-    files = sorted([file_name for file_name in files if re.match(IMAGE_REGEX, file_name)])
-    print(files)
+    # move_dir = os.path.join(base_dir, move, target)
+    # files = os.listdir(base_dir)
+    # files = sorted([file_name for file_name in files if re.match(IMAGE_REGEX, file_name)])
+    # print(files)
 
-    for idx, file in enumerate(files):
-
-        editor = ImageEditor(file=os.path.join(base_dir, file))
-        editor.eraseColour([248, 232, 208], overwrite=True)
-        # editor.eraseColour([123, 206, 239], overwrite=True)
-        editor.saveImage(directory=base_dir)
+    # for idx, file in enumerate(files):
+    #
+    #     editor = ImageEditor(file=os.path.join(base_dir, file))
+    #     # editor.eraseColour([248, 232, 208], overwrite=True)
+    #     # editor.eraseColour([123, 206, 239], overwrite=True)
+    #     editor.saveImage(directory=base_dir)

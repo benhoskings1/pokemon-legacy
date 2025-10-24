@@ -97,8 +97,15 @@ class NPC(GameObject):
         self.scale = scale
         self.map_scale = map_scale
 
-        self.trainer_type: TrainerTypes = TrainerTypes[properties["npc_type"]]
-        self.name: str = "" if not properties else properties["npc_name"]
+        if "npc_type" not in properties.keys():
+            npc_type = "youngster"
+        elif properties["npc_type"] not in TrainerTypes:
+            npc_type = "youngster"
+        else:
+            npc_type = properties["npc_type"]
+
+        self.trainer_type: TrainerTypes = TrainerTypes[npc_type]
+        self.name: str = "" if not properties else properties.get("npc_name")
 
         self._sprite_sets: dict[Movement, list[pg.Surface]]
         self._leg: bool = True

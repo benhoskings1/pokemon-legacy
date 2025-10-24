@@ -122,19 +122,24 @@ class Colours(Enum):
     white = pg.Color(255, 255, 255)
     black = pg.Color(1, 1, 1)
     darkGrey = pg.Color(60, 60, 60)
+    midGrey = pg.Color(150, 150, 150)
     lightGrey = pg.Color(200, 200, 200)
-    green = pg.Color(100, 255, 100)
-    red = pg.Color(255, 100, 100)
+    green = pg.Color(69, 181, 67)
+    red = pg.Color(181, 67, 67)
     shadow = pg.Color(180, 180, 180)
+    blue = pg.Color(67, 113, 181)
+    yellow = pg.Color(252, 198, 3)
+    hero_blue = pg.Color("#274251")
+    light_blue = pg.Color("#4f86a5")
 
 
 class BlitLocation(Enum):
     topLeft = pg.Vector2(0, 0)
     midTop = pg.Vector2(-0.5, 0)
     topRight = pg.Vector2(-1, 0)
-    bottomLeft = 3
-    midBottom = 4
-    bottomRight = 5
-    midLeft = 6
-    midRight = 7
-    centre = 8
+    bottomLeft = pg.Vector2(0, -1)
+    midBottom = pg.Vector2(-0.5, 1)
+    bottomRight = pg.Vector2(-1, -1)
+    midLeft = pg.Vector2(0, -0.5)
+    midRight = pg.Vector2(-1, -0.5)
+    centre = pg.Vector2(-0.5, -0.5)

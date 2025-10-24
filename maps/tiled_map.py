@@ -6,13 +6,14 @@ import pytmx
 from pytmx import TiledMap, TiledObject
 from pytmx.util_pygame import pygame_image_loader
 
+from math import floor, ceil
+
 from general.utils import Colours, BlitLocation
+
 from graphics.sprite_screen import SpriteScreen
+from graphics.text_box import TextBox
 
 from trainer import NPC, Trainer, Player2, Direction, Movement, AttentionBubble
-from displays.battle.battle_display_main import TextBox
-
-from math import floor, ceil
 
 from maps.game_obejct import GameObject
 
@@ -26,7 +27,7 @@ class TiledMap2(TiledMap, SpriteScreen):
     def __init__(
             self,
             file_path,
-            size : tuple[int, int] | pg.Vector2,
+            size: tuple[int, int] | pg.Vector2,
             player: Player2,
             player_position,
             player_layer: None | str = None,
@@ -100,13 +101,14 @@ class TiledMap2(TiledMap, SpriteScreen):
         if player_layer:
             add_layer = next((obj for obj in self.object_layers if obj.name == player_layer), None)
 
-        if not player_layer or not add_layer:
+        if add_layer is None:
             add_layer = self.object_layers[0]
 
         self.object_layer_sprites[add_layer.id].add(player)
 
-        self.text_box = TextBox(sprite_id="text_box", scale=map_scale, static=True)
-        self.text_box.rect.topleft += pg.Vector2(3, 0) * map_scale
+        # TODO: fix the static scale here
+        self.text_box = TextBox(sprite_id="text_box", scale=2, static=True)
+        self.text_box.rect.topleft += pg.Vector2(6, 0)
 
         # self.load_custom_object_layers()
 
@@ -121,11 +123,12 @@ class TiledMap2(TiledMap, SpriteScreen):
 
         :return: the sprite collision, if any, else None
         """
-        new_rect = trainer.map_rects[self].move(direction.value * self.tilewidth)
-
-        ob_collision = new_rect.collideobjects(self.obstacles.sprites(), key=lambda o: o.rect)
-        if ob_collision:
-            return ob_collision
+        new_rect = trainer.map_rects[self].move(
+            pg.Vector2(
+                direction.value.x * self.tilewidth,
+                direction.value.y * self.tileheight
+            )
+        )
 
         for layer_id, object_group in self.object_layer_sprites.items():
             npc_sprites = [s for s in object_group.sprites() if isinstance(s, NPC)]
@@ -133,7 +136,8 @@ class TiledMap2(TiledMap, SpriteScreen):
             if map_collision:
                 return map_collision
 
-            other_sprites = [s for s in object_group.sprites() if not isinstance(s, NPC)]
+            # get all solid objects
+            other_sprites = [s for s in object_group.sprites() if s.solid and not isinstance(s, NPC)]
             map_collision = new_rect.collideobjects(other_sprites, key=lambda o: o.rect)
             if map_collision:
                 return map_collision
@@ -241,8 +245,8 @@ class TiledMap2(TiledMap, SpriteScreen):
                 if obj.type == "npc":
                     npc = NPC(obj.properties, scale=2)
                     npc.map_positions[self] = pg.Vector2(
-                        round(rect.x / self.tile_size_og.x),
-                        round(rect.y / self.tile_size_og.y)
+                        (rect.x / self.tile_size_og.x),
+                        (rect.y / self.tile_size_og.y)
                     )
                     npc._load_surfaces()
                     sprite_group.add(npc)
@@ -317,7 +321,7 @@ class TiledMap2(TiledMap, SpriteScreen):
                         path,
                         pos=-pos,
                         scale=self.map_scale,
-                        base=True
+                        # base=True
                     )
 
             elif isinstance(layer, pytmx.TiledTileLayer):
@@ -368,13 +372,11 @@ class TiledMap2(TiledMap, SpriteScreen):
 
         display_surf = self.base_surface.copy()
 
-        render_rect = pg.Rect(self.extra_offset, self.render_surface.size)
         display_surf.blit(self.surface, (0, 0))
 
         display_surf.blit(self.render_surface.get_surface(),
                           self.extra_offset if not offset else self.extra_offset + offset)
 
-        pg.draw.rect(display_surf, Colours.green.value, render_rect, width=1)
         display_surf.blit(self.sprite_surface, (0, 0))
 
         return display_surf
@@ -385,8 +387,9 @@ class TiledMap2(TiledMap, SpriteScreen):
 
         self.text_box.refresh()
 
-        text_rect = pg.Rect(pg.Vector2(10, 4) * self.map_scale, pg.Vector2(201, 40) * self.map_scale)
-        self.text_box.add_text_2(text, text_rect.inflate(-10, -18), max_chars=max_chars)
+        text_rect = self.text_box.image.get_rect().inflate(-20 * self.text_box.scale, -18*self.text_box.scale)
+        # text_rect = pg.Rect(pg.Vector2(10, 4) * self.text_box.scale, pg.Vector2(201, 40) * self.text_box.scale)
+        self.text_box.add_text_2(text, text_rect, max_chars=max_chars)
         self.text_box.update_image()
 
     def display_message(self, text, window, duration=1000):
@@ -451,9 +454,3 @@ class MapObjects(pg.sprite.Group):
             else:
                 if getattr(obj, "image", None) is not None:
                     _map.render_surface.add_surf(obj.image, obj.rect.topleft - player_offset)
-
-    # def add(
-    #         self,
-    #         sprites: list[pg.sprite.Sprite] | list[GameObject]
-    # ) -> None:
-    #     super().add(sprites)

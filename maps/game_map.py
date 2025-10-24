@@ -1,10 +1,7 @@
-import pytmx
+import os.path
+
 import pygame as pg
 from random import randint
-
-from general.utils import Colours
-from player import Player
-from trainer import Trainer, TrainerTypes, AttentionBubble
 
 from maps.tiled_map import TiledMap2, GameObject
 from maps.pokecenter import PokeCenter
@@ -12,7 +9,7 @@ from maps.pokecenter import PokeCenter
 
 class EntryTile(GameObject):
     def __init__(self, rect: pg.Rect, obj_id: int, scale=1.0):
-        GameObject.__init__(self, rect, obj_id, solid=False, scale=scale)
+        GameObject.__init__(self, rect, obj_id, solid=True, scale=scale)
 
 
 class TallGrass(GameObject):
@@ -24,13 +21,25 @@ class TallGrass(GameObject):
 
 
 class GameMap(TiledMap2):
+
+    start_positions = {
+        "Sinnoh Map.tmx": pg.Vector2(31, 14),
+        "Twinleaf Town.tmx": pg.Vector2(21, 32)
+    }
+
     def __init__(self, file_path, size, player, window, map_scale=1, obj_scale=1):
+
+        if os.path.basename(file_path) in self.start_positions:
+            player_position = self.start_positions[os.path.basename(file_path)]
+        else:
+            player_position = pg.Vector2(31, 14)
+            
         TiledMap2.__init__(
             self,
             file_path,
             size,
             player,
-            player_position=pg.Vector2(31, 14),
+            player_position=player_position,
             map_scale=map_scale,
             object_scale=obj_scale,
             player_layer="4_NPCs"
@@ -96,16 +105,16 @@ if __name__ == '__main__':
     pg.display.set_caption('Map Files')
     pg.event.pump()
 
-    player = Player("Sprites/Player Sprites", position=pg.Vector2(14, 13))
-
-    sinnoh_map = GameMap('pokecenter.tmx', displaySize, player=player)
-    sinnoh_map.render(player.position)
-    while True:
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                pg.quit()
-            elif event.type == pg.KEYDOWN:
-                ...
-
-        window.blit(sinnoh_map.get_surface(), (32, 32))
-        pg.display.flip()
+    # player = Player("Sprites/Player Sprites", position=pg.Vector2(14, 13))
+    #
+    # sinnoh_map = GameMap('pokecenter.tmx', displaySize, player=player)
+    # sinnoh_map.render(player.position)
+    # while True:
+    #     for event in pg.event.get():
+    #         if event.type == pg.QUIT:
+    #             pg.quit()
+    #         elif event.type == pg.KEYDOWN:
+    #             ...
+    #
+    #     window.blit(sinnoh_map.get_surface(), (32, 32))
+    #     pg.display.flip()

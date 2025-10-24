@@ -3,23 +3,23 @@ from enum import Enum
 import pygame as pg
 from font.font import LevelFont, Font, FontType
 
-from general.utils import clean_surfaces, BlitLocation
+from general.utils import clean_surfaces, BlitLocation, Colours
 
 
-class Colours(Enum):
-    clear = pg.SRCALPHA
-    white = pg.Color(255, 255, 255)
-    black = pg.Color(1, 1, 1)
-    darkGrey = pg.Color(60, 60, 60)
-    midGrey = pg.Color(150, 150, 150)
-    lightGrey = pg.Color(200, 200, 200)
-    green = pg.Color(69, 181, 67)
-    red = pg.Color(181, 67, 67)
-    shadow = pg.Color(180, 180, 180)
-    blue = pg.Color(67, 113, 181)
-    yellow = pg.Color(252, 198, 3)
-    hero_blue = pg.Color("#274251")
-    light_blue = pg.Color("#4f86a5")
+# class Colours(Enum):
+#     clear = pg.SRCALPHA
+#     white = pg.Color(255, 255, 255)
+#     black = pg.Color(1, 1, 1)
+#     darkGrey = pg.Color(60, 60, 60)
+#     midGrey = pg.Color(150, 150, 150)
+#     lightGrey = pg.Color(200, 200, 200)
+#     green = pg.Color(69, 181, 67)
+#     red = pg.Color(181, 67, 67)
+#     shadow = pg.Color(180, 180, 180)
+#     blue = pg.Color(67, 113, 181)
+#     yellow = pg.Color(252, 198, 3)
+#     hero_blue = pg.Color("#274251")
+#     light_blue = pg.Color("#4f86a5")
 
 
 class BlitPosition(Enum):

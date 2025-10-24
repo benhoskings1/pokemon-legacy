@@ -265,9 +265,9 @@ class Game:
                 self.game_display.map.object_layer_sprites[upper_obj_layer.id].remove(trainer.attention_bubble)
 
                 for i in range(round(move_count - 1)):
-                    self.game_display.map.move_trainer(trainer, trainer.facing_direction, self.topSurf, move_duration=500)
+                    self.game_display.map.move_trainer(trainer, trainer.facing_direction, self.topSurf, move_duration=200)
 
-                self.display_message("May I trouble you for a battle please?", 2000)
+                self.game_display.map.display_message("May I trouble you for a battle please?", self.topSurf, 2000)
                 self.wait_for_key(break_on_timeout=False)
                 self.start_battle(foe_team=trainer.team, trainer=trainer)
                 trainer.battled = True
@@ -281,46 +281,6 @@ class Game:
             return False
 
         return moved
-
-    def move_trainer(self, trainer, direction, duration, frames=20):
-        """ move a trainer to a new position """
-        trainer.update()
-
-        # trainer._moving = True
-        start_rect = trainer.rect
-        trainer._moving = True
-        for frame_idx in range(frames):
-            trainer.rect = start_rect.move(direction.value * self.game_display.map.tileheight * frame_idx / frames)
-            trainer.blit_rect = trainer.rect.copy().move(4, 0)
-
-            self.game_display.map.render(self.player.position)
-            self.update_display()
-            pg.time.wait(round(duration / frames))
-
-        trainer._moving = False
-
-        # set back to integer values
-        trainer.rect = start_rect.move(direction.value * self.game_display.map.tileheight)
-        trainer.position += direction.value
-        self.game_display.map.render(self.player.position)
-        self.update_display()
-
-    def check_trainer_collision(self) -> None | Trainer:
-        """ Return a trainer if the player is in within their collision rect """
-
-        trainers = self.game_display.map.get_sprite_types(Trainer)
-
-        return trainers[0] if trainers else None
-
-    def detect_grass_collision(self, battle=False) -> None:
-        collide = self.game_display.map.detect_collision()
-        if collide:
-            grass = collide
-            num = random.randint(0, (1 if battle else 255))
-            if num < grass.encounterNum:
-                pg.time.delay(100)
-                self.battle_intro(250)
-                self.start_battle(route=grass.route)
 
     def start_battle(self, foe_team: None | list[Pokemon] | Team=None, route="Route 201", trainer=None) -> None:
         """ Start a battle. """
@@ -347,6 +307,7 @@ class Game:
             trainer.battled = True
 
     def battle_intro(self, time_delay):
+        # TODO: migrate this to game display
         black_surf = pg.Surface(self.topSurf.get_size())
         black_surf.fill(Colours.darkGrey.value)
         for count in range(2):
