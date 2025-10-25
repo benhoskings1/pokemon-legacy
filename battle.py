@@ -3,7 +3,7 @@ import math
 from math import floor
 from random import randint, choice
 
-from battle_action import BattleAction, BattleActionType, BattleAttack, BattleTagIn
+from game_logic.battle_action import BattleAttack, BattleTagIn
 from displays.battle.battle_display_main import BattleDisplayMain, LevelUpBox
 from displays.battle.battle_display_touch import *
 from displays.battle.learn_move_display import LearnMoveDisplay

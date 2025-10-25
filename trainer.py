@@ -30,6 +30,7 @@ class TrainerTypes(Enum):
     riley = "riley"
     youngster = "youngster"
     lass = "lass"
+    farmer = "farmer"
 
 
 class Movement(Enum):
@@ -73,11 +74,13 @@ class NPC(GameObject):
         TrainerTypes.youngster: (1, 1),
         TrainerTypes.lass: (9, 2),
         TrainerTypes.pokecenter_lady: (6, 7),
+        TrainerTypes.farmer: (10, 0)
     }
 
+    # colours given in BGR for opencv
     bag_colour_mapping = {
         TrainerTypes.youngster: [96, 128, 32],
-        # TrainerTypes.youngster: pg.Color((32, 128, 96, 255)),
+        TrainerTypes.farmer: [96, 128, 32],
         TrainerTypes.pokecenter_lady: pg.Color((80, 128, 64, 255)),
         TrainerTypes.lass: pg.Color((96, 128, 32, 255)),
     }
@@ -181,9 +184,13 @@ class NPC(GameObject):
                 frame = cls.editor.createSurface()
 
             else:
+
                 if frame_idx == 0:
-                    frame = frame.convert_alpha()
-                    print(f"consider mapping {trainer_type}: pg.Color({frame.get_at([0, 0])}),")
+                    # frame = frame.convert_alpha()
+                    print(f"consider mapping {trainer_type}: pg.Color({frame[0, 0, :]}),")
+
+                cls.editor.loadData(frame)
+                frame = cls.editor.createSurface()
 
             if scale != 1.0:
                 frame = pg.transform.scale(frame, pg.Vector2(frame.get_size()) * scale)

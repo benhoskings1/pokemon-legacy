@@ -1,9 +1,9 @@
 from enum import Enum
 
 import pygame as pg
-from font.font import LevelFont, Font, FontType
+from graphics.font.font import Font, FontType
 
-from general.utils import clean_surfaces, BlitLocation, Colours
+from general.utils import BlitLocation, Colours
 
 
 # class Colours(Enum):

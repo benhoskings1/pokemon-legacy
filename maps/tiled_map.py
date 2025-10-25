@@ -9,6 +9,7 @@ from pytmx.util_pygame import pygame_image_loader
 from math import floor, ceil
 
 from general.utils import Colours, BlitLocation
+from general.controller import Controller
 
 from graphics.sprite_screen import SpriteScreen
 from graphics.text_box import TextBox
@@ -23,7 +24,23 @@ class Obstacle(GameObject):
         GameObject.__init__(self, rect, obj_id, solid=True, scale=scale)
 
 
+class EntryTile(GameObject):
+    def __init__(self, rect: pg.Rect, obj_id: int, scale=1.0):
+        GameObject.__init__(self, rect, obj_id, solid=True, scale=scale)
+
+
+class ExitTile(GameObject):
+    def __init__(self, rect: pg.Rect, obj_id: int, scale=1):
+        GameObject.__init__(self, rect, obj_id, solid=True, scale=scale)
+
+
 class TiledMap2(TiledMap, SpriteScreen):
+
+    tile_object_mapping = {
+        "obstacle": Obstacle,
+        "exit": ExitTile,
+    }
+
     def __init__(
             self,
             file_path,
@@ -32,9 +49,10 @@ class TiledMap2(TiledMap, SpriteScreen):
             player_position,
             player_layer: None | str = None,
             map_scale: float = 1.0,
-            object_scale: float= 1.0,
+            object_scale: float = 1.0,
             view_screen_tile_size=pg.Vector2(25, 18),
-            view_field = None
+            view_field = None,
+            map_directory: str = None
     ):
         """
         This map dynamically renders the players immediate surroundings, rather than the entire map.
@@ -50,6 +68,8 @@ class TiledMap2(TiledMap, SpriteScreen):
         args = []
         kwargs = {"pixelalpha": True, "image_loader": pygame_image_loader}
         TiledMap.__init__(self, file_path, *args, **kwargs)
+
+        self.map_directory = map_directory
 
         self.layers = sorted(self.layers, key=lambda layer: layer.name)
 
@@ -231,13 +251,21 @@ class TiledMap2(TiledMap, SpriteScreen):
         pg.display.flip()
 
     def object_interaction(self, sprite: pg.sprite.Sprite):
-        """ hook for object interactions """
-        ...
+        """ hook for automatic object interactions """
+        if isinstance(sprite, ExitTile):
+            self.running = False
+            return sprite
+
+        return None
 
     def load_objects(self):
         """
         Loads any default objects. Supported types are: 'npc', 'obstacle'
         """
+
+        def create_object(obj_type, *args, **kwargs):
+            return self.tile_object_mapping[obj_type](*args, **kwargs)
+
         for layer in self.object_layers:
             sprite_group = MapObjects(tile_size=self.tile_size)
             for obj in layer:
@@ -261,9 +289,18 @@ class TiledMap2(TiledMap, SpriteScreen):
                     trainer._load_surfaces()
                     sprite_group.add(trainer)
 
-                elif obj.type == "obstacle":
-                    obstacle = Obstacle(rect, obj_id=obj.id, scale=self.map_scale)
-                    sprite_group.add(obstacle)
+                else:
+                    if obj.type in self.tile_object_mapping.keys():
+                        game_object = create_object(obj.type, rect, obj.id, scale=self.map_scale)
+                        sprite_group.add(game_object)
+
+                #     obj.type == "obstacle":
+                #     obstacle = Obstacle(rect, obj_id=obj.id, scale=self.map_scale)
+                #     sprite_group.add(obstacle)
+                #
+                # elif obj.type == "exit":
+                #     exit_tile = ExitTile(rect, obj_id=obj.id, scale=self.map_scale)
+                #     sprite_group.add(exit_tile)
 
             self.object_layer_sprites[layer.id] = sprite_group
 
@@ -308,7 +345,7 @@ class TiledMap2(TiledMap, SpriteScreen):
                 source = getattr(layer, 'source', None)
                 if source:
                     img_offset = pg.Vector2(layer.offsetx, layer.offsety) * self.map_scale
-                    path = os.path.join("maps", source)
+                    path = os.path.join("maps", self.map_directory, source)
 
                     # TODO: work out why these 0.5s are here?
                     pos = pg.Vector2((player_pos.x + 0.5 - self.view_field.x // 2) * self.tilewidth,
@@ -410,6 +447,46 @@ class TiledMap2(TiledMap, SpriteScreen):
                     sprite_list.append(sprite)
 
         return sprite_list
+
+    def loop(self, render_surface, controller=Controller()):
+        self.render()
+        render_surface.blit(self.get_surface(), (0, 0))
+        pg.display.flip()
+        print("starting pokecenter loop")
+        self.running = True
+        while self.running:
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    self.running = False
+
+                elif event.type == pg.KEYDOWN:
+                    if event.key in controller.move_keys:
+                        player_moving = True
+
+                        while player_moving:
+                            collision, moved = self.move_player(
+                                controller.direction_key_bindings[event.key],
+                                window=render_surface
+                            )
+
+                            if collision:
+                                self.object_interaction(collision)
+                                if not self.running:
+                                    break
+
+                            pg.display.flip()
+
+                            for event_2 in pg.event.get():
+                                if event_2.type == pg.KEYUP:
+                                    player_moving = False
+
+                    elif event.key == controller.a:
+                        obj_collision = self.check_collision(self.player, self.player.facing_direction)
+
+                        if obj_collision:
+                            print(obj_collision)
+                            self.intentional_interaction(obj_collision, render_surface)
+
 
 
 class MapObjects(pg.sprite.Group):

@@ -6,14 +6,9 @@ import pygame as pg
 from general.utils import Colours
 from general.controller import Controller
 
-from maps.tiled_map import TiledMap2, GameObject, Obstacle
+from maps.tiled_map import TiledMap2, GameObject, Obstacle, ExitTile
 
 move_directions = {pg.K_UP: (0, 1), pg.K_DOWN: (0, -1), pg.K_LEFT: (1, 0), pg.K_RIGHT: (-1, 0)}
-
-
-class ExitTile(GameObject):
-    def __init__(self, rect: pg.Rect, obj_id: int, scale=1):
-        GameObject.__init__(self, rect, obj_id, solid=True, scale=scale)
 
 
 class DeskTile(GameObject):
@@ -29,7 +24,6 @@ class ComputerTile(Obstacle):
 
 
 tile_object_mapping = {
-    "exit": ExitTile,
     "desk": DeskTile,
     "computer": ComputerTile,
 }
@@ -72,13 +66,8 @@ class PokeCenter(TiledMap2, GameObject):
                     obj_tile = tile_object_mapping[obj.type](rect, obj.id, scale=self.map_scale)
                     sprite_group.add(obj_tile)
 
-    def object_interaction(self, sprite: pg.sprite.Sprite):
-        """ hook for automatic object interactions """
-        if isinstance(sprite, ExitTile):
-            self.running = False
-            return sprite
-
-        return None
+    # def object_interaction(self, sprite: pg.sprite.Sprite):
+    #     super().object_interaction(sprite)
 
     def intentional_interaction(self, sprite: pg.sprite.Sprite, render_surface: pg.Surface):
         """ hook for player triggered interactions """

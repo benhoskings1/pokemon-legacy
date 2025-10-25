@@ -5,11 +5,7 @@ from random import randint
 
 from maps.tiled_map import TiledMap2, GameObject
 from maps.pokecenter import PokeCenter
-
-
-class EntryTile(GameObject):
-    def __init__(self, rect: pg.Rect, obj_id: int, scale=1.0):
-        GameObject.__init__(self, rect, obj_id, solid=True, scale=scale)
+from maps.buildings.small_house import SmallHouse
 
 
 class TallGrass(GameObject):
@@ -78,9 +74,15 @@ class GameMap(TiledMap2):
                     pokecenter = PokeCenter(rect, player=self.player, map_scale=2, obj_scale=2)
                     sprite_group.add(pokecenter)
 
+                elif obj.type == "entry_tile":
+                    if obj.name == "small_house":
+                        game_object = SmallHouse(rect, player=self.player, map_scale=2, obj_scale=2)
+                        sprite_group.add(game_object)
+
+
     def object_interaction(self, sprite: pg.sprite.Sprite):
-        if isinstance(sprite, PokeCenter):
-            sprite: PokeCenter
+        if isinstance(sprite, TiledMap2):
+            # sprite: PokeCenter
             sprite.loop(self.window)
 
         return None

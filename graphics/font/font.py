@@ -364,7 +364,7 @@ class ClockFont:
         self.letters = {}
         self.sizes = {}
 
-        names = sorted(os.listdir("font/Clock"))
+        names = sorted(os.listdir("graphics/font/Clock"))
 
         for name in names:
             letter = name[0]
@@ -373,7 +373,7 @@ class ClockFont:
                 letter = ":"
 
             if name.endswith(".png"):
-                image = pg.image.load(str.format("font/Clock/{}", name))
+                image = pg.image.load(str.format("graphics/font/Clock/{}", name))
                 newImage = pg.transform.scale(image, pg.Vector2(image.get_size()) * scale)
                 self.sizes[letter] = newImage.get_size()
                 self.letters[letter] = newImage

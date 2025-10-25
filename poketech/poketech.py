@@ -3,7 +3,7 @@ from enum import Enum
 
 import pygame as pg
 
-from font.font import ClockFont
+from graphics.font.font import ClockFont
 from graphics.screen_V2 import BlitLocation
 from graphics.sprite_screen import SpriteScreen
 

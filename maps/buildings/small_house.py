@@ -15,14 +15,15 @@ class SmallHouse(TiledMap2, GameObject):
 
         TiledMap2.__init__(
             self,
-            "maps/pokecenter.tmx",
+            "maps/buildings/player_house.tmx",
             size,
             player,
-            player_position=pg.Vector2(8, 14),
+            player_position=pg.Vector2(6, 8),
             map_scale=map_scale,
             object_scale=obj_scale,
             player_layer="5_player_layer",
-            view_screen_tile_size=pg.Vector2(19, 18)
+            view_screen_tile_size=pg.Vector2(19, 18),
+            map_directory="buildings"
         )
 
         self.base_surface.fill(Colours.black.value)
