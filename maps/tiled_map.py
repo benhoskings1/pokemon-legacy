@@ -68,6 +68,8 @@ class TiledMap2(TiledMap, SpriteScreen):
         args = []
         kwargs = {"pixelalpha": True, "image_loader": pygame_image_loader}
         TiledMap.__init__(self, file_path, *args, **kwargs)
+        self.map_name = os.path.basename(file_path)
+        self.border_rect = pg.Rect(0, 0, self.width, self.height)
 
         self.map_directory = map_directory
 
@@ -133,6 +135,9 @@ class TiledMap2(TiledMap, SpriteScreen):
         # self.load_custom_object_layers()
 
         self.render(player_position)
+
+    def __repr__(self):
+        return f"TiledMap({self.map_name})"
 
     def check_collision(self, trainer, direction: Direction) -> None | GameObject:
         """
@@ -307,13 +312,14 @@ class TiledMap2(TiledMap, SpriteScreen):
     def move_player(self, direction: Direction, window):
         """ Moves the player by a given direction """
         collision, moved = self.move_trainer(self.player, direction, window)
+        edge = self.detect_map_edge()
 
         trainers = self.get_sprite_types(Trainer)
         trainer = self.player.map_rects[self].collideobjects(trainers, key=lambda o: o.get_vision_rect(self))
         if trainer is not None:
             collision = trainer
 
-        return collision, moved
+        return collision, moved, edge
 
     def render(self, grid_lines=False, start_pos=None, verbose=False):
         """
@@ -373,8 +379,8 @@ class TiledMap2(TiledMap, SpriteScreen):
                             (width, height) = tile_image.get_size()
 
                             pos = pg.Vector2(
-                                (x - tile_render_rect.left - offset.x) * self.tilewidth * self.map_scale,
-                                (y - tile_render_rect.top - offset.y) * self.tileheight * self.map_scale - height
+                                (x - tile_render_rect.left - offset.x) * self.tilewidth,
+                                (y - tile_render_rect.top - offset.y) * self.tileheight - height * self.map_scale
                             )
 
                             self.render_surface.add_image(tile_image, pos, scale=self.map_scale)
@@ -447,6 +453,29 @@ class TiledMap2(TiledMap, SpriteScreen):
                     sprite_list.append(sprite)
 
         return sprite_list
+
+    def detect_map_edge(self) -> None | str:
+        """ Return a bool representing if the map edge is detected """
+
+        player_pos = self.player.map_positions[self]
+
+        tile_render_rect = pg.Rect(
+            ceil(player_pos.x - self.view_screen_tile_size.x / 2),
+            ceil(player_pos.y - 1 - self.view_screen_tile_size.y / 2),
+            self.view_screen_tile_size.x, self.view_screen_tile_size.y
+        )
+
+        if tile_render_rect.top < 0:
+            return "top"
+        elif tile_render_rect.bottom > self.height:
+            return "bottom"
+        elif tile_render_rect.left < 0:
+            return "left"
+        elif tile_render_rect.right > self.width:
+            return "right"
+
+        return None
+
 
     def loop(self, render_surface, controller=Controller()):
         self.render()

@@ -79,7 +79,6 @@ class GameMap(TiledMap2):
                         game_object = SmallHouse(rect, player=self.player, map_scale=2, obj_scale=2)
                         sprite_group.add(game_object)
 
-
     def object_interaction(self, sprite: pg.sprite.Sprite):
         if isinstance(sprite, TiledMap2):
             # sprite: PokeCenter

@@ -355,7 +355,12 @@ class Trainer(NPC):
 
 
 class Player2(Trainer):
-    def __init__(self, position: tuple[int] | list[int] | pg.Vector2, team: Team, scale: float = 1.0):
+    def __init__(
+            self,
+            position: tuple[int, int] | list[int] | pg.Vector2,
+            team: Team,
+            scale: float = 1.0
+    ):
         """
         Player object (inherits from trainer)
 

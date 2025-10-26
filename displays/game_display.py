@@ -5,6 +5,7 @@ from graphics.sprite_screen import SpriteScreen
 from maps.game_map import GameMap
 from displays.battle.battle_display_main import TextBox
 from displays.menu.menu_display_popup import MenuDisplayPopup
+from maps.route_orchestrator import RouteOrchestrator
 
 
 class GameDisplayStates(Enum):
@@ -24,23 +25,31 @@ class GameDisplay(SpriteScreen):
             player,
             window,
             scale: int | float = 1,
-            _map: str = "Twinleaf Town.tmx"
+            _map: str = "Twinleaf Town.tmx",
+            start_map: str = "twinleaf_town"
     ):
         # ==== INIT ====
         SpriteScreen.__init__(self, size)
 
         self.player = player
-        self.map = GameMap(f"Map_Files/{_map}", size, player=player, window=window, map_scale=1,
-                            obj_scale=1)
+
+        # === GAME SETUP ===
+        self.route_orchestrator = RouteOrchestrator(
+            size,
+            player,
+            window,
+            map_scale=2,
+            obj_scale=2
+        )
+
+        self.map = self.route_orchestrator.get_map_node(f"{start_map}.tmx")
+        self.player.map_positions[self.map] = pg.Vector2(17, 10)
+        self.map.render()
 
         self.scale = scale
 
         self.text_box = TextBox(sprite_id="text_box", scale=scale, static=True)
         self.text_box.rect.topleft += pg.Vector2(3, 0) * scale
-        self.player.blit_rect.center = self.surface.get_rect().center
-
-        # TODO: transition player into map for layered rendering :)
-        # self.sprites.add(self.player)
 
     def get_surface(self, show_sprites: bool = False, offset: None | pg.Vector2 = None) -> pg.Surface:
         if self.power_off:
@@ -98,3 +107,9 @@ class GameDisplay(SpriteScreen):
         if not sprite_only:
             self.surface = pg.Surface(self.size, pg.SRCALPHA)
         self.sprite_surface = pg.Surface(self.size, pg.SRCALPHA)
+
+    def render_joint_maps(self, maps: list[GameMap]):
+       self.active_map_surface = self.active_map.get_surface()
+
+       joint_map_surface = self.active_map_surface.copy()
+
