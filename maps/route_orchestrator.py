@@ -29,13 +29,17 @@ class RouteOrchestrator:
         self.route_graph = nx.Graph()
         self.route_graph.add_nodes_from(self.routes)
 
-        # update the link
+        # TODO convert this to a static config set
         self.link_routes(
             "twinleaf_town.tmx", "route_201.tmx",
             pg.Vector2(16, 0), pg.Vector2(14, 32)
         )
 
+    def load_player_positions(self):
+        ...
+
     def get_map_node(self, map_name) -> GameMap:
+        """ Get a map node that matches the map name """
         return next((n for n in self.route_graph.nodes if n.map_name == map_name), None)
 
     def link_routes(self, route_1, route_2, pos_1, pos_2):
@@ -45,7 +49,9 @@ class RouteOrchestrator:
         try:
             for n in [node_1, node_2]:
                 assert n is not None, (
-                    f"{route_1 if n is node_1 else route_2} is not a valid option. Please make sure to\nlink one of these values: {[node.map_name for node in self.route_graph.nodes]}"
+                    f"{route_1 if n is node_1 else route_2} is not a valid option. "
+                    f"Please make sure to link one of these values: "
+                    f"{[node.map_name for node in self.route_graph.nodes]}"
                 )
         except AssertionError as e:
             raise e

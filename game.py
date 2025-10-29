@@ -214,7 +214,7 @@ class Game:
     def update_display(self, flip=True, cover_lower=False, cover_upper=False):
         """ update the game screen """
         self.game_display.refresh()
-        self.topSurf.blit(self.game_display.get_surface(), (0, 0))
+        self.topSurf.blit(self.game_display.joint_map_surface, (0, 0))
         self.bottomSurf.blit(self.poketech.get_surface(), (0, 0))
         if flip:
             pg.display.flip()
@@ -227,28 +227,7 @@ class Game:
         :return: bool
         """
 
-        start_pos = self.player.map_positions[self.game_display.map]
-        map_obj, moved, edge = self.game_display.map.move_player(direction, self.topSurf)
-
-        if moved and edge is not None:
-            orchestrator = self.game_display.route_orchestrator
-            joint_maps = orchestrator.get_adjoining_map(self.game_display.map, edge)
-
-            player_pos = self.player.map_positions[self.game_display.map]
-            if not self.game_display.map.border_rect.collidepoint(player_pos):
-                if joint_maps is not None:
-                    new_map, map_link = list(joint_maps.items())[0]
-
-                    player_diff = start_pos - map_link[self.game_display.map.map_name]
-
-                    self.game_display.map = new_map
-
-                    new_map_pos = map_link[new_map.map_name] + player_diff
-
-                    self.player.map_positions[self.game_display.map] = new_map_pos
-                    self.game_display.map.render()
-                    self.game_display.map.move_player(direction, self.topSurf)
-
+        map_obj, moved, edge = self.game_display.move_player(direction, self.topSurf)
 
         if isinstance(map_obj, PokeCenter):
             map_obj: PokeCenter

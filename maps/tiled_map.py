@@ -68,6 +68,8 @@ class TiledMap2(TiledMap, SpriteScreen):
         args = []
         kwargs = {"pixelalpha": True, "image_loader": pygame_image_loader}
         TiledMap.__init__(self, file_path, *args, **kwargs)
+
+        # === PROPERTY SETUP ===
         self.map_name = os.path.basename(file_path)
         self.border_rect = pg.Rect(0, 0, self.width, self.height)
 
@@ -101,12 +103,12 @@ class TiledMap2(TiledMap, SpriteScreen):
         self.extra_offset = -pg.Vector2(self.extra_size[0] * self.tile_size.x,
                                        self.extra_size[1] * self.tile_size.y)
 
-        SpriteScreen.__init__(self, size, colour=Colours.red)
+        SpriteScreen.__init__(self, size)
 
         self.map_scale = map_scale
         self.obj_scale = object_scale
 
-        self.render_surface = SpriteScreen(view_screen_size, )
+        self.render_surface = SpriteScreen(view_screen_size)
 
         self.grassObjects = pg.sprite.Group()
         self.obstacles = pg.sprite.Group()
@@ -132,7 +134,8 @@ class TiledMap2(TiledMap, SpriteScreen):
         self.text_box = TextBox(sprite_id="text_box", scale=2, static=True)
         self.text_box.rect.topleft += pg.Vector2(6, 0)
 
-        # self.load_custom_object_layers()
+        self.tile_surface_mapping = {
+        }
 
         self.render(player_position)
 
@@ -162,7 +165,7 @@ class TiledMap2(TiledMap, SpriteScreen):
                 return map_collision
 
             # get all solid objects
-            other_sprites = [s for s in object_group.sprites() if s.solid and not isinstance(s, NPC)]
+            other_sprites = [s for s in object_group.sprites() if not isinstance(s, NPC)]
             map_collision = new_rect.collideobjects(other_sprites, key=lambda o: o.rect)
             if map_collision:
                 return map_collision
@@ -196,8 +199,10 @@ class TiledMap2(TiledMap, SpriteScreen):
         if not move_duration:
             move_duration = 200 if self.player.movement == Movement.walking else 125
 
-        self.trainer_move_animation(trainer, direction, window, duration=move_duration)
-        trainer._leg = not trainer._leg
+        if not isinstance(trainer, Player2):
+            self.trainer_move_animation(trainer, direction, window, duration=move_duration)
+            trainer._leg = not trainer._leg
+
         self.player._moving = False
 
         return obj_collision, True
@@ -314,12 +319,12 @@ class TiledMap2(TiledMap, SpriteScreen):
         collision, moved = self.move_trainer(self.player, direction, window)
         edge = self.detect_map_edge()
 
+        return collision, moved, edge
+
+    def check_trainer_collision(self):
         trainers = self.get_sprite_types(Trainer)
         trainer = self.player.map_rects[self].collideobjects(trainers, key=lambda o: o.get_vision_rect(self))
-        if trainer is not None:
-            collision = trainer
-
-        return collision, moved, edge
+        return trainer
 
     def render(self, grid_lines=False, start_pos=None, verbose=False):
         """
@@ -369,10 +374,16 @@ class TiledMap2(TiledMap, SpriteScreen):
 
             elif isinstance(layer, pytmx.TiledTileLayer):
                 offset = pg.Vector2(0, 0) if start_pos is None else player_pos - start_pos
-                # print(f"offset: {offset}")
-                for x, y, gid in layer:
-                    if ((tile_render_rect.left <= x <= tile_render_rect.right)
-                            and (tile_render_rect.top <= y <= tile_render_rect.bottom)):
+                start_x = max(0, tile_render_rect.left)
+                end_x = min(self.width, tile_render_rect.right + 1)
+                start_y = max(0, tile_render_rect.top)
+                end_y = min(self.height, tile_render_rect.bottom + 1)
+
+                for y in range(start_y, end_y):
+                    for x in range(start_x, end_x):
+                        gid = layer.data[y][x]
+                        if gid == 0:
+                            continue  # empty tile
 
                         tile_image = self.get_tile_image_by_gid(gid)
                         if tile_image:
@@ -476,7 +487,6 @@ class TiledMap2(TiledMap, SpriteScreen):
 
         return None
 
-
     def loop(self, render_surface, controller=Controller()):
         self.render()
         render_surface.blit(self.get_surface(), (0, 0))
@@ -548,6 +558,10 @@ class MapObjects(pg.sprite.Group):
 
                 player_rect = obj.map_rects[_map].move(-player_offset.x, -player_offset.y)
                 pg.draw.rect(_map.render_surface.surface, Colours.green.value, player_rect, width=1)
+
+                if isinstance(obj, Trainer) and not isinstance(obj, Player2):
+                    vision_rect = obj.get_vision_rect(_map).move(-player_offset.x, -player_offset.y)
+                    pg.draw.rect(_map.render_surface.surface, Colours.red.value, vision_rect, width=1)
 
             elif isinstance(obj, AttentionBubble):
                 im_size = pg.Vector2(obj.trainer.image.get_size())

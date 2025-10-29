@@ -45,7 +45,7 @@ class Route:
 
 
 class Routes(Enum):
-    route201 = Route("Route 201")
+    route201 = Route("route_201")
     route202 = Route("Route 202")
     route203 = Route("Route 203")
     route204N = Route("Route 204 North")

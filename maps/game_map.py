@@ -66,7 +66,7 @@ class GameMap(TiledMap2):
             sprite_group = self.object_layer_sprites[layer.id]
             for obj in layer:
                 rect = pg.Rect(obj.x, obj.y, obj.width, obj.height)
-                if obj.name == "Grass":
+                if obj.type == "tall_grass":
                     grass = TallGrass(rect, route=obj.Location, scale=self.map_scale)
                     sprite_group.add(grass)
 

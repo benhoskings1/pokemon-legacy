@@ -283,7 +283,7 @@ class Trainer(NPC):
         return self._get_vision_rect(self.map_rects[_map], self.facing_direction)
 
     @staticmethod
-    def _get_vision_rect(sprite_rect: pg.Rect, facing_direction: Direction, view_dist: int = 3) -> pg.Rect:
+    def _get_vision_rect(sprite_rect: pg.Rect, facing_direction: Direction, view_dist: int = 4) -> pg.Rect:
         """
         Return a rect representing the view distance of a trainer.
 
