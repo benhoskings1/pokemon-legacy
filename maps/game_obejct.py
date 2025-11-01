@@ -10,6 +10,8 @@ class GameObject(pg.sprite.Sprite):
             solid: bool = True,
             scale: int | float = 1.0,
             custom_image: bool = False,
+            auto_interact: bool = False,
+            render_mode=0
     ):
         """
         base class for any game object.
@@ -27,10 +29,16 @@ class GameObject(pg.sprite.Sprite):
         self.rect = pg.Rect(pos, size)
 
         if not custom_image:
-            self.image = pg.Surface(self.rect.size, pg.SRCALPHA)
-            pg.draw.rect(self.image, Colours.green.value, self.image.get_rect(), 1)
+            if render_mode > 0:
+                self.image = pg.Surface(self.rect.size, pg.SRCALPHA)
+                pg.draw.rect(self.image, Colours.green.value, self.image.get_rect(), 1)
 
         self.solid = solid
+        self.auto_interact = auto_interact
 
     def __repr__(self):
         return f"{self.__class__.__name__} at {self.rect} <id:{self.obj_id}>"
+
+    def interaction(self, _map, *args):
+        """ hook function """
+        return None

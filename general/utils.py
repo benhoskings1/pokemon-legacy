@@ -12,6 +12,7 @@ from enum import Enum
 
 # from pokemon import pokedex
 from Image_Processing.ImageEditor import ImageEditor
+import time
 
 
 def clean_surfaces(obj, _path='root'):
@@ -115,6 +116,34 @@ def get_image_frame(file_name):
         return int(match.group(1))
     else:
         return None
+
+
+def wait_for_key(
+        key=None,
+        break_on_timeout=True,
+) -> str | bool:
+    """
+
+    :param key: pygame key ref
+    """
+
+    t0 = time.monotonic()
+    pg.event.clear()
+    while True:
+        event = pg.event.wait()
+        if event.type == pg.QUIT:
+            return "quit"
+
+        elif event.type == pg.KEYDOWN:
+            if key:
+                if event.key == key:
+                    return True
+            else:
+                return True
+
+        if time.monotonic() - t0 > 10 and break_on_timeout:
+            # timeout at 10s
+            return True
 
 
 class Colours(Enum):

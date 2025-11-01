@@ -20,18 +20,24 @@ from maps.game_obejct import GameObject
 
 
 class Obstacle(GameObject):
-    def __init__(self, rect, obj_id, scale: int | float = 1.0):
-        GameObject.__init__(self, rect, obj_id, solid=True, scale=scale)
+    def __init__(self, rect, obj_id, **kwargs):
+        GameObject.__init__(self, rect, obj_id, solid=True, **kwargs)
 
 
 class EntryTile(GameObject):
-    def __init__(self, rect: pg.Rect, obj_id: int, scale=1.0):
-        GameObject.__init__(self, rect, obj_id, solid=True, scale=scale)
+    def __init__(self, rect: pg.Rect, obj_id: int, **kwargs):
+        GameObject.__init__(self, rect, obj_id, solid=True, auto_interact=True, **kwargs)
 
 
 class ExitTile(GameObject):
-    def __init__(self, rect: pg.Rect, obj_id: int, scale=1):
-        GameObject.__init__(self, rect, obj_id, solid=True, scale=scale)
+    def __init__(self, rect: pg.Rect, obj_id: int, **kwargs):
+        GameObject.__init__(self, rect, obj_id, solid=True, auto_interact=True, **kwargs)
+
+
+class WallTile(GameObject):
+    def __init__(self, rect: pg.Rect, obj_id: int, direction="down", scale=1):
+        GameObject.__init__(self, rect, obj_id, solid=True, scale=scale, auto_interact=True)
+        self.direction = next((d for d in Direction if d.name == direction), None)
 
 
 class TiledMap2(TiledMap, SpriteScreen):
@@ -50,9 +56,10 @@ class TiledMap2(TiledMap, SpriteScreen):
             player_layer: None | str = None,
             map_scale: float = 1.0,
             object_scale: float = 1.0,
-            view_screen_tile_size=pg.Vector2(25, 18),
+            view_screen_tile_size=pg.Vector2(25, 20),
             view_field = None,
-            map_directory: str = None
+            map_directory: str = None,
+            render_mode=0
     ):
         """
         This map dynamically renders the players immediate surroundings, rather than the entire map.
@@ -65,12 +72,12 @@ class TiledMap2(TiledMap, SpriteScreen):
         :param map_scale: the scale factor of the map display
         :param object_scale: the scale factor of the object display
         """
-        args = []
-        kwargs = {"pixelalpha": True, "image_loader": pygame_image_loader}
-        TiledMap.__init__(self, file_path, *args, **kwargs)
+        TiledMap.__init__(self, file_path, pixelalpha=True, image_loader=pygame_image_loader)
+
+        self.render_mode = render_mode
 
         # === PROPERTY SETUP ===
-        self.map_name = os.path.basename(file_path)
+        self.map_name = os.path.basename(file_path).replace(".tmx", "")
         self.border_rect = pg.Rect(0, 0, self.width, self.height)
 
         self.map_directory = map_directory
@@ -192,7 +199,15 @@ class TiledMap2(TiledMap, SpriteScreen):
         obj_collision = self.check_collision(trainer, direction)
 
         if obj_collision and obj_collision.solid:
-            return self.object_interaction(obj_collision), False
+            if not obj_collision.auto_interact:
+                return None, False
+
+            if isinstance(obj_collision, WallTile):
+                if obj_collision.direction != direction:
+                    return self.object_interaction(obj_collision, window), False
+            else:
+                # obj_collision.interaction(self, window)
+                return self.object_interaction(obj_collision, window), False
 
         self.player._moving = True
 
@@ -260,7 +275,7 @@ class TiledMap2(TiledMap, SpriteScreen):
         window.blit(self.get_surface(), (0, 0))
         pg.display.flip()
 
-    def object_interaction(self, sprite: pg.sprite.Sprite):
+    def object_interaction(self, sprite: pg.sprite.Sprite, *args):
         """ hook for automatic object interactions """
         if isinstance(sprite, ExitTile):
             self.running = False
@@ -299,9 +314,20 @@ class TiledMap2(TiledMap, SpriteScreen):
                     trainer._load_surfaces()
                     sprite_group.add(trainer)
 
+                elif obj.type == "wall":
+                    direction = obj.properties.get("direction", None)
+                    wall = WallTile(rect, obj.id, direction, scale=2)
+                    sprite_group.add(wall)
+
                 else:
                     if obj.type in self.tile_object_mapping.keys():
-                        game_object = create_object(obj.type, rect, obj.id, scale=self.map_scale)
+                        game_object = create_object(
+                            obj.type,
+                            rect,
+                            obj.id,
+                            scale=self.map_scale,
+                            render_mode=self.render_mode,
+                        )
                         sprite_group.add(game_object)
 
                 #     obj.type == "obstacle":
@@ -356,7 +382,10 @@ class TiledMap2(TiledMap, SpriteScreen):
                 source = getattr(layer, 'source', None)
                 if source:
                     img_offset = pg.Vector2(layer.offsetx, layer.offsety) * self.map_scale
-                    path = os.path.join("maps", self.map_directory, source)
+                    if not self.map_directory:
+                        path = os.path.join("maps", source)
+                    else:
+                        path = os.path.join("maps", self.map_directory, source)
 
                     # TODO: work out why these 0.5s are here?
                     pos = pg.Vector2((player_pos.x + 0.5 - self.view_field.x // 2) * self.tilewidth,
@@ -447,7 +476,6 @@ class TiledMap2(TiledMap, SpriteScreen):
         self.text_box.update_image()
 
     def display_message(self, text, window, duration=1000):
-
         for char_idx in range(1, len(text) + 1):
             self.update_display_text(text, max_chars=char_idx)
             window.blit(self.get_surface(), (0, 0))
@@ -465,7 +493,7 @@ class TiledMap2(TiledMap, SpriteScreen):
 
         return sprite_list
 
-    def detect_map_edge(self) -> None | str:
+    def detect_map_edge(self) -> None | list[str]:
         """ Return a bool representing if the map edge is detected """
 
         player_pos = self.player.map_positions[self]
@@ -476,63 +504,25 @@ class TiledMap2(TiledMap, SpriteScreen):
             self.view_screen_tile_size.x, self.view_screen_tile_size.y
         )
 
+        edges = []
         if tile_render_rect.top < 0:
-            return "top"
-        elif tile_render_rect.bottom > self.height:
-            return "bottom"
-        elif tile_render_rect.left < 0:
-            return "left"
-        elif tile_render_rect.right > self.width:
-            return "right"
+            edges.append("top")
+        if tile_render_rect.bottom > self.height:
+            edges.append("bottom")
+        if tile_render_rect.left < 0:
+            edges.append("left")
+        if tile_render_rect.right > self.width:
+            edges.append("right")
 
-        return None
-
-    def loop(self, render_surface, controller=Controller()):
-        self.render()
-        render_surface.blit(self.get_surface(), (0, 0))
-        pg.display.flip()
-        print("starting pokecenter loop")
-        self.running = True
-        while self.running:
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    self.running = False
-
-                elif event.type == pg.KEYDOWN:
-                    if event.key in controller.move_keys:
-                        player_moving = True
-
-                        while player_moving:
-                            collision, moved = self.move_player(
-                                controller.direction_key_bindings[event.key],
-                                window=render_surface
-                            )
-
-                            if collision:
-                                self.object_interaction(collision)
-                                if not self.running:
-                                    break
-
-                            pg.display.flip()
-
-                            for event_2 in pg.event.get():
-                                if event_2.type == pg.KEYUP:
-                                    player_moving = False
-
-                    elif event.key == controller.a:
-                        obj_collision = self.check_collision(self.player, self.player.facing_direction)
-
-                        if obj_collision:
-                            print(obj_collision)
-                            self.intentional_interaction(obj_collision, render_surface)
-
+        return edges if len(edges) > 0 else None
 
 
 class MapObjects(pg.sprite.Group):
-    def __init__(self, tile_size):
+    def __init__(self, tile_size, render_mode=0):
         pg.sprite.Group.__init__(self)
 
         self.tile_size = tile_size
+        self.render_mode = render_mode
 
     def __repr__(self):
         return f"<MapObjects> {self.sprites}"
@@ -556,12 +546,13 @@ class MapObjects(pg.sprite.Group):
                 npc_offset = pg.Vector2((im_size.x - self.tile_size.x) / 2, im_size.y - self.tile_size.y)
                 _map.render_surface.add_surf(obj.image, obj.map_rects[_map].topleft - player_offset - npc_offset)
 
-                player_rect = obj.map_rects[_map].move(-player_offset.x, -player_offset.y)
-                pg.draw.rect(_map.render_surface.surface, Colours.green.value, player_rect, width=1)
+                if self.render_mode > 0:
+                    player_rect = obj.map_rects[_map].move(-player_offset.x, -player_offset.y)
+                    pg.draw.rect(_map.render_surface.surface, Colours.green.value, player_rect, width=1)
 
-                if isinstance(obj, Trainer) and not isinstance(obj, Player2):
-                    vision_rect = obj.get_vision_rect(_map).move(-player_offset.x, -player_offset.y)
-                    pg.draw.rect(_map.render_surface.surface, Colours.red.value, vision_rect, width=1)
+                    if isinstance(obj, Trainer) and not isinstance(obj, Player2):
+                        vision_rect = obj.get_vision_rect(_map).move(-player_offset.x, -player_offset.y)
+                        pg.draw.rect(_map.render_surface.surface, Colours.red.value, vision_rect, width=1)
 
             elif isinstance(obj, AttentionBubble):
                 im_size = pg.Vector2(obj.trainer.image.get_size())

@@ -8,8 +8,9 @@ from datetime import datetime
 
 from bag import BagV2
 from battle import Battle, State, BattleOutcome
-from maps.game_map import TallGrass
+from maps.game_map import TallGrass, RoutePopup
 from maps.pokecenter import PokeCenter
+from maps.tiled_map import ExitTile
 from pokedex import Pokedex
 from game_log.game_log import GameLog, GameEvent, GameEventType
 
@@ -39,10 +40,18 @@ pokedex = pd.read_csv("game_data/pokedex/Local Dex.tsv", delimiter='\t', index_c
 
 
 class Game:
-    def __init__(self, new=False, overwrite=False, save_slot=1):
+    def __init__(
+            self,
+            new=False,
+            overwrite=False,
+            save_slot=1,
+            explore_mode=False,
+            render_mode=0
+    ):
 
         self.overwrite: bool = overwrite
         self.save_slot: int = save_slot
+        self.explore_mode: bool = explore_mode
         self.running: bool = True
 
         self.data_path: str = f"game_data/save_states/{'save_state_' + str(save_slot) if not new else 'start'}"
@@ -105,8 +114,13 @@ class Game:
 
         self.pokedex.load_surfaces()
 
-        self.game_display = GameDisplay(self.topSurf.get_size(), self.player, window=self.topSurf,
-                                        scale=self.graphics_scale)
+        self.game_display = GameDisplay(
+            self.topSurf.get_size(),
+            self.player,
+            window=self.topSurf,
+            scale=self.graphics_scale,
+            render_mode=render_mode
+        )
 
         self.menu_objects = {
             GameDisplayStates.pokedex: self.pokedex,
@@ -214,31 +228,29 @@ class Game:
     def update_display(self, flip=True, cover_lower=False, cover_upper=False):
         """ update the game screen """
         self.game_display.refresh()
-        self.topSurf.blit(self.game_display.joint_map_surface, (0, 0))
+        self.topSurf.blit(self.game_display.get_surface(), (0, 0))
         self.bottomSurf.blit(self.poketech.get_surface(), (0, 0))
         if flip:
             pg.display.flip()
 
-    def move_player(self, direction, detect_grass=True, force_battle=False) -> bool:
+    def move_player(self, direction, force_battle=False) -> bool:
         """ move the player
 
         :param direction: the direction to move the player
-        :param detect_grass: whether to detect grass or not
         :return: bool
         """
 
         map_obj, moved, edge = self.game_display.move_player(direction, self.topSurf)
 
-        if isinstance(map_obj, PokeCenter):
-            map_obj: PokeCenter
-            map_obj.loop(self.topSurf)
+        # if isinstance(map_obj, ExitTile):
+
 
         if moved:
             self.player.steps += 1
             self.poketech.pedometerSteps += 1
             self.poketech.update_pedometer()
 
-            if detect_grass and isinstance(map_obj, TallGrass):
+            if not self.explore_mode and isinstance(map_obj, TallGrass):
                 grass = map_obj
                 num = random.randint(0, (1 if force_battle else 255))
                 if num < grass.encounterNum:
@@ -419,6 +431,7 @@ class Game:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     self.running = False
+
                 elif event.type == pg.KEYDOWN:
                     if event.key == self.controller.y:
                         action = self.game_display.menu_loop(self)
@@ -432,7 +445,7 @@ class Game:
                         self.update_display()
 
                     elif event.key == self.controller.a:
-                        obj = self.game_display.map.check_collision(self.player, direction=Direction.up)
+                        obj = self.game_display.map.check_collision(self.player, direction=self.player.facing_direction)
                         if isinstance(obj, Trainer):
                             trainer = obj
                             if trainer and not trainer.battled and self.player.facing_direction == Direction.up:
@@ -445,6 +458,9 @@ class Game:
                                 trainer.battled = True
                                 self.update_display()
 
+                        elif obj:
+                            self.game_display.map.object_interaction(obj, self.topSurf)
+
                 elif event.type == pg.MOUSEBUTTONDOWN:
                     relative_pos = pg.Vector2(pg.mouse.get_pos()) - pg.Vector2(0, self.topSurf.get_size()[1])
 
@@ -455,6 +471,8 @@ class Game:
                     pg.time.delay(100)
 
             # TODO: add call to game update for NPC walking/tree shaking etc.
+            self.game_display.update()
+            self.update_display()
 
         if self.overwrite:
             self.save()

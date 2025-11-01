@@ -3,24 +3,38 @@ import os.path as path
 
 import pygame as pg
 
-from general.utils import Colours
-from general.controller import Controller
+from trainer import Trainer
+from general.Direction import Direction
+from general.utils import Colours, wait_for_key
+# from general.controller import Controller
 
-from maps.tiled_map import TiledMap2, GameObject, Obstacle, ExitTile
+from maps.tiled_map import TiledMap2, GameObject, Obstacle, EntryTile
+
 
 move_directions = {pg.K_UP: (0, 1), pg.K_DOWN: (0, -1), pg.K_LEFT: (1, 0), pg.K_RIGHT: (-1, 0)}
 
 
 class DeskTile(GameObject):
-    def __init__(self, rect: pg.Rect, obj_id: int, scale=1):
+    def __init__(self, rect: pg.Rect, obj_id: int, scale=1, render_mode=0):
         GameObject.__init__(self, rect, obj_id, solid=True, scale=scale)
-        self.image = pg.Surface(self.rect.size, pg.SRCALPHA)
-        pg.draw.rect(self.image, Colours.blue.value, self.image.get_rect(), 1)
+        if render_mode > 0:
+            self.image = pg.Surface(self.rect.size, pg.SRCALPHA)
+            pg.draw.rect(self.image, Colours.blue.value, self.image.get_rect(), 1)
+
+    def interaction(self, _map, *args):
+        _map.display_message("Hello and welcome to the pokecenter.",
+                             window=args[0], )
+        _map.display_message("We restore your tired pokemon to full health.",
+                             window=args[0], )
+        _map.display_message("Would you like to rest your pokemon?",
+                             window=args[0])
+        print("Healing all pokemon")
+        _map.player.team.restore()
 
 
 class ComputerTile(Obstacle):
     def __init__(self, rect: pg.Rect, obj_id: int, scale=1):
-        Obstacle.__init__(self, rect, obj_id, scale)
+        Obstacle.__init__(self, rect, obj_id, scale=scale)
 
 
 tile_object_mapping = {
@@ -29,11 +43,11 @@ tile_object_mapping = {
 }
 
 
-class PokeCenter(TiledMap2, GameObject):
+class PokeCenter(TiledMap2, EntryTile):
     def __init__(self, rect, player, map_scale=1, obj_scale=1, parent_map_scale=1.0):
         size = pg.Vector2(256, 192) * map_scale
 
-        GameObject.__init__(self, rect, obj_id=0, solid=True, scale=parent_map_scale)
+        EntryTile.__init__(self, rect, obj_id=0, scale=parent_map_scale)
 
         TiledMap2.__init__(
             self,
@@ -51,7 +65,7 @@ class PokeCenter(TiledMap2, GameObject):
         self.running = False
 
     def __repr__(self):
-        return f"PokeCenter()"
+        return f"PokeCenter({self.rect})"
 
     def load_objects(self):
         # load default objects
@@ -66,65 +80,28 @@ class PokeCenter(TiledMap2, GameObject):
                     obj_tile = tile_object_mapping[obj.type](rect, obj.id, scale=self.map_scale)
                     sprite_group.add(obj_tile)
 
-    # def object_interaction(self, sprite: pg.sprite.Sprite):
-    #     super().object_interaction(sprite)
+    def object_interaction(self, sprite: pg.sprite.Sprite, render_surface: pg.Surface):
+        map_obj = super().object_interaction(sprite)
+        if map_obj:
+            return map_obj
 
-    def intentional_interaction(self, sprite: pg.sprite.Sprite, render_surface: pg.Surface):
-        """ hook for player triggered interactions """
         if isinstance(sprite, DeskTile):
             self.display_message("Hello and welcome to the pokecenter.",
                                  window=render_surface, )
+            wait_for_key()
             self.display_message("We restore your tired pokemon to full health.",
                                  window=render_surface, )
+            wait_for_key()
             self.display_message("Would you like to rest your pokemon?",
                                  window=render_surface)
             print("Healing all pokemon")
             self.player.team.restore()
+            self.render()
 
         elif isinstance(sprite, ComputerTile):
             print("Computer!")
 
-    def loop(self, render_surface, controller=Controller()):
-        self.render()
-        render_surface.blit(self.get_surface(), (0, 0))
-        pg.display.flip()
-        print("starting pokecenter loop")
-        self.running = True
-        while self.running:
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    self.running = False
-
-                elif event.type == pg.KEYDOWN:
-                    if event.key in controller.move_keys:
-                        player_moving = True
-
-                        while player_moving:
-                            collision, moved = self.move_player(
-                                controller.direction_key_bindings[event.key],
-                                window=render_surface
-                            )
-
-                            if collision:
-                                self.object_interaction(collision)
-                                if not self.running:
-                                    break
-
-                            pg.display.flip()
-
-                            for event_2 in pg.event.get():
-                                if event_2.type == pg.KEYUP:
-                                    player_moving = False
-
-                    elif event.key == controller.a:
-                        obj_collision = self.check_collision(self.player, self.player.facing_direction)
-
-                        if obj_collision:
-                            print(obj_collision)
-                            self.intentional_interaction(obj_collision, render_surface)
-
-    # def move_trainer(self, trainer, direction, window, move_duration=2000):
-    #     super().move_trainer(trainer, direction, window, move_duration=move_duration)
+        return None
 
 
 if __name__ == '__main__':

@@ -4,10 +4,11 @@ import pygame as pg
 from graphics.sprite_screen import SpriteScreen
 
 from general.Direction import Direction
-from maps.game_map import GameMap
+from maps.game_map import RoutePopup, GameMap
 from displays.battle.battle_display_main import TextBox
 from displays.menu.menu_display_popup import MenuDisplayPopup
 from maps.route_orchestrator import RouteOrchestrator
+from maps.tiled_map import TiledMap2, ExitTile
 
 
 class GameDisplayStates(Enum):
@@ -28,7 +29,8 @@ class GameDisplay(SpriteScreen):
             window,
             scale: int | float = 1,
             _map: str = "Twinleaf Town.tmx",
-            start_map: str = "twinleaf_town"
+            start_map: str = "sandgem_town",
+            render_mode: int = 0
     ):
         # ==== INIT ====
         SpriteScreen.__init__(self, size)
@@ -41,10 +43,11 @@ class GameDisplay(SpriteScreen):
             player,
             window,
             map_scale=2,
-            obj_scale=2
+            obj_scale=2,
+            render_mode=render_mode,
         )
 
-        self.map = self.route_orchestrator.get_map_node(f"{start_map}.tmx")
+        self.map = self.route_orchestrator.get_map_node(start_map)
         self.player.map_positions[self.map] = pg.Vector2(17, 10)
         self.map.render()
 
@@ -53,22 +56,29 @@ class GameDisplay(SpriteScreen):
         self.text_box = TextBox(sprite_id="text_box", scale=scale, static=True)
         self.text_box.rect.topleft += pg.Vector2(3, 0) * scale
 
+        self.last_game_map = self.map
+
     def get_surface(
             self,
-            show_sprites: bool = False,
+            show_sprites: bool = True,
             offset: None | pg.Vector2 = None
     ) -> pg.Surface:
+
+        self.sprites.update()
 
         if show_sprites:
             self.sprites.draw(self)
 
-        self.add_image(self.map.get_surface(), (0, 0))
+        self.add_image(self.joint_map_surface, (0, 0))
 
         display_surf = self.base_surface.copy()
         display_surf.blit(self.surface, (0, 0))
         display_surf.blit(self.sprite_surface, (0, 0))
 
         return display_surf
+
+    def update(self):
+        self.sprites.update()
 
     def update_display_text(self, text, max_chars=None):
         if self.text_box not in self.sprites:
@@ -114,6 +124,16 @@ class GameDisplay(SpriteScreen):
 
     def move_player(self, direction: Direction, window, frames=5, duration=200):
         map_obj, moved, edge = self.map.move_player(direction, window)
+        if isinstance(map_obj, TiledMap2):
+            self.last_game_map = self.map
+
+            self.map = map_obj
+            return map_obj, False, None
+
+        elif isinstance(map_obj, ExitTile):
+            self.map = self.last_game_map
+            return map_obj, False, None
+
         if moved:
             self.player._moving = True
             self.map.render()
@@ -141,7 +161,7 @@ class GameDisplay(SpriteScreen):
                     self.player.map_positions[_map] = map_start + direction.value * frame / frames
                     _map.render(start_pos=map_start)
 
-                window.blit(self.joint_map_surface, (0, 0))
+                window.blit(self.get_surface(), (0, 0))
                 pg.display.flip()
                 frame_dur = pg.time.get_ticks() - frame_start
                 pg.time.delay(int(duration / frames) - frame_dur)
@@ -159,9 +179,13 @@ class GameDisplay(SpriteScreen):
                     new_map, map_link = list(joint_maps.items())[0]
 
                     self.map = new_map
+
+                    route_popup = RoutePopup(self.map.map_name, scale=self.scale)
+                    self.sprites.add(route_popup)
+
                     print(f"new map {self.map}")
 
-        window.blit(self.joint_map_surface, (0, 0))
+        window.blit(self.get_surface(), (0, 0))
         pg.display.flip()
 
         trainer = self.map.check_trainer_collision()

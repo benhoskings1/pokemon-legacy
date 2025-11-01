@@ -205,11 +205,10 @@ class ImageEditor2:
 
 if __name__ == "__main__":
 
-    file = "house_small.png"
-
-    editor = ImageEditor(file=file)
-    editor.scaleImage(pg.Vector2(2, 2), overwrite=True)
-    editor.saveImage("test")
+    for file in [f for f in os.listdir("frames") if f.endswith(".png")]:
+        editor = ImageEditor(file=os.path.join("frames", file))
+        editor.scaleImage(pg.Vector2(2, 2), overwrite=True)
+        editor.saveImage("frames")
     # IMAGE_REGEX = r""
     # move = "bubble"
     # target = "foe"

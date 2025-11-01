@@ -39,6 +39,9 @@ class GameLog:
         self.events.append(event)
 
     def write_log(self, log_dir: str):
+        if not os.path.exists(log_dir):
+            os.mkdir(log_dir)
+
         with open(os.path.join(log_dir, f"game_log_{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"), "w") as log:
             for event in self.events:
                 log.write(str(event) + "\n")

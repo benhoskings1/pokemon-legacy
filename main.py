@@ -51,12 +51,23 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--new", action="store_true")
     parser.add_argument("-o", "--overwrite", action="store_false")
 
+    parser.add_argument("-e", "--explore-mode", action="store_true")
+    parser.add_argument('-r', '--render-mode', action='count', default=0)
+
     args = parser.parse_args()
 
     pg.init()
     pg.event.pump()
 
-    game = Game(overwrite=args.overwrite, save_slot=1, new=args.new)
+    print(f"starting game with mode: {args.explore_mode}")
+
+    game = Game(
+        overwrite=args.overwrite,
+        save_slot=1,
+        new=args.new,
+        explore_mode=args.explore_mode,
+        render_mode=args.render_mode
+    )
     game.loop()
 
     object_map = map_properties(game, filter_types=[pg.Surface])

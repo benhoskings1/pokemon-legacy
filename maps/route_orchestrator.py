@@ -13,7 +13,15 @@ from maps.game_map import GameMap
 
 
 class RouteOrchestrator:
-    def __init__(self, size, player, window, map_scale = 1.0, obj_scale = 1.0):
+    def __init__(
+            self,
+            size,
+            player: Player2,
+            window,
+            map_scale: int | float = 1.0,
+            obj_scale: int | float = 1.0,
+            render_mode: int = 0
+    ):
         route_files = [f for f in os.listdir("maps/routes") if f.endswith(".tmx")]
         self.routes = [
             GameMap(
@@ -22,7 +30,8 @@ class RouteOrchestrator:
                 player,
                 window,
                 map_scale=map_scale,
-                obj_scale=obj_scale
+                obj_scale=obj_scale,
+                render_mode=render_mode
             ) for f in route_files
         ]
 
@@ -31,8 +40,12 @@ class RouteOrchestrator:
 
         # TODO convert this to a static config set
         self.link_routes(
-            "twinleaf_town.tmx", "route_201.tmx",
-            pg.Vector2(16, 0), pg.Vector2(14, 32)
+            "twinleaf_town", "route_201",
+            pg.Vector2(16, 0), pg.Vector2(14, 28)
+        )
+        self.link_routes(
+            "route_201", "sandgem_town",
+            pg.Vector2(64, 12), pg.Vector2(0, 16)
         )
 
     def load_player_positions(self):
@@ -61,23 +74,28 @@ class RouteOrchestrator:
     def get_adjoining_map(
             self,
             _map: TiledMap,
-            edge: str  # left | right | top | bottom
+            edges: list[str]  # left | right | top | bottom
     ):
+        if edges is None or _map not in self.route_graph.nodes:
+            return None
+
         map_neighbours = self.route_graph.adj[_map]
+
+        links = {}
 
         for nbr, link_dict in map_neighbours.items():
             map_link_pos = link_dict["link"][_map.map_name]
 
-            if map_link_pos[0] == 0 and edge == "left":
-                return {nbr: link_dict["link"]}
-            elif map_link_pos[0] >= _map.width - 1 and edge == "right":
-                return {nbr: link_dict["link"]}
-            elif map_link_pos[1] == 0 and edge == "top":
-                return {nbr: link_dict["link"]}
-            elif map_link_pos[1] >= _map.height - 1 and edge == "bottom":
-                return {nbr: link_dict["link"]}
+            if map_link_pos[0] == 0 and "left" in edges:
+                links.update({nbr: link_dict["link"]})
+            elif map_link_pos[0] >= _map.width - 1 and "right" in edges:
+                links.update({nbr: link_dict["link"]})
+            elif map_link_pos[1] == 0 and "top" in edges:
+                links.update({nbr: link_dict["link"]})
+            elif map_link_pos[1] >= _map.height - 1 and "bottom" in edges:
+                links.update({nbr: link_dict["link"]})
 
-        return None
+        return links if len(links) > 0 else None
 
 
 if "__main__" == __name__:
