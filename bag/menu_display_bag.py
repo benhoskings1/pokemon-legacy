@@ -6,7 +6,7 @@ import pygame as pg
 from enum import Enum
 
 from graphics.screen_V2 import BlitLocation, FontOption
-from bag import BagV2
+from bag.bag import BagV2
 from general.utils import Colours
 from general.Item import ItemType, Item
 from graphics.sprite_screen import SpriteScreen, DisplayContainer

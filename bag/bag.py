@@ -59,7 +59,7 @@ if __name__ == "__main__":
     pg.init()
     window = pg.display.set_mode(pg.Vector2(240, 180) * 2)
 
-    with open("test_data/bag/test_bag.json", "r") as read_file:
+    with open("../test_data/bag/test_bag.json", "r") as read_file:
         bag_data = json.load(read_file)
 
     demo_bag = BagV2(bag_data)

@@ -1,4 +1,5 @@
 import os
+from importlib.resources.abc import Traversable
 
 import pygame
 import pygame as pg
@@ -56,9 +57,9 @@ class TiledMap2(TiledMap, SpriteScreen):
             player_layer: None | str = None,
             map_scale: float = 1.0,
             object_scale: float = 1.0,
-            view_screen_tile_size=pg.Vector2(25, 20),
+            view_screen_tile_size=pg.Vector2(29, 22),
             view_field = None,
-            map_directory: str = None,
+            map_directory: str | Traversable = None,
             render_mode=0
     ):
         """
@@ -71,6 +72,11 @@ class TiledMap2(TiledMap, SpriteScreen):
         :param player_layer: the layer of the map to blit the player
         :param map_scale: the scale factor of the map display
         :param object_scale: the scale factor of the object display
+        :param view_screen_tile_size: the screen tile size of the map display
+        :param view_field: the screen tile size of the map display
+        :param map_directory: the directory of the map
+        :param render_mode: the level of verbosity in rendering the map
+
         """
         TiledMap.__init__(self, file_path, pixelalpha=True, image_loader=pygame_image_loader)
 
@@ -204,10 +210,11 @@ class TiledMap2(TiledMap, SpriteScreen):
 
             if isinstance(obj_collision, WallTile):
                 if obj_collision.direction != direction:
-                    return self.object_interaction(obj_collision, window), False
+                    sprite, _ = self.object_interaction(obj_collision, window)
+                    return sprite, False
             else:
-                # obj_collision.interaction(self, window)
-                return self.object_interaction(obj_collision, window), False
+                sprite, _ = self.object_interaction(obj_collision, window)
+                return sprite, False
 
         self.player._moving = True
 
@@ -279,9 +286,9 @@ class TiledMap2(TiledMap, SpriteScreen):
         """ hook for automatic object interactions """
         if isinstance(sprite, ExitTile):
             self.running = False
-            return sprite
+            return sprite, True
 
-        return None
+        return sprite, False
 
     def load_objects(self):
         """
@@ -329,14 +336,6 @@ class TiledMap2(TiledMap, SpriteScreen):
                             render_mode=self.render_mode,
                         )
                         sprite_group.add(game_object)
-
-                #     obj.type == "obstacle":
-                #     obstacle = Obstacle(rect, obj_id=obj.id, scale=self.map_scale)
-                #     sprite_group.add(obstacle)
-                #
-                # elif obj.type == "exit":
-                #     exit_tile = ExitTile(rect, obj_id=obj.id, scale=self.map_scale)
-                #     sprite_group.add(exit_tile)
 
             self.object_layer_sprites[layer.id] = sprite_group
 
@@ -470,7 +469,7 @@ class TiledMap2(TiledMap, SpriteScreen):
 
         self.text_box.refresh()
 
-        text_rect = self.text_box.image.get_rect().inflate(-20 * self.text_box.scale, -18*self.text_box.scale)
+        text_rect = self.text_box.image.get_rect().inflate(-20 * self.text_box.scale, -10*self.text_box.scale)
         # text_rect = pg.Rect(pg.Vector2(10, 4) * self.text_box.scale, pg.Vector2(201, 40) * self.text_box.scale)
         self.text_box.add_text_2(text, text_rect, max_chars=max_chars)
         self.text_box.update_image()

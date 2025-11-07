@@ -6,7 +6,7 @@ from random import randint
 
 from graphics.screen_V2 import Screen
 from maps.tiled_map import TiledMap2, GameObject
-from maps.pokecenter import PokeCenter
+from maps.buildings.pokecenter import PokeCenter
 from maps.buildings.small_house import SmallHouse
 
 from general.utils import BlitLocation
@@ -77,7 +77,6 @@ class GameMap(TiledMap2):
             render_mode=render_mode,
         )
 
-        # self.load_objects()
         self.render()
 
         self.window = window
@@ -97,27 +96,21 @@ class GameMap(TiledMap2):
                 elif obj.name == "pokecenter":
                     pokecenter = PokeCenter(rect, player=self.player, map_scale=2, obj_scale=2,
                                             parent_map_scale=self.map_scale)
-                    print(f"{pokecenter}!!")
                     sprite_group.add(pokecenter)
 
                 elif obj.type == "entry_tile":
-                    if obj.name == "small_house":
-                        game_object = SmallHouse(rect, player=self.player, map_scale=2, obj_scale=2)
+                    if obj.name == "player_house":
+                        game_object = SmallHouse(
+                            rect, player=self.player, map_scale=2, obj_scale=2,
+                            parent_map_scale=self.map_scale
+                        )
                         sprite_group.add(game_object)
 
     def object_interaction(self, sprite: pg.sprite.Sprite, *args):
         if isinstance(sprite, TiledMap2):
-            return sprite
+            return sprite, True
 
-        return None
-
-    def detect_collision(self) -> pg.sprite.Sprite:
-        """
-        Detects collisions between the player and the grass objects.
-        """
-        player_rect = self.player.map_rects[self]
-        collisions = player_rect.collideobjects(self.grassObjects.sprites(), key=lambda o: o.rect)
-        return collisions
+        return None, False
 
 
 if __name__ == '__main__':

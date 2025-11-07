@@ -4,14 +4,14 @@ import os.path as path
 import pygame as pg
 
 from trainer import Trainer
-from general.Direction import Direction
+from general.direction import Direction
 from general.utils import Colours, wait_for_key
 # from general.controller import Controller
 
 from maps.tiled_map import TiledMap2, GameObject, Obstacle, EntryTile
 
-
-move_directions = {pg.K_UP: (0, 1), pg.K_DOWN: (0, -1), pg.K_LEFT: (1, 0), pg.K_RIGHT: (-1, 0)}
+import importlib.resources as resources
+MODULE_PATH = resources.files(__package__)
 
 
 class DeskTile(GameObject):
@@ -20,16 +20,6 @@ class DeskTile(GameObject):
         if render_mode > 0:
             self.image = pg.Surface(self.rect.size, pg.SRCALPHA)
             pg.draw.rect(self.image, Colours.blue.value, self.image.get_rect(), 1)
-
-    def interaction(self, _map, *args):
-        _map.display_message("Hello and welcome to the pokecenter.",
-                             window=args[0], )
-        _map.display_message("We restore your tired pokemon to full health.",
-                             window=args[0], )
-        _map.display_message("Would you like to rest your pokemon?",
-                             window=args[0])
-        print("Healing all pokemon")
-        _map.player.team.restore()
 
 
 class ComputerTile(Obstacle):
@@ -51,14 +41,15 @@ class PokeCenter(TiledMap2, EntryTile):
 
         TiledMap2.__init__(
             self,
-            "maps/pokecenter.tmx",
+            "maps/buildings/pokecenter.tmx",
             size,
             player,
             player_position=pg.Vector2(8, 14),
             map_scale=map_scale,
             object_scale=obj_scale,
             player_layer="5_player_layer",
-            view_screen_tile_size=pg.Vector2(19, 18)
+            view_screen_tile_size=pg.Vector2(19, 18),
+            map_directory=MODULE_PATH,
         )
 
         self.base_surface.fill(Colours.black.value)
@@ -81,19 +72,28 @@ class PokeCenter(TiledMap2, EntryTile):
                     sprite_group.add(obj_tile)
 
     def object_interaction(self, sprite: pg.sprite.Sprite, render_surface: pg.Surface):
-        map_obj = super().object_interaction(sprite)
-        if map_obj:
-            return map_obj
+        map_obj, action_complete = super().object_interaction(sprite)
+        if map_obj and action_complete:
+            return map_obj, True
 
-        if isinstance(sprite, DeskTile):
-            self.display_message("Hello and welcome to the pokecenter.",
-                                 window=render_surface, )
+        elif isinstance(sprite, DeskTile):
+            self.display_message(
+                "Hello and welcome to the pokecenter.",
+                window=render_surface,
+            )
             wait_for_key()
-            self.display_message("We restore your tired pokemon to full health.",
-                                 window=render_surface, )
+
+            self.display_message(
+                "We restore your tired pokemon to full health.",
+                    window=render_surface,
+            )
             wait_for_key()
-            self.display_message("Would you like to rest your pokemon?",
-                                 window=render_surface)
+            self.display_message(
+                "Would you like to rest your pokemon?",
+                window=render_surface
+            )
+            wait_for_key()
+
             print("Healing all pokemon")
             self.player.team.restore()
             self.render()
@@ -101,28 +101,8 @@ class PokeCenter(TiledMap2, EntryTile):
         elif isinstance(sprite, ComputerTile):
             print("Computer!")
 
-        return None
+        return None, True
 
 
 if __name__ == '__main__':
     ...
-    # from player import Player
-    #
-    # pg.init()
-    #
-    # player = Player("Sprites/Player Sprites")
-    # center = PokeCenter(pg.Rect(100, 100, 100, 100), player, 2)
-    #
-    # pg.init()
-    # display = pg.display.set_mode((512, 384))
-    #
-    # while True:
-    #     for event in pg.event.get():
-    #         if event.type == pg.KEYDOWN:
-    #             if event.key in move_directions:
-    #                 player.position += move_directions[event.key]
-    #
-    #             display.fill((0, 0, 0))
-    #             center.render(player.position)
-    #             display.blit(center.get_surface(), (0, 0))
-    #             pg.display.flip()

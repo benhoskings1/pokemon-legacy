@@ -3,12 +3,12 @@ import pygame as pg
 
 from graphics.sprite_screen import SpriteScreen
 
-from general.Direction import Direction
+from general.direction import Direction
 from maps.game_map import RoutePopup, GameMap
 from displays.battle.battle_display_main import TextBox
 from displays.menu.menu_display_popup import MenuDisplayPopup
 from maps.route_orchestrator import RouteOrchestrator
-from maps.tiled_map import TiledMap2, ExitTile
+from maps.tiled_map import TiledMap2, ExitTile, WallTile
 
 
 class GameDisplayStates(Enum):
@@ -28,7 +28,7 @@ class GameDisplay(SpriteScreen):
             player,
             window,
             scale: int | float = 1,
-            _map: str = "Twinleaf Town.tmx",
+            # _map: str = "Twinleaf Town.tmx",
             start_map: str = "sandgem_town",
             render_mode: int = 0
     ):
@@ -37,7 +37,7 @@ class GameDisplay(SpriteScreen):
 
         self.player = player
 
-        # === GAME SETUP ===
+        # === SETUP ===
         self.route_orchestrator = RouteOrchestrator(
             size,
             player,
@@ -124,17 +124,22 @@ class GameDisplay(SpriteScreen):
 
     def move_player(self, direction: Direction, window, frames=5, duration=200):
         map_obj, moved, edge = self.map.move_player(direction, window)
+
+        step_count = 1 if moved else 0
         if isinstance(map_obj, TiledMap2):
             self.last_game_map = self.map
-
             self.map = map_obj
             return map_obj, False, None
 
         elif isinstance(map_obj, ExitTile):
+            print(map_obj)
             self.map = self.last_game_map
             return map_obj, False, None
 
-        if moved:
+        elif isinstance(map_obj, WallTile) and moved:
+            step_count += 1
+
+        for step_idx in range(step_count):
             self.player._moving = True
             self.map.render()
 
@@ -166,7 +171,6 @@ class GameDisplay(SpriteScreen):
                 frame_dur = pg.time.get_ticks() - frame_start
                 pg.time.delay(int(duration / frames) - frame_dur)
 
-            self.player._moving = False
             self.player._leg = not self.player._leg
 
             for _map, map_start in start_positions.items():
@@ -184,9 +188,6 @@ class GameDisplay(SpriteScreen):
                     self.sprites.add(route_popup)
 
                     print(f"new map {self.map}")
-
-        window.blit(self.get_surface(), (0, 0))
-        pg.display.flip()
 
         trainer = self.map.check_trainer_collision()
 

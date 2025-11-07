@@ -2,20 +2,16 @@ import json
 import random
 import shutil
 import sys
-import time
 import warnings
 from datetime import datetime
 
-from bag import BagV2
+from bag.bag import BagV2
 from battle import Battle, State, BattleOutcome
-from maps.game_map import TallGrass, RoutePopup
-from maps.pokecenter import PokeCenter
-from maps.tiled_map import ExitTile
+from maps.game_map import TallGrass
 from pokedex import Pokedex
 from game_log.game_log import GameLog, GameEvent, GameEventType
 
 from displays.load_display import LoadDisplay
-from general.Animations import createAnimation
 from general.utils import *
 from general.controller import Controller
 from general.Time import Time
@@ -24,13 +20,11 @@ from general.Route import Route
 # ======= Load displays =====
 from displays.game_display import GameDisplay, GameDisplayStates
 from displays.menu.menu_display_team import MenuTeamDisplay
-from displays.menu.menu_display_bag import MenuBagDisplay
+from bag.menu_display_bag import MenuBagDisplay
 
 
 from trainer import Trainer, Player2, Movement, Direction
 from pokemon import Pokemon
-
-from pokemon_module.pokemon_generator import PokemonGenerator
 
 from poketech.poketech import Poketech
 from team import Team
@@ -145,6 +139,7 @@ class Game:
 
         self.fade_to_black(500)
 
+    # === GAME SETUP ===
     def __getstate__(self):
         self.window = None
         self.topSurf = None
@@ -167,6 +162,7 @@ class Game:
         self.__dict__.update(state)
         self.load_displays()
 
+    # === DYNAMIC PROPERTIES ===
     @property
     def time(self):
         return datetime.now()
@@ -237,13 +233,11 @@ class Game:
         """ move the player
 
         :param direction: the direction to move the player
+        :param force_battle: force battle or not
         :return: bool
         """
 
         map_obj, moved, edge = self.game_display.move_player(direction, self.topSurf)
-
-        # if isinstance(map_obj, ExitTile):
-
 
         if moved:
             self.player.steps += 1
@@ -404,24 +398,6 @@ class Game:
 
         while self.running:
             pg.time.delay(25)  # set the debounce-time for keys
-            keys = pg.key.get_pressed()
-
-            if keys[self.controller.up]:
-                self.move_player(Direction.up)
-            elif keys[self.controller.down]:
-                self.move_player(Direction.down)
-            elif keys[self.controller.left]:
-                self.move_player(Direction.left)
-            elif keys[self.controller.right]:
-                self.move_player(Direction.right)
-
-            if keys[self.controller.b]:
-                self.player.movement = Movement.running
-            else:
-                if self.player.movement != Movement.walking:
-                    self.player.movement = Movement.walking
-                    self.player.update()
-                    self.update_display()
 
             # load poketech clock update
 
@@ -433,7 +409,46 @@ class Game:
                     self.running = False
 
                 elif event.type == pg.KEYDOWN:
+                    if event.key in self.controller.move_keys:
+                        player_moving = True
+                        prev_event = event
+                        event_2 = event
+                        while player_moving:
+                            if event_2.type == pg.KEYUP:
+                                keys_2 = pg.key.get_pressed()
+                                dir_keys = [keys_2[dir_key] for dir_key in self.controller.move_keys]
+                                if not keys_2[self.controller.b]:
+                                    self.player.movement = Movement.walking
+                                    event_2 = prev_event
+
+                                if not any(dir_keys):
+                                    player_moving = False
+                                else:
+                                    event_2 = prev_event
+
+                            elif event_2.type == pg.KEYDOWN:
+                                if event_2.key == self.controller.b:
+                                    self.player.movement = Movement.running
+                                    event_2 = prev_event
+
+                                if event_2.key in self.controller.move_keys:
+                                    self.move_player(self.controller.direction_key_bindings[event_2.key])
+                                    self.topSurf.blit(self.game_display.get_surface(), (0, 0))
+
+                            poll = pg.event.poll()
+                            if poll.type != pg.NOEVENT:
+                                # print(f"poll: {poll}")
+                                prev_event = event_2
+                                event_2 = poll
+
+                        self.player._moving = False
+                        self.game_display.map.render()
+                        self.topSurf.blit(self.game_display.get_surface(), (0, 0))
+                        pg.display.flip()
+
+
                     if event.key == self.controller.y:
+                        print("looping")
                         action = self.game_display.menu_loop(self)
                         while action:
                             if isinstance(action, GameDisplayStates):
@@ -446,6 +461,7 @@ class Game:
 
                     elif event.key == self.controller.a:
                         obj = self.game_display.map.check_collision(self.player, direction=self.player.facing_direction)
+                        print(obj)
                         if isinstance(obj, Trainer):
                             trainer = obj
                             if trainer and not trainer.battled and self.player.facing_direction == Direction.up:

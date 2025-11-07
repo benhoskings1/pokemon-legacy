@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.2" name="sinnoh_tileset_1x" tilewidth="80" tileheight="94" tilecount="42" columns="0">
+<tileset version="1.10" tiledversion="1.11.2" name="sinnoh_tileset_1x" tilewidth="80" tileheight="94" tilecount="76" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image source="overworld/Short Grass/Grass_1@1x.png" width="16" height="16"/>
@@ -51,9 +51,6 @@
  </tile>
  <tile id="17">
   <image source="overworld/Trees/Tree 1/tree_top@1x.png" width="32" height="14"/>
- </tile>
- <tile id="18">
-  <image source="buildings/house_small.png" width="64" height="74"/>
  </tile>
  <tile id="19">
   <image source="overworld/ramps/bottom_left.png" width="16" height="16"/>
@@ -127,6 +124,111 @@
  <tile id="48">
   <image source="buildings/house_large.png" width="80" height="94"/>
  </tile>
+ <tile id="49">
+  <image source="overworld/objects/fence.png" width="16" height="16"/>
+ </tile>
+ <tile id="50">
+  <image source="overworld/objects/signpost.png" width="16" height="16"/>
+ </tile>
+ <tile id="51">
+  <image source="overworld/objects/fance_upper.png" width="16" height="16"/>
+ </tile>
+ <tile id="52">
+  <image source="overworld/objects/fence_lower.png" width="16" height="16"/>
+ </tile>
+ <tile id="55">
+  <image source="overworld/objects/fence_lower_right.png" width="16" height="16"/>
+ </tile>
+ <tile id="56">
+  <image source="overworld/objects/fence_mid.png" width="16" height="16"/>
+ </tile>
+ <tile id="59">
+  <image source="overworld/objects/rop_right.png" width="16" height="16"/>
+ </tile>
+ <tile id="60">
+  <image source="overworld/objects/fence_mid_right.png" width="16" height="16"/>
+ </tile>
+ <tile id="63">
+  <image source="overworld/Trees/Tree 1/tree_portal.png" width="32" height="48"/>
+ </tile>
+ <tile id="64">
+  <image source="overworld/landscape/rocks/bottom_left.png" width="16" height="16"/>
+ </tile>
+ <tile id="65">
+  <image source="overworld/landscape/rocks/bottom_mid.png" width="16" height="16"/>
+ </tile>
+ <tile id="66">
+  <image source="overworld/landscape/rocks/bottom_right.png" width="16" height="16"/>
+ </tile>
+ <tile id="67">
+  <image source="overworld/landscape/rocks/center.png" width="16" height="16"/>
+ </tile>
+ <tile id="68">
+  <image source="overworld/landscape/rocks/mid_left.png" width="16" height="16"/>
+ </tile>
+ <tile id="69">
+  <image source="overworld/landscape/rocks/mid_right.png" width="16" height="16"/>
+ </tile>
+ <tile id="70">
+  <image source="overworld/landscape/rocks/top_left.png" width="16" height="16"/>
+ </tile>
+ <tile id="71">
+  <image source="overworld/landscape/rocks/top_right.png" width="16" height="16"/>
+ </tile>
+ <tile id="73">
+  <image source="overworld/landscape/rocks/upper_left_corner.png" width="16" height="16"/>
+ </tile>
+ <tile id="74">
+  <image source="overworld/landscape/rocks/upper_right_corner.png" width="16" height="16"/>
+ </tile>
+ <tile id="75">
+  <image source="overworld/landscape/rocks/top_mid.png" width="16" height="16"/>
+ </tile>
+ <tile id="76">
+  <image source="overworld/landscape/beach/bottom_left.png" width="16" height="16"/>
+ </tile>
+ <tile id="77">
+  <image source="overworld/landscape/beach/bottom_mid.png" width="16" height="16"/>
+ </tile>
+ <tile id="78">
+  <image source="overworld/landscape/beach/bottom_right.png" width="16" height="16"/>
+ </tile>
+ <tile id="79">
+  <image source="overworld/landscape/beach/center.png" width="16" height="16"/>
+ </tile>
+ <tile id="80">
+  <image source="overworld/landscape/beach/mid_left.png" width="16" height="16"/>
+ </tile>
+ <tile id="81">
+  <image source="overworld/landscape/beach/top_left.png" width="16" height="16"/>
+ </tile>
+ <tile id="82">
+  <image source="overworld/landscape/beach/top_mid.png" width="16" height="16"/>
+ </tile>
+ <tile id="83">
+  <image source="overworld/landscape/beach/top_right.png" width="16" height="16"/>
+ </tile>
+ <tile id="84">
+  <image source="overworld/landscape/beach/lower_left_corner.png" width="16" height="16"/>
+ </tile>
+ <tile id="85">
+  <image source="overworld/landscape/beach/lower_right_corner.png" width="16" height="16"/>
+ </tile>
+ <tile id="86">
+  <image source="overworld/landscape/beach/mid_right.png" width="16" height="16"/>
+ </tile>
+ <tile id="87">
+  <image source="overworld/landscape/big_rock_water.png" width="32" height="32"/>
+ </tile>
+ <tile id="88">
+  <image source="overworld/landscape/big_rock_land.png" width="32" height="32"/>
+ </tile>
+ <tile id="89">
+  <image source="overworld/landscape/beach/upper_left_corner.png" width="16" height="16"/>
+ </tile>
+ <tile id="90">
+  <image source="overworld/landscape/beach/upper_right_corner.png" width="16" height="16"/>
+ </tile>
  <wangsets>
   <wangset name="sinnoh_paths" type="corner" tile="-1">
    <wangcolor name="path_1" color="#ff0000" tile="-1" probability="1"/>
@@ -157,6 +259,34 @@
    <wangtile tileid="45" wangid="0,2,0,2,0,0,0,2"/>
    <wangtile tileid="46" wangid="0,2,0,0,0,2,0,2"/>
    <wangtile tileid="47" wangid="0,0,0,2,0,2,0,2"/>
+  </wangset>
+  <wangset name="landscape" type="corner" tile="-1">
+   <wangcolor name="rocks" color="#ff0000" tile="-1" probability="1"/>
+   <wangcolor name="beach" color="#00ff00" tile="-1" probability="1"/>
+   <wangtile tileid="64" wangid="0,1,0,0,0,0,0,0"/>
+   <wangtile tileid="65" wangid="0,1,0,0,0,0,0,1"/>
+   <wangtile tileid="66" wangid="0,0,0,0,0,0,0,1"/>
+   <wangtile tileid="67" wangid="0,1,0,1,0,1,0,1"/>
+   <wangtile tileid="68" wangid="0,1,0,1,0,0,0,0"/>
+   <wangtile tileid="69" wangid="0,0,0,0,0,1,0,1"/>
+   <wangtile tileid="70" wangid="0,0,0,1,0,0,0,0"/>
+   <wangtile tileid="71" wangid="0,0,0,0,0,1,0,0"/>
+   <wangtile tileid="73" wangid="0,1,0,1,0,1,0,0"/>
+   <wangtile tileid="74" wangid="0,0,0,1,0,1,0,1"/>
+   <wangtile tileid="75" wangid="0,0,0,1,0,1,0,0"/>
+   <wangtile tileid="76" wangid="0,2,0,0,0,0,0,0"/>
+   <wangtile tileid="77" wangid="0,2,0,0,0,0,0,2"/>
+   <wangtile tileid="78" wangid="0,0,0,0,0,0,0,2"/>
+   <wangtile tileid="79" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="80" wangid="0,2,0,2,0,0,0,0"/>
+   <wangtile tileid="81" wangid="0,0,0,2,0,0,0,0"/>
+   <wangtile tileid="82" wangid="0,0,0,2,0,2,0,0"/>
+   <wangtile tileid="83" wangid="0,0,0,0,0,2,0,0"/>
+   <wangtile tileid="84" wangid="0,2,0,2,0,2,0,0"/>
+   <wangtile tileid="85" wangid="0,0,0,2,0,2,0,2"/>
+   <wangtile tileid="86" wangid="0,0,0,0,0,2,0,2"/>
+   <wangtile tileid="89" wangid="0,2,0,2,0,0,0,2"/>
+   <wangtile tileid="90" wangid="0,2,0,0,0,2,0,2"/>
   </wangset>
  </wangsets>
 </tileset>

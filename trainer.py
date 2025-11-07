@@ -8,6 +8,7 @@ from team import Team
 from Sprites.SpriteSet import SpriteSet2
 from maps.game_obejct import GameObject
 
+from general.direction import Direction
 from Image_Processing.ImageEditor import ImageEditor
 
 from battle_animation import BattleAnimation
@@ -31,18 +32,12 @@ class TrainerTypes(Enum):
     youngster = "youngster"
     lass = "lass"
     farmer = "farmer"
+    player_mum = 9
 
 
 class Movement(Enum):
     walking = 0
     running = 1
-
-
-class Direction(Enum):
-    down = pg.Vector2(0, 1)
-    up = pg.Vector2(0, -1)
-    left = pg.Vector2(-1, 0)
-    right = pg.Vector2(1, 0)
 
 
 class AttentionBubble(pg.sprite.Sprite):
@@ -63,7 +58,6 @@ class AttentionBubble(pg.sprite.Sprite):
 
 class NPC(GameObject):
     # load in the sprite surfaces
-    # npc_parent_surf = pg.image.load('assets/sprites/trainers/all_npcs.png')
     npc_parent_surf_cv2 = cv2.imread('assets/sprites/trainers/all_npcs_2.png', cv2.IMREAD_UNCHANGED)
 
     trainer_front_parent_surf = pg.image.load('assets/sprites/trainers/trainer_front_images.png')
@@ -74,15 +68,18 @@ class NPC(GameObject):
         TrainerTypes.youngster: (1, 1),
         TrainerTypes.lass: (9, 2),
         TrainerTypes.pokecenter_lady: (6, 7),
-        TrainerTypes.farmer: (10, 0)
+        TrainerTypes.farmer: (10, 0),
+        TrainerTypes.player_mum: (9, 3),
+
     }
 
     # colours given in BGR for opencv
     bag_colour_mapping = {
         TrainerTypes.youngster: [96, 128, 32],
         TrainerTypes.farmer: [96, 128, 32],
-        TrainerTypes.pokecenter_lady: pg.Color((80, 128, 64, 255)),
-        TrainerTypes.lass: pg.Color((96, 128, 32, 255)),
+        TrainerTypes.pokecenter_lady: [80, 128, 64],
+        TrainerTypes.lass: [96, 128, 32],
+        TrainerTypes.player_mum: [64, 104, 120],
     }
 
     direction_dict = {
@@ -102,7 +99,8 @@ class NPC(GameObject):
 
         if "npc_type" not in properties.keys():
             npc_type = "youngster"
-        elif properties["npc_type"] not in TrainerTypes:
+        elif properties["npc_type"] not in [t.name for t in TrainerTypes]:
+            print("falling back to youngster npc")
             npc_type = "youngster"
         else:
             npc_type = properties["npc_type"]

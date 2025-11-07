@@ -47,6 +47,14 @@ class RouteOrchestrator:
             "route_201", "sandgem_town",
             pg.Vector2(64, 12), pg.Vector2(0, 16)
         )
+        self.link_routes(
+            "verity_lakefront", "route_201",
+            pg.Vector2(24, 38), pg.Vector2(0, 9)
+        )
+        self.link_routes(
+            "sandgem_town", "route_219",
+            pg.Vector2(20, 32), pg.Vector2(20, 0)
+        )
 
     def load_player_positions(self):
         ...
