@@ -1,21 +1,20 @@
-item_id	item_type_id	battle_item_type_id	name	description	buy_price	sell_price
-1	2	2	Poke Ball	A device for catching wild Pokémon. It is thrown like a ball at the target. It is designed as a capsule system.	200	100
-2	2	2	Great Ball	A good, high-performance Ball that provides a higher Pokémon catch rate than a standard Poké Ball.	600	300
-3	2	2	Ultra Ball	An ultra-performance Ball that provides a higher Pokémon catch rate than a Great Ball.	1200	600
-4	2	2	Master Ball	The best Ball with the ultimate level of performance. It will catch any wild Pokémon without fail.
-5	3	1	Potion	A Spray-type medicine for wounds. It restores the HP of one Pokemon by just 20 Points
-6	3	1	Super Potion	A Spray-type medicine for wounds. It restores the HP of one Pokemon by 50 Points
-7	3	1	Hyper Potion	A Spray-type medicine for wounds. It restores the HP of one Pokemon by 200 Points
-8	3	3	Antidote	A Spray-type medicine. It lifts the effect of poison from one Pokemon.
-9	3	3	Awakening
-10	3	3	Burn Heal
-11	3	3	Full Heal
-12	3	3	Full Restore
-13	3	3	Heal Powder
-14	3	3	Ice Heal
-15	3	3	Max Revive
-16	3	3	Old Gateau
-17	3	3	Paralyse Heal
-18	3	3	Revival Herb
-19	3	3	Revive
-20	3	3	Sacred Ash
+item_id	item_type_id	battle_item_type_id	name	display_name	description	buy_price	sell_price
+1	2	2	Poke Ball	Poke Ball	A device for catching wild Pokémon. It is thrown like a ball at the target. It is designed as a capsule system.	200	100
+2	2	2	Great Ball	Great Ball	A good, high-performance Ball that provides a higher Pokémon catch rate than a standard Poké Ball.	600	300
+3	2	2	Ultra Ball	Ultra Ball	An ultra-performance Ball that provides a higher Pokémon catch rate than a Great Ball.	1200	600
+5	3	1	Potion	Potion	A Spray-type medicine for wounds. It restores the HP of one Pokemon by just 20 Points	300	NULL
+6	3	1	Super Potion	NULL	A Spray-type medicine for wounds. It restores the HP of one Pokemon by 50 Points		NULL
+7	3	1	Hyper Potion	NULL	A Spray-type medicine for wounds. It restores the HP of one Pokemon by 200 Points		NULL
+8	3	3	Antidote	NULL	A Spray-type medicine. It lifts the effect of poison from one Pokemon.	100	NULL
+9	3	3	Awakening	NULL		NULL	NULL
+10	3	3	Burn Heal	NULL		NULL	NULL
+11	3	3	Full Heal	NULL		NULL	NULL
+12	3	3	Full Restore	NULL		NULL	NULL
+13	3	3	Heal Powder	NULL		NULL	NULL
+14	3	3	Ice Heal	NULL		NULL	NULL
+15	3	3	Max Revive	NULL		NULL	NULL
+16	3	3	Old Gateau	NULL		NULL	NULL
+17	3	3	Paralyse Heal	NULL		200	NULL
+18	3	3	revival_herb	Revival Herb		NULL	NULL
+19	3	3	revive	Revive		NULL	NULL
+20	3	3	Sacred Ash	NULL		NULL	NULL

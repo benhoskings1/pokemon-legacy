@@ -1,6 +1,8 @@
 import pygame as pg
 from general.utils import Colours
 
+from general.Item import Item
+
 
 class GameObject(pg.sprite.Sprite):
     def __init__(
@@ -42,3 +44,17 @@ class GameObject(pg.sprite.Sprite):
     def interaction(self, _map, *args):
         """ hook function """
         return None
+
+
+class PokeballTile(GameObject):
+    def __init__(self, obj_id: int, rect, item, scale: int | float = 1.0):
+        GameObject.__init__(self, rect, obj_id=obj_id, solid=True, scale=scale)
+
+        self.image = pg.image.load("maps/assets/overworld/objects/pokeball.png")
+        if scale != 1:
+            self.image = pg.transform.scale(self.image, pg.Vector2(self.image.get_size()) * scale)
+
+        self.item = item
+
+    def __repr__(self):
+        return f"PokeballTile({self.item})"

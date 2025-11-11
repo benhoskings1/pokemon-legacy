@@ -136,7 +136,6 @@ class MenuBagDisplay(SpriteScreen):
 
         self.active_display_state = MenuTeamDisplayStates.items
         self.item_ids = [0 for _ in MenuTeamDisplayStates]
-        self.item_counts = [len(self.game.bag.get_items(item_type=item_type)) for item_type in ItemType]
 
         self.selected_item = None
 
@@ -153,6 +152,10 @@ class MenuBagDisplay(SpriteScreen):
 
         self.touch_display.sprites.add(self.pocket_buttons)
         self.update_display()
+
+    @property
+    def item_counts(self):
+        return [len(self.game.bag.get_items(item_type=item_type)) for item_type in ItemType]
 
     def map_state_to_item_type(self) -> ItemType:
         if self.active_display_state == MenuTeamDisplayStates.HMs_and_TMs:

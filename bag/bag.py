@@ -1,21 +1,23 @@
 import json
-
-import pandas as pd
 import pygame as pg
 
-
-from general.Item import Pokeball, MedicineItem, BattleItemType, ItemType
-
-
-pokeballs = pd.read_csv("game_data/Items/pokeballs.tsv", delimiter="\t", index_col=0)
+from general.Item import Item, Pokeball, MedicineItem, BattleItemType, ItemType
+from collections import Counter
 
 
 class BagV2:
     def __init__(self, data):
         self.data = {ItemType(k): v for k, v in data.items()}
 
-        self.data[ItemType.medicine] = {MedicineItem(k): v for k, v in self.data[ItemType.medicine].items()}
-        self.data[ItemType.pokeball] = {Pokeball(k): v for k, v in self.data[ItemType.pokeball].items()}
+        self.data[ItemType.medicine] = Counter({MedicineItem(k): v for k, v in self.data[ItemType.medicine].items()})
+        self.data[ItemType.pokeball] = Counter({Pokeball(k): v for k, v in self.data[ItemType.pokeball].items()})
+
+        # protect items attribute
+        self._items = {}
+
+    @property
+    def items(self):
+        return self._items
 
     def get_items(self, item_type: ItemType = None, battle_item_type: BattleItemType = None):
         """ Return items """
@@ -53,16 +55,40 @@ class BagV2:
 
         return json_data
 
+    def add_item(self, item: Item, item_count: int = 1):
+        # check to identify if there is already an instance of the object
+        matching_item = next(
+            (bag_item for bag_item in self.data[item.item_type] if bag_item.name == item.name),
+            item
+        )
+        self.data[item.item_type][matching_item] += item_count
+
+
+class BagV3(dict):
+    def __init__(self, data):
+        super().__init__(data)
+
+    def __setitem__(self, key, value):
+        ...
+
+
 
 if __name__ == "__main__":
     # pygame setup
     pg.init()
     window = pg.display.set_mode(pg.Vector2(240, 180) * 2)
 
-    with open("../test_data/bag/test_bag.json", "r") as read_file:
+    with open("test_data/bag/test_bag.json", "r") as read_file:
         bag_data = json.load(read_file)
 
     demo_bag = BagV2(bag_data)
-    item_list = list(demo_bag.get_items(item_type=ItemType.mail).items())
-    print(item_list)
-    print(sorted(item_list, key=lambda item: item[0].item_id))
+
+    antidote = MedicineItem("Antidote")
+
+    print(demo_bag.data[ItemType.medicine])
+
+    demo_bag.add_item(antidote)
+    demo_bag.add_item(antidote)
+    # item_list = list(demo_bag.get_items(item_type=ItemType.mail).items())
+    # print(item_list)
+    # print(sorted(item_list, key=lambda item: item[0].item_id))

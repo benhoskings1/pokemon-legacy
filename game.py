@@ -6,8 +6,10 @@ import warnings
 from datetime import datetime
 
 from bag.bag import BagV2
+from general.Item import ItemGenerator
 from battle import Battle, State, BattleOutcome
 from maps.game_map import TallGrass
+from maps.game_obejct import PokeballTile
 from pokedex import Pokedex
 from game_log.game_log import GameLog, GameEvent, GameEventType
 
@@ -22,7 +24,6 @@ from displays.game_display import GameDisplay, GameDisplayStates
 from displays.menu.menu_display_team import MenuTeamDisplay
 from bag.menu_display_bag import MenuBagDisplay
 
-
 from trainer import Trainer, Player2, Movement, Direction
 from pokemon import Pokemon
 
@@ -34,6 +35,9 @@ pokedex = pd.read_csv("game_data/pokedex/Local Dex.tsv", delimiter='\t', index_c
 
 
 class Game:
+
+    item_generator = ItemGenerator()
+
     def __init__(
             self,
             new=False,
@@ -96,7 +100,13 @@ class Game:
                 self.battle.load_displays(self)
 
         else:
-            self.player = Player2(position=pg.Vector2(31, 14), team=self.team, scale=self.graphics_scale)
+            self.player = Player2(
+                position=pg.Vector2(31, 14),
+                team=self.team,
+                scale=self.graphics_scale,
+                bag=self.bag,
+            )
+
             self.poketech = Poketech(self.topSurf.get_size(), self.time, team=self.team, scale=self.graphics_scale)
             self.battle = None
 
@@ -283,6 +293,7 @@ class Game:
         self.update_display()
 
         if not moved:
+
             # add an optional delay here
             return False
 
@@ -366,16 +377,7 @@ class Game:
                 return True
 
     def display_message(self, text, duration=1000):
-        self.update_display()
-        pg.display.flip()
-
-        for char_idx in range(1, len(text) + 1):
-            self.game_display.update_display_text(text, max_chars=char_idx)
-            self.update_display()
-            pg.display.flip()
-            pg.time.delay(round(duration * 0.7 / len(text)))
-
-        self.game_display.sprites.remove(self.game_display.text_box)
+        self.game_display.map.display_message(text, self.topSurf, duration)
 
     def loop(self):
         if self.battle:
@@ -446,7 +448,6 @@ class Game:
                         self.topSurf.blit(self.game_display.get_surface(), (0, 0))
                         pg.display.flip()
 
-
                     if event.key == self.controller.y:
                         print("looping")
                         action = self.game_display.menu_loop(self)
@@ -473,6 +474,27 @@ class Game:
                                 self.start_battle(foe_team=trainer.team, trainer=trainer)
                                 trainer.battled = True
                                 self.update_display()
+
+                        elif isinstance(obj, PokeballTile):
+
+                            item = self.item_generator.generate_item(obj.item)
+                            # remove pokeball from map
+                            obj.kill()
+                            self.game_display.map.render()
+                            self.update_display()
+
+                            self.display_message(
+                                f"{self.player.name} found an {item.name}"
+                            )
+                            wait_for_key()
+                            self.display_message(
+                                f"{self.player.name} put the {item.name} in the"
+                                f" {item.item_type.name.upper()} Pocket."
+                            )
+                            wait_for_key(break_on_timeout=False)
+                            self.update_display()
+
+                            self.bag.add_item(item)
 
                         elif obj:
                             self.game_display.map.object_interaction(obj, self.topSurf)

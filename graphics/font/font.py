@@ -37,7 +37,7 @@ FONT_CHARACTER_SIZES = {
     "z": (6, 7),  "0": (6, 10), "1": (4, 10), "2": (6, 10), "3": (6, 10),
     "4": (6, 10), "5": (6, 10), "6": (6, 10), "7": (6, 10), "8": (6, 10),
     "9": (6, 10), "/": (6, 10), "?": (6, 11), "!": (2, 11), "'": (3, 11),
-    "-": (6, 10)
+    "-": (6, 10), " ": (4, 10), ".": (4, 10), "é": (6, 10)
 }
 
 FONT_CHARACTER_SIZES.update({k.upper(): (6, 10) for k in FONT_CHARACTER_SIZES.keys()})
@@ -65,6 +65,16 @@ def colour_change(surface, baseColours, shadowColours=None):
 
 
 class Font:
+
+    custom_image_mapping = {
+        "é": "e_accent"
+    }
+
+    baselines = {
+        "g": Baseline.lower, "j": Baseline.lower, "p": Baseline.lower,
+        "q": Baseline.lower, "y": Baseline.lower,
+    }
+
     def __init__(self, scale, font_type: FontType = FontType.regular):
         self.scale = scale
 
@@ -73,7 +83,7 @@ class Font:
         self.letters = {}
         self.sizes = {}
 
-        names = sorted(os.listdir(os.path.join(MODULE_PATH, font_type.name)))
+        names = sorted([f for f in os.listdir(os.path.join(MODULE_PATH, font_type.name)) if f.endswith(".png")])
 
         for name in names:
             letter = name[0]
@@ -81,49 +91,15 @@ class Font:
                 letter = str.upper(letter)
             elif "slash" in name:
                 letter = "/"
+            elif "accent" in name:
+                letter = name.split(".")[0]
 
-            if name.endswith(".png"):
-                image = pg.image.load(os.path.join(MODULE_PATH, f"{font_type.name}/{name}"))
-                newImage = pg.transform.scale(image, pg.Vector2(image.get_size()) * scale)
-                self.sizes[letter] = newImage.get_size()
-                self.letters[letter] = newImage
+            # print(letter)
 
-        self.baselines = {"0": Baseline.centre, "1": Baseline.centre,
-                          "2": Baseline.centre, "3": Baseline.centre,
-                          "4": Baseline.centre, "5": Baseline.centre,
-                          "6": Baseline.centre, "7": Baseline.centre,
-                          "8": Baseline.centre, "9": Baseline.centre,
-                          "a": Baseline.centre, "A": Baseline.centre,
-                          "b": Baseline.centre, "B": Baseline.centre,
-                          "c": Baseline.centre, "C": Baseline.centre,
-                          "d": Baseline.centre, "D": Baseline.centre,
-                          "e": Baseline.centre, "E": Baseline.centre,
-                          "f": Baseline.centre, "F": Baseline.centre,
-                          "g": Baseline.lower, "G": Baseline.centre,
-                          "h": Baseline.centre, "H": Baseline.centre,
-                          "i": Baseline.centre, "I": Baseline.centre,
-                          "j": Baseline.lower, "J": Baseline.centre,
-                          "k": Baseline.centre, "K": Baseline.centre,
-                          "l": Baseline.centre, "L": Baseline.centre,
-                          "m": Baseline.centre, "M": Baseline.centre,
-                          "n": Baseline.centre, "N": Baseline.centre,
-                          "o": Baseline.centre, "O": Baseline.centre,
-                          "p": Baseline.lower, "P": Baseline.centre,
-                          "q": Baseline.lower, "Q": Baseline.centre,
-                          "r": Baseline.centre, "R": Baseline.centre,
-                          "s": Baseline.centre, "S": Baseline.centre,
-                          "t": Baseline.centre, "T": Baseline.centre,
-                          "u": Baseline.centre, "U": Baseline.centre,
-                          "v": Baseline.centre, "V": Baseline.centre,
-                          "w": Baseline.centre, "W": Baseline.centre,
-                          "x": Baseline.centre, "X": Baseline.centre,
-                          "y": Baseline.lower, "Y": Baseline.centre,
-                          "z": Baseline.centre, "Z": Baseline.centre,
-                          "?": Baseline.centre, "!": Baseline.centre,
-                          "/": Baseline.centre, "-": Baseline.centre,
-                          ".": Baseline.centre, "'": Baseline.centre,
-                          "(": Baseline.centre, ")": Baseline.centre,
-                          "+": Baseline.centre}
+            image = pg.image.load(os.path.join(MODULE_PATH, f"{font_type.name}/{name}"))
+            newImage = pg.transform.scale(image, pg.Vector2(image.get_size()) * scale)
+            self.sizes[letter] = newImage.get_size()
+            self.letters[letter] = newImage
 
         self.size = 10
 
@@ -134,6 +110,22 @@ class Font:
         text = text.replace(".", "")
         word_widths = [(sum([FONT_CHARACTER_SIZES[char][0] for char in word]) + len(word)*sep) * scale for word in text.split(" ")]
         return word_widths, (sum([word_width for word_width in word_widths]) + space_count*3) * scale
+
+    @staticmethod
+    def sanitise_characters(text):
+        characters = set(text)
+        defined_keys = set(FONT_CHARACTER_SIZES.keys())
+        replace_dict = {
+            unknown: "?" for unknown in characters.difference(defined_keys)
+        }
+
+        sanitised = text
+        for o_word, n_word in replace_dict.items():
+            sanitised = sanitised.replace(o_word, n_word)
+
+        # replace all unknowns
+        return sanitised
+
 
     def render_text(self, text: str, lineCount=1, colour=None, shadowColour=None) -> pg.Surface:
         words = text.split(" ")
@@ -164,10 +156,11 @@ class Font:
                 else:
 
                     width += self.sizes[letter][0]
-                    if self.sizes[letter][1] > height and self.baselines[letter] != Baseline.lower:
+                    letter_baseline = self.baselines.get(letter, Baseline.centre)
+                    if self.sizes[letter][1] > height and letter_baseline != Baseline.lower:
                         height = self.sizes[letter][1]
 
-                    if self.baselines[letter] == Baseline.lower:
+                    if letter_baseline == Baseline.lower:
                         lowerBase = True
 
             if lowerBase:
@@ -186,7 +179,11 @@ class Font:
                 if letter == " ":
                     offset += 3 * self.space
                 else:
-                    if self.baselines[letter] == Baseline.centre:
+
+                    letter = self.custom_image_mapping.get(letter, letter)
+
+                    letter_baseline = self.baselines.get(letter, Baseline.centre)
+                    if letter_baseline == Baseline.centre:
                         surf.blit(self.letters[letter], (offset, surfSize.y - self.sizes[letter][1] - 2 * self.scale * lowerBase))
                         offset += self.sizes[letter][0] + self.space
                     else:
@@ -221,7 +218,7 @@ class Font:
         return textSurf
 
     def render_text_2(self, text: str, text_box: pg.Rect | pg.Vector2 | tuple[int, int],
-                      sep=1, vsep=1.5, colour: Colours | pg.Color = None, shadow_colour=None, max_chars=None) -> pg.Surface:
+                      sep=0, vsep=1.5, colour: Colours | pg.Color = None, shadow_colour=None, max_chars=None) -> pg.Surface:
         """
         Renders the given text in the given colour or shadow colour. The max_chars should be used over
         indexing directly into text, since this will maintain the correct line formatting as each
@@ -237,9 +234,11 @@ class Font:
         """
         def blit_word(chars, x, y) -> int:
             for char in chars:
+                char = self.custom_image_mapping.get(char, char)
+
                 char_size = self.letters[char].get_size()
                 v_offset = base_line - char_size[1]
-                if self.baselines[char] != Baseline.centre:
+                if self.baselines.get(char, Baseline.centre) != Baseline.centre:
                     v_offset += 2 * self.scale
 
                 text_surface.blit(self.letters[char], (x, y + v_offset))
@@ -247,10 +246,12 @@ class Font:
 
             return x
 
+        text = self.sanitise_characters(text)
+
         max_chars = max_chars if max_chars is not None else len(text)
 
         words = text.split(" ")
-        word_widths, total_width = self.calculate_text_size(text, self.scale)
+        word_widths, total_width = self.calculate_text_size(text, scale=self.scale, sep=sep)
 
         if isinstance(text_box, pg.Vector2) or len(text_box) == 2:
             # treat two value pairs as x, y coordinates and only render text on one line

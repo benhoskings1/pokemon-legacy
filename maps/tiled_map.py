@@ -469,19 +469,19 @@ class TiledMap2(TiledMap, SpriteScreen):
 
         self.text_box.refresh()
 
-        text_rect = self.text_box.image.get_rect().inflate(-20 * self.text_box.scale, -10*self.text_box.scale)
-        # text_rect = pg.Rect(pg.Vector2(10, 4) * self.text_box.scale, pg.Vector2(201, 40) * self.text_box.scale)
+        text_rect = pg.Rect(pg.Vector2(12, 8) * self.text_box.scale, pg.Vector2(221, 34) * self.text_box.scale)
         self.text_box.add_text_2(text, text_rect, max_chars=max_chars)
         self.text_box.update_image()
 
-    def display_message(self, text, window, duration=1000):
+    def display_message(self, text, window, duration=2000, keep_textbox=False, offset=None):
         for char_idx in range(1, len(text) + 1):
             self.update_display_text(text, max_chars=char_idx)
-            window.blit(self.get_surface(), (0, 0))
+            window.blit(self.get_surface(offset=offset), (0, 0))
             pg.display.flip()
             pg.time.delay(round(duration * 0.7 / len(text)))
 
-        self.sprites.remove(self.text_box)
+        if not keep_textbox:
+            self.sprites.remove(self.text_box)
 
     def get_sprite_types(self, sprite_type) -> list[pg.sprite.Sprite]:
         sprite_list = []

@@ -143,3 +143,6 @@ class DisplayContainer(pg.sprite.Sprite, SpriteScreen):
             return True
         else:
             return False
+
+    def update(self):
+        self.sprites.update()

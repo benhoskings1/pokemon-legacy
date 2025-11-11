@@ -7,6 +7,7 @@ import json
 from team import Team
 from Sprites.SpriteSet import SpriteSet2
 from maps.game_obejct import GameObject
+from bag.bag import BagV2
 
 from general.direction import Direction
 from Image_Processing.ImageEditor import ImageEditor
@@ -237,7 +238,7 @@ class Trainer(NPC):
         TrainerTypes.riley: (0, 2),
     }
 
-    with open("game_data/trainer_teams.json") as f:
+    with open("game_data/game_config/trainer_teams.json") as f:
         trainer_data = json.load(f)
 
     def __init__(self, properties: dict=None, team: None | Team=None, is_player=False, scale: float = 1.0):
@@ -357,7 +358,8 @@ class Player2(Trainer):
             self,
             position: tuple[int, int] | list[int] | pg.Vector2,
             team: Team,
-            scale: float = 1.0
+            scale: float = 1.0,
+            bag: BagV2 | None = None
     ):
         """
         Player object (inherits from trainer)
@@ -389,6 +391,8 @@ class Player2(Trainer):
         self.reset_battle_sprite()
 
         self.steps = 0
+        self.money = 3000
+        self.bag = bag
 
     def __repr__(self):
         return f"Player {self.trainer_type.name} at {self.map_rects}"

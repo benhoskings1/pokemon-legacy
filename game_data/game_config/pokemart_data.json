@@ -1,0 +1,11 @@
+[
+  {
+    "pokemart_id": 0,
+    "buy_items": [
+      "Poke Ball",
+      "potion",
+      "antidote",
+      "paralyse heal"
+    ]
+  }
+]

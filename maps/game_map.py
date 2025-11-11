@@ -5,9 +5,11 @@ import pygame as pg
 from random import randint
 
 from graphics.screen_V2 import Screen
-from maps.tiled_map import TiledMap2, GameObject
-from maps.buildings.pokecenter import PokeCenter
+from maps.tiled_map import TiledMap2
+from maps.game_obejct import GameObject, PokeballTile
+from maps.buildings.pokecenter.pokecenter import PokeCenter
 from maps.buildings.small_house import SmallHouse
+from maps.buildings.pokemart.pokemart import PokeMart
 
 from general.utils import BlitLocation
 
@@ -18,6 +20,11 @@ class TallGrass(GameObject):
 
         self.route = route
         self.encounterNum = randint(15, 25)
+
+
+class OceanTile(GameObject):
+    def __init__(self, rect, scale: int | float = 1.0):
+        GameObject.__init__(self, rect, obj_id=0, solid=True, scale=scale, auto_interact=True)
 
 
 class RoutePopup(Screen, pg.sprite.Sprite):
@@ -45,8 +52,8 @@ class RoutePopup(Screen, pg.sprite.Sprite):
 class GameMap(TiledMap2):
 
     start_positions = {
-        "Sinnoh Map.tmx": pg.Vector2(31, 14),
-        "Twinleaf Town.tmx": pg.Vector2(21, 32)
+        "twinleaf_town.tmx": pg.Vector2(21, 32),
+        "route_219.tmx": pg.Vector2(16, 6),
     }
 
     def __init__(
@@ -59,7 +66,6 @@ class GameMap(TiledMap2):
             obj_scale=1,
             render_mode=0,
     ):
-
         if os.path.basename(file_path) in self.start_positions:
             player_position = self.start_positions[os.path.basename(file_path)]
         else:
@@ -88,23 +94,37 @@ class GameMap(TiledMap2):
         for layer in self.object_layers:
             sprite_group = self.object_layer_sprites[layer.id]
             for obj in layer:
+                tile = None
+
                 rect = pg.Rect(obj.x, obj.y, obj.width, obj.height)
                 if obj.type == "tall_grass":
-                    grass = TallGrass(rect, route=obj.Location, scale=self.map_scale)
-                    sprite_group.add(grass)
-
-                elif obj.name == "pokecenter":
-                    pokecenter = PokeCenter(rect, player=self.player, map_scale=2, obj_scale=2,
-                                            parent_map_scale=self.map_scale)
-                    sprite_group.add(pokecenter)
+                    tile = TallGrass(rect, route=obj.Location, scale=self.map_scale)
 
                 elif obj.type == "entry_tile":
                     if obj.name == "player_house":
-                        game_object = SmallHouse(
+                        tile = SmallHouse(
                             rect, player=self.player, map_scale=2, obj_scale=2,
                             parent_map_scale=self.map_scale
                         )
-                        sprite_group.add(game_object)
+
+                    elif obj.name == "pokecenter":
+                        tile = PokeCenter(rect, player=self.player, map_scale=2, obj_scale=2,
+                                                parent_map_scale=self.map_scale)
+
+                    elif obj.name == "pokemart":
+                        tile = PokeMart(rect, player=self.player, map_scale=2, obj_scale=2,
+                                                parent_map_scale=self.map_scale, properties=obj.properties)
+
+                elif obj.type == "ocean":
+                    tile = OceanTile(rect, scale=self.map_scale)
+
+                elif obj.type == "pokeball":
+                    item = obj.properties.get("item", None)
+                    tile = PokeballTile(obj.id, rect, item=item, scale=self.map_scale)
+                    print(repr(tile))
+
+                if tile is not None:
+                    sprite_group.add(tile)
 
     def object_interaction(self, sprite: pg.sprite.Sprite, *args):
         if isinstance(sprite, TiledMap2):
