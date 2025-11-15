@@ -3,7 +3,10 @@ import os.path as path
 
 import pygame as pg
 
-from trainer import Trainer, TrainerTypes, NPC
+from engine.characters.character import CharacterTypes
+from engine.characters.npc import NPC
+
+# from trainer import Trainer, TrainerTypes, NPC
 from general.direction import Direction
 from general.utils import Colours, wait_for_key
 from general.controller import Controller
@@ -194,7 +197,7 @@ class PokeCenter(TiledMap2, EntryTile, StateMachine):
         self.update_render_window()
 
         pokecenter_lady: NPC | None = next(
-            (npc for npc in self.get_sprite_types(NPC) if npc.trainer_type == TrainerTypes.pokecenter_lady),
+            (npc for npc in self.get_sprite_types(NPC) if npc.character_type == CharacterTypes.pokecenter_lady),
             None
         )
 

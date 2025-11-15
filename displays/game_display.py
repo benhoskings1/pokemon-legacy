@@ -28,7 +28,7 @@ class GameDisplay(SpriteScreen):
             player,
             window,
             scale: int | float = 1,
-            start_map: str = "sandgem_town",
+            start_map: str = "twinleaf_town",
             render_mode: int = 0
     ):
         # ==== INIT ====
@@ -122,7 +122,6 @@ class GameDisplay(SpriteScreen):
         self.sprite_surface = pg.Surface(self.size, pg.SRCALPHA)
 
     def move_player(self, direction: Direction, window, frames=5, duration=200):
-        # print("moving player")
         map_obj, moved, edge = self.map.move_player(direction, window)
 
         step_count = 1 if moved else 0
@@ -133,7 +132,6 @@ class GameDisplay(SpriteScreen):
             return map_obj, False, None
 
         elif isinstance(map_obj, ExitTile):
-            print(map_obj)
             self.map = self.last_game_map
             return map_obj, False, None
 

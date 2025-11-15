@@ -4,18 +4,21 @@ from importlib.resources.abc import Traversable
 import pygame
 import pygame as pg
 import pytmx
-from pytmx import TiledMap, TiledObject
+from pytmx import TiledMap
 from pytmx.util_pygame import pygame_image_loader
 
 from math import floor, ceil
 
-from general.utils import Colours, BlitLocation
-from general.controller import Controller
+from general.utils import Colours
+from general.direction import Direction
 
 from graphics.sprite_screen import SpriteScreen
 from graphics.text_box import TextBox
 
-from trainer import NPC, Trainer, Player2, Direction, Movement, AttentionBubble
+from engine.characters.character import Character, AttentionBubble, Movement
+from engine.characters.npc import NPC
+from engine.characters.trainer import Trainer
+from engine.characters.player import Player2
 
 from maps.game_obejct import GameObject
 
@@ -172,13 +175,13 @@ class TiledMap2(TiledMap, SpriteScreen):
         )
 
         for layer_id, object_group in self.object_layer_sprites.items():
-            npc_sprites = [s for s in object_group.sprites() if isinstance(s, NPC)]
+            npc_sprites = [s for s in object_group.sprites() if isinstance(s, Character)]
             map_collision = new_rect.collideobjects(npc_sprites, key=lambda o: o.map_rects[self])
             if map_collision:
                 return map_collision
 
             # get all solid objects
-            other_sprites = [s for s in object_group.sprites() if not isinstance(s, NPC)]
+            other_sprites = [s for s in object_group.sprites() if not isinstance(s, Character)]
             map_collision = new_rect.collideobjects(other_sprites, key=lambda o: o.rect)
             if map_collision:
                 return map_collision
@@ -375,8 +378,6 @@ class TiledMap2(TiledMap, SpriteScreen):
         )
         # ====== render static ======
         for layer in self.layers:
-            if verbose:
-                print(f"rendering layer {layer}")
             if isinstance(layer, pytmx.TiledImageLayer):
                 source = getattr(layer, 'source', None)
                 if source:
@@ -528,7 +529,7 @@ class MapObjects(pg.sprite.Group):
 
     @staticmethod
     def get_obj_y_location(obj, _map):
-        return obj.map_rects[_map].top if isinstance(obj, NPC) else obj.rect.top
+        return obj.map_rects[_map].top if isinstance(obj, Character) else obj.rect.top
 
     def draw(
         self,
@@ -540,7 +541,7 @@ class MapObjects(pg.sprite.Group):
         """ Custom sprite drawing """
         sprite_set = sorted(self.sprites(), key=lambda sprite: self.get_obj_y_location(sprite, _map))
         for obj in sprite_set:
-            if isinstance(obj, NPC):
+            if isinstance(obj, Character):
                 im_size = pg.Vector2(obj.image.get_size())
                 npc_offset = pg.Vector2((im_size.x - self.tile_size.x) / 2, im_size.y - self.tile_size.y)
                 _map.render_surface.add_surf(obj.image, obj.map_rects[_map].topleft - player_offset - npc_offset)

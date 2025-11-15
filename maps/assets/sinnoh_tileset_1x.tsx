@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.2" name="sinnoh_tileset_1x" tilewidth="80" tileheight="94" tilecount="76" columns="0">
+<tileset version="1.10" tiledversion="1.11.2" name="sinnoh_tileset_1x" tilewidth="80" tileheight="94" tilecount="82" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image source="overworld/Short Grass/Grass_1@1x.png" width="16" height="16"/>
@@ -228,6 +228,24 @@
  </tile>
  <tile id="90">
   <image source="overworld/landscape/beach/upper_right_corner.png" width="16" height="16"/>
+ </tile>
+ <tile id="91">
+  <image source="overworld/landscape/grass_edge/mid_right.png" width="16" height="16"/>
+ </tile>
+ <tile id="92">
+  <image source="overworld/landscape/grass_edge/mid_left.png" width="16" height="16"/>
+ </tile>
+ <tile id="93">
+  <image source="overworld/landscape/grass_edge/tile_4.png" width="16" height="16"/>
+ </tile>
+ <tile id="94">
+  <image source="overworld/landscape/grass_edge/tile_3.png" width="16" height="16"/>
+ </tile>
+ <tile id="95">
+  <image source="overworld/landscape/grass_edge/tile_2.png" width="16" height="16"/>
+ </tile>
+ <tile id="96">
+  <image source="overworld/landscape/grass_edge/tile_1.png" width="16" height="16"/>
  </tile>
  <wangsets>
   <wangset name="sinnoh_paths" type="corner" tile="-1">

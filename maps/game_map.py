@@ -27,6 +27,12 @@ class OceanTile(GameObject):
         GameObject.__init__(self, rect, obj_id=0, solid=True, scale=scale, auto_interact=True)
 
 
+class PortalTile(GameObject):
+    def __init__(self, rect, obj_id, map_name, scale: int | float = 1.0):
+        GameObject.__init__(self, rect, obj_id=obj_id, solid=True, scale=scale, auto_interact=True)
+        self.map_name = map_name
+
+
 class RoutePopup(Screen, pg.sprite.Sprite):
     def __init__(self, location, scale=1.0):
         size = pg.Vector2(118, 24) * scale
@@ -122,6 +128,9 @@ class GameMap(TiledMap2):
                     item = obj.properties.get("item", None)
                     tile = PokeballTile(obj.id, rect, item=item, scale=self.map_scale)
                     print(repr(tile))
+
+                elif obj.type == "portal":
+                    tile = PortalTile(rect, obj.id, self.map_name, scale=self.map_scale)
 
                 if tile is not None:
                     sprite_group.add(tile)

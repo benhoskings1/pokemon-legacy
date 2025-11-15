@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="17" height="16" tilewidth="16" tileheight="12" infinite="0" nextlayerid="7" nextobjectid="25">
+ <imagelayer id="2" name="1_base_layer" offsetx="8" offsety="4">
+  <image source="assets/pokecenter_floor_0.png" width="256" height="192"/>
+ </imagelayer>
+ <objectgroup id="5" name="2_npc_layer">
+  <object id="23" name="healer_lady" type="npc" x="128" y="66" width="16" height="12">
+   <properties>
+    <property name="npc_name" value="pokecenter_lady"/>
+    <property name="npc_type" value="pokecenter_lady"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <imagelayer id="4" name="3_desk_layer" offsetx="82" offsety="42">
+  <image source="../../assets/pokecenter/desk.png" width="108" height="53"/>
+ </imagelayer>
+ <objectgroup id="3" name="4_object_layer">
+  <object id="1" name="desk" type="desk" x="128" y="84" width="16" height="12"/>
+  <object id="2" type="obstacle" x="0" y="72" width="16" height="96"/>
+  <object id="4" type="obstacle" x="16" y="168" width="16" height="12"/>
+  <object id="5" type="obstacle" x="32" y="180" width="96" height="12"/>
+  <object id="7" type="obstacle" x="16" y="60" width="64" height="12"/>
+  <object id="10" type="obstacle" x="80" y="72" width="16" height="24"/>
+  <object id="11" type="obstacle" x="96" y="84" width="32" height="12"/>
+  <object id="12" type="obstacle" x="176" y="72" width="16" height="24"/>
+  <object id="13" name="computer" type="computer" x="192" y="60" width="16" height="12"/>
+  <object id="14" type="obstacle" x="208" y="48" width="32" height="12"/>
+  <object id="15" type="obstacle" x="240" y="60" width="16" height="12"/>
+  <object id="16" type="obstacle" x="256" y="72" width="16" height="96"/>
+  <object id="17" type="obstacle" x="240" y="168" width="16" height="12"/>
+  <object id="18" type="obstacle" x="144" y="180" width="96" height="12"/>
+  <object id="19" name="exit" type="exit" x="128" y="180" width="16" height="12"/>
+  <object id="24" type="obstacle" x="144" y="84" width="32" height="12"/>
+ </objectgroup>
+ <objectgroup id="6" name="5_player_layer"/>
+</map>

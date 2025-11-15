@@ -4,15 +4,10 @@ from enum import Enum
 import time
 
 import pygame as pg
-import pandas as pd
 
-from general.Selector import Selector
 from general.direction import Direction
-from graphics.screen_V2 import BlitLocation
 from graphics.sprite_screen import DisplayContainer
 from graphics.selector_display import SelectorDisplay
-
-from trainer import Player2
 
 MODULE_PATH = resources.files(__package__)
 

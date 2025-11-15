@@ -18,7 +18,8 @@ from general.Status_Conditions.Burn import Burn
 from general.Status_Conditions.Poison import Poison
 from pokemon import Pokemon
 from team import Team
-from trainer import Trainer
+
+from engine.characters.trainer import Trainer
 
 
 class State(Enum):

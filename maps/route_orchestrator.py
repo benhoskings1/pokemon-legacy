@@ -4,7 +4,8 @@ import pygame as pg
 from pytmx import TiledMap
 
 from maps.tiled_map import TiledMap2
-from trainer import Player2
+from engine.characters.player import Player2
+# from trainer import Player2
 import networkx as nx
 
 from team import Team
@@ -13,6 +14,14 @@ from maps.game_map import GameMap
 
 
 class RouteOrchestrator:
+
+    sinnoh_links = {
+        ("twinleaf_town", "route_201", (16, 0), (14, 28)),
+        ("route_201", "sandgem_town", (64, 12), (0, 16)),
+        ("verity_lakefront", "route_201", (24, 38), (0, 9)),
+        ("sandgem_town", "route_219", (20, 32), (20, 0)),
+    }
+
     def __init__(
             self,
             size,
@@ -38,26 +47,12 @@ class RouteOrchestrator:
         self.route_graph = nx.Graph()
         self.route_graph.add_nodes_from(self.routes)
 
-        # TODO convert this to a static config set
-        self.link_routes(
-            "twinleaf_town", "route_201",
-            pg.Vector2(16, 0), pg.Vector2(14, 28)
-        )
-        self.link_routes(
-            "route_201", "sandgem_town",
-            pg.Vector2(64, 12), pg.Vector2(0, 16)
-        )
-        self.link_routes(
-            "verity_lakefront", "route_201",
-            pg.Vector2(24, 38), pg.Vector2(0, 9)
-        )
-        self.link_routes(
-            "sandgem_town", "route_219",
-            pg.Vector2(20, 32), pg.Vector2(20, 0)
-        )
+        for m1, m2, p1, p2 in self.sinnoh_links:
+            self.link_routes(m1, m2, pg.Vector2(p1), pg.Vector2(p2))
 
-    def load_player_positions(self):
-        ...
+        # for each pair of portals in the entire map, link the map and the output position
+        self.portal_mapping = {
+        }
 
     def get_map_node(self, map_name) -> GameMap:
         """ Get a map node that matches the map name """

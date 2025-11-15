@@ -24,7 +24,10 @@ from displays.game_display import GameDisplay, GameDisplayStates
 from displays.menu.menu_display_team import MenuTeamDisplay
 from bag.menu_display_bag import MenuBagDisplay
 
-from trainer import Trainer, Player2, Movement, Direction
+from engine.characters.character import Movement, Direction
+from engine.characters.trainer import Trainer
+from engine.characters.player import Player2
+# from trainer import Trainer, Player2, Movement
 from pokemon import Pokemon
 
 from poketech.poketech import Poketech
@@ -133,6 +136,8 @@ class Game:
         }
 
         self.menu_active = False
+
+        print(self.player.map_positions)
 
         # ==== LOG INITIALISATION ====
         self.log, self.log_dir = GameLog(), "game_data/logs"
