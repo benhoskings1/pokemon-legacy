@@ -6,8 +6,8 @@ import time
 import pygame as pg
 
 from general.direction import Direction
-from graphics.sprite_screen import DisplayContainer
-from graphics.selector_display import SelectorDisplay
+from engine.graphics.sprite_screen import DisplayContainer
+from engine.graphics.selector_display import SelectorDisplay
 
 MODULE_PATH = resources.files(__package__)
 

@@ -1,4 +1,4 @@
-from graphics.sprite_screen import SpriteScreen
+from engine.graphics import SpriteScreen
 
 
 class DualDisplay:

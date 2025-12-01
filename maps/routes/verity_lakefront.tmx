@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="24" height="57" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="22">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="24" height="57" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="52">
  <tileset firstgid="1" source="../assets/sinnoh_tileset_1x.tsx"/>
  <layer id="1" name="1_base_layer" width="24" height="57">
   <data encoding="csv">
@@ -62,7 +62,7 @@
 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 </data>
  </layer>
- <layer id="6" name="Tile Layer 4" width="24" height="57" locked="1" offsetx="-8" offsety="-8">
+ <layer id="6" name="2_base_layer" width="24" height="57" locked="1" offsetx="-8" offsety="-8">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,69,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,69,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -123,7 +123,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="2" name="2_path_layer" width="24" height="57">
+ <layer id="2" name="3_path_layer" width="24" height="57">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,17,0,17,0,17,0,17,0,17,0,17,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -184,7 +184,7 @@
 0,0,0,0,0,0,17,0,17,0,17,0,17,0,17,0,17,0,17,0,17,0,17,0
 </data>
  </layer>
- <layer id="5" name="3_portals" width="24" height="57">
+ <layer id="5" name="4_portals" width="24" height="57">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,69,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,69,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -245,8 +245,8 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="3" name="4_player_layer"/>
- <objectgroup id="4" name="5_object_layer">
+ <objectgroup id="3" name="5_player_layer"/>
+ <objectgroup id="4" name="6_object_layer">
   <object id="1" type="obstacle" x="160" y="784" width="224" height="16"/>
   <object id="2" type="wall" x="208" y="704" width="80" height="16">
    <properties>
@@ -284,15 +284,56 @@
   <object id="16" type="obstacle" x="112" y="560" width="16" height="48"/>
   <object id="17" type="obstacle" x="128" y="544" width="32" height="16"/>
   <object id="18" type="obstacle" x="160" y="560" width="16" height="48"/>
-  <object id="20" type="portal" x="128" y="352" width="32" height="16">
+  <object id="22" type="map_link" x="144" y="560" width="16" height="16">
    <properties>
-    <property name="portal_id" value="1"/>
+    <property name="building_link" type="bool" value="true"/>
+    <property name="linked_map" value="verity_lakefront"/>
+    <property name="location" value="9,22"/>
    </properties>
   </object>
-  <object id="21" type="portal" x="128" y="560" width="32" height="16">
+  <object id="23" type="map_link" x="144" y="352" width="16" height="16">
    <properties>
-    <property name="portal_id" value="1"/>
+    <property name="building_link" type="bool" value="true"/>
+    <property name="linked_map" value="verity_lakefront"/>
+    <property name="location" value="9,35"/>
    </properties>
   </object>
+  <object id="24" type="map_link" x="128" y="560" width="16" height="16">
+   <properties>
+    <property name="building_link" type="bool" value="true"/>
+    <property name="linked_map" value="verity_lakefront"/>
+    <property name="location" value="8,22"/>
+   </properties>
+  </object>
+  <object id="25" type="map_link" x="128" y="352" width="16" height="16">
+   <properties>
+    <property name="building_link" type="bool" value="true"/>
+    <property name="linked_map" value="verity_lakefront"/>
+    <property name="location" value="8,35"/>
+   </properties>
+  </object>
+  <object id="26" type="obstacle" x="160" y="336" width="32" height="32"/>
+  <object id="27" type="obstacle" x="96" y="336" width="32" height="32"/>
+  <object id="28" type="obstacle" x="192" y="272" width="32" height="16"/>
+  <object id="29" type="obstacle" x="64" y="272" width="32" height="32"/>
+  <object id="30" type="obstacle" x="64" y="304" width="32" height="32"/>
+  <object id="31" type="obstacle" x="192" y="288" width="16" height="48"/>
+  <object id="32" type="obstacle" x="48" y="240" width="16" height="32"/>
+  <object id="33" type="obstacle" x="64" y="224" width="32" height="16"/>
+  <object id="34" type="obstacle" x="96" y="192" width="32" height="16"/>
+  <object id="35" type="obstacle" x="128" y="160" width="32" height="16"/>
+  <object id="36" type="obstacle" x="160" y="128" width="32" height="16"/>
+  <object id="37" type="obstacle" x="80" y="208" width="16" height="16"/>
+  <object id="38" type="obstacle" x="112" y="176" width="16" height="16"/>
+  <object id="39" type="obstacle" x="144" y="144" width="16" height="16"/>
+  <object id="40" type="obstacle" x="176" y="32" width="16" height="96"/>
+  <object id="41" type="obstacle" x="192" y="32" width="64" height="16"/>
+  <object id="42" type="obstacle" x="256" y="64" width="32" height="16"/>
+  <object id="43" type="obstacle" x="288" y="80" width="16" height="96"/>
+  <object id="44" type="obstacle" x="256" y="176" width="32" height="16"/>
+  <object id="45" type="obstacle" x="224" y="208" width="32" height="16"/>
+  <object id="46" type="obstacle" x="256" y="48" width="16" height="16"/>
+  <object id="47" type="obstacle" x="256" y="192" width="16" height="16"/>
+  <object id="48" type="obstacle" x="224" y="208" width="16" height="64"/>
  </objectgroup>
 </map>

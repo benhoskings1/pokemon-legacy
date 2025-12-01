@@ -1,6 +1,3 @@
-import os
-import os.path as path
-
 import pygame as pg
 
 from engine.characters.character import CharacterTypes
@@ -11,14 +8,14 @@ from general.direction import Direction
 from general.utils import Colours, wait_for_key
 from general.controller import Controller
 
-from maps.tiled_map import TiledMap2, GameObject, Obstacle, EntryTile
+from engine.game_world.tiled_map import TiledMap2, GameObject, Obstacle, MapLinkTile
 from maps.buildings.pokecenter.pokecenter_containers import (
     ConfirmContainer, ConfirmOption, PokeballIncubator,
     ComputerSelector, ComputerSelectOption, ComputerActionSelector,
     ComputerAction
 )
 
-from statemachine import StateMachine, State, Event
+from statemachine import StateMachine, State
 
 import importlib.resources as resources
 MODULE_PATH = resources.files(__package__)
@@ -43,7 +40,7 @@ tile_object_mapping = {
 }
 
 
-class PokeCenter(TiledMap2, EntryTile, StateMachine):
+class PokeCenter(TiledMap2, MapLinkTile, StateMachine):
 
     idle = State("idle", initial=True)
     inquiry = State("inquiry")
@@ -69,7 +66,7 @@ class PokeCenter(TiledMap2, EntryTile, StateMachine):
     def __init__(self, rect, player, map_scale=1, obj_scale=1, parent_map_scale=1.0):
         size = pg.Vector2(256, 192) * map_scale
 
-        EntryTile.__init__(self, rect, obj_id=0, scale=parent_map_scale)
+        MapLinkTile.__init__(self, rect, obj_id=0, linked_map_name="pokecenter",)
 
         StateMachine.__init__(self)
 

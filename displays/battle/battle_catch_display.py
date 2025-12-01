@@ -1,6 +1,6 @@
 import pygame as pg
-from pokemon import Pokemon
-from graphics.sprite_screen import SpriteScreen, DisplayContainer
+from engine.pokemon.pokemon import Pokemon
+from engine.graphics.sprite_screen import SpriteScreen, DisplayContainer
 
 
 class NameContainer2(DisplayContainer):

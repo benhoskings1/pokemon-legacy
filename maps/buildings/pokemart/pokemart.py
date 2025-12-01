@@ -6,14 +6,14 @@ import json
 from enum import Enum
 import pygame as pg
 import networkx as nx
-from statemachine import StateMachine, State, Event
+from statemachine import StateMachine, State
 
 from general.utils import Colours, wait_for_key
 from general.Item import Item
 from general.controller import Controller
 from general.direction import Direction, opposite_direction_mapping
-from graphics.sprite_screen import DisplayContainer
-from maps.tiled_map import TiledMap2, GameObject, EntryTile
+from engine.graphics.sprite_screen import DisplayContainer
+from engine.game_world.tiled_map import TiledMap2, GameObject, MapLinkTile
 from maps.buildings.pokemart.pokemart_containers import (
     MoneyContainer, ItemSetContainer, DisplayBar, BagCountContainer, PriceCounter,
     ConfirmContainer, ConfirmOption
@@ -144,7 +144,7 @@ class DeskTile(GameObject):
             pg.draw.rect(self.image, Colours.blue.value, self.image.get_rect(), 1)
 
 
-class PokeMart(TiledMap2, EntryTile, StateMachine):
+class PokeMart(TiledMap2, MapLinkTile, StateMachine):
 
     custom_tile_object_mapping = {
         "desk": DeskTile,
@@ -184,7 +184,7 @@ class PokeMart(TiledMap2, EntryTile, StateMachine):
 
         StateMachine.__init__(self)
 
-        EntryTile.__init__(self, rect, obj_id=0, scale=parent_map_scale)
+        MapLinkTile.__init__(self, rect, obj_id=0, linked_map_name="pokemart",)
 
         TiledMap2.__init__(
             self,

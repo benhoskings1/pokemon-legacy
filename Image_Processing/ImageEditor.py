@@ -90,7 +90,7 @@ class ImageEditor:
 
         return pixelDataCopy
 
-    def transparent_where_color(self, color: tuple[int, int, int], overwrite=True) -> np.ndarray:
+    def transparent_where_color(self, color: tuple[int], overwrite=True) -> np.ndarray:
         """
         Set alpha=0 where the RGB part of the image matches the given color.
 

@@ -1,3 +1,4 @@
+import time
 from math import floor
 
 from PIL import Image
@@ -7,12 +8,9 @@ from Image_Processing.ImageEditor import ImageEditor
 
 from general.Environment import Environment
 from general.utils import Colours, create_display_bar, BlitLocation
-from graphics.screen_V2 import Screen, FontOption
-from graphics.sprite_screen import SpriteScreen, PokeballCatchAnimation
-from pokemon import Pokemon
-
-import time
-
+from engine.graphics.screen_V2 import Screen, FontOption
+from engine.graphics.sprite_screen import SpriteScreen, PokeballCatchAnimation
+from engine.pokemon.pokemon import Pokemon
 
 editor = ImageEditor()
 STAT_NAMES = ["Max. HP", "Attack", "Defence", "Sp. Atk", "Sp. Def", "Speed"]

@@ -4,11 +4,11 @@ from enum import Enum
 import pygame as pg
 
 from general.Move import Move2
-from pokemon import Pokemon
+from engine.pokemon.pokemon import Pokemon
 from general.utils import Colours, create_display_bar
-from graphics.screen_V2 import FontOption, BlitLocation
-from graphics.sprite_screen import SpriteScreen, DisplayContainer
-from pokemon import PokemonSpriteSmall
+from engine.graphics.screen_V2 import FontOption, BlitLocation
+from engine.graphics.sprite_screen import SpriteScreen, DisplayContainer
+from engine.pokemon.pokemon import PokemonSpriteSmall
 
 CONTAINER_POSITIONS = [(1, 3), (129, 12), (1, 52), (129, 60), (1, 100), (129, 108)]
 
@@ -426,8 +426,8 @@ class MenuTeamDisplaySummary(SpriteScreen):
         self.selected_idx, self.active_screen_idx = 0, 0
 
         self.sprites.add(self.containers[PokemonSummaryStates(self.active_screen_idx)])
-
-        self.load_pokemon_details(team.pokemon[0])
+        if len(team) > 0:
+            self.load_pokemon_details(team.pokemon[0])
 
     def load_pokemon_details(self, pokemon: Pokemon):
         self.refresh()
@@ -483,8 +483,8 @@ class MenuTeamDisplay:
         self.game = game
 
         self.displays = {
-            MenuTeamDisplayStates.home: MenuTeamDisplayHome(size, scale, game.team),
-            MenuTeamDisplayStates.summary: MenuTeamDisplaySummary(size, game.team, scale=scale),
+            MenuTeamDisplayStates.home: MenuTeamDisplayHome(size, scale, game.player.team),
+            MenuTeamDisplayStates.summary: MenuTeamDisplaySummary(size, game.player.team, scale=scale),
         }
 
         self.active_display_state = MenuTeamDisplayStates.home

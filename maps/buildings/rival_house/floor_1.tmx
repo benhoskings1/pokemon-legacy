@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="12" height="12" tilewidth="16" tileheight="13" infinite="0" nextlayerid="4" nextobjectid="15">
+ <layer id="1" name="Tile Layer 1" width="12" height="12">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <imagelayer id="2" name="Image Layer 1" offsetx="16" offsety="9">
+  <image source="assets/top_floor.png" width="160" height="137"/>
+ </imagelayer>
+ <objectgroup id="3" name="Object Layer 1">
+  <object id="2" type="obstacle" x="160" y="117" width="16" height="26"/>
+  <object id="5" type="obstacle" x="112" y="52" width="64" height="13"/>
+  <object id="9" type="obstacle" x="0" y="78" width="16" height="65"/>
+  <object id="10" type="obstacle" x="16" y="143" width="160" height="13"/>
+  <object id="11" type="obstacle" x="176" y="65" width="16" height="78"/>
+  <object id="12" type="obstacle" x="48" y="39" width="128" height="13"/>
+  <object id="13" type="obstacle" x="16" y="65" width="32" height="13"/>
+  <object id="14" name="floor_0" type="map_link" x="32" y="52" width="16" height="13">
+   <properties>
+    <property name="building_link" type="bool" value="true"/>
+    <property name="linked_map" value="floor_0"/>
+    <property name="location" value="10,3"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

@@ -5,12 +5,11 @@ from enum import Enum
 import pygame as pg
 import pandas as pd
 
-from general.Selector import Selector
 from general.direction import Direction
 from general.Item import Item
-from graphics.screen_V2 import BlitLocation
-from graphics.sprite_screen import DisplayContainer
-from graphics.selector_display import SelectorDisplay
+from engine.graphics.screen_V2 import BlitLocation
+from engine.graphics.sprite_screen import DisplayContainer
+from engine.graphics.selector_display import SelectorDisplay
 
 from engine.characters.player import Player2
 

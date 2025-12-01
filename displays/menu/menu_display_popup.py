@@ -1,7 +1,7 @@
 import pygame as pg
 
 from general.controller import Controller
-from graphics.sprite_screen import DisplayContainer
+from engine.graphics.sprite_screen import DisplayContainer
 
 
 MENU_SELECTOR_POSITIONS = [(4, y) for y in [5 + idx * 24 for idx in range(7)]]

@@ -9,35 +9,5 @@
         ],
         "health": 20,
         "friendly": true
-    },
-    {
-        "name": "Shinx",
-        "level": 10,
-        "exp": 700,
-        "moves": [
-            {"name": "Scratch"},
-            {"name": "Leer"}
-        ],
-        "friendly": true
-    },
-    {
-        "name": "Riolu",
-        "level": 10,
-        "exp": 700,
-        "moves": [
-            {"name": "Scratch"},
-            {"name": "Leer"}
-        ],
-        "friendly": true
-    },
-    {
-        "name": "Chimchar",
-        "level": 10,
-        "exp": 700,
-        "moves": [
-            {"name": "Scratch"},
-            {"name": "Leer"}
-        ],
-        "friendly": true
     }
 ]

@@ -1,9 +1,7 @@
-import os
-
 import pandas as pd
 import pygame as pg
 
-from pokemon import StatusEffect
+from engine.pokemon.pokemon import StatusEffect
 from enum import Enum
 
 item_data = pd.read_csv("game_data/items.tsv", delimiter="\t")

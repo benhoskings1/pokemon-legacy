@@ -2,20 +2,16 @@ import os
 
 import pygame as pg
 
-from engine.characters.character import Movement
 from engine.characters.trainer import Trainer
 
-from graphics.engine.sprite_set import SpriteSet2
-
-from battle_animation import BattleAnimation
-from team import Team
-from bag.bag import BagV2
+from engine.battle.battle_animation import BattleAnimation
+from engine.pokemon.team import Team
+from engine.bag.bag import BagV2
 
 
 class Player2(Trainer):
     def __init__(
             self,
-            position: tuple[int, int] | list[int] | pg.Vector2,
             team: Team,
             scale: float = 1.0,
             bag: BagV2 | None = None
@@ -23,21 +19,16 @@ class Player2(Trainer):
         """
         Player object (inherits from trainer)
 
-        :param position: grid position of the player
         :param team: team for the player
         :param scale: scale of the sprites
         """
         properties = {
-            "npc_type": "player_male",
+            "character_type": "player_male",
+            "character_id": -1,
             "npc_name": "Benji",
             "trainer_id": "1001",
-            "facing_direction": "down"
+            "facing_direction": "up"
         }
-
-        if not isinstance(position, pg.Vector2):
-            position = pg.Vector2(position)
-
-        # player_rect = pg.Rect(position * 32 * scale, pg.Vector2(32, 32) * scale)
 
         self.sprite_path = "Sprites/Player Sprites"
         Trainer.__init__(self, properties=properties, team=team, is_player=True, scale=scale)
@@ -55,6 +46,11 @@ class Player2(Trainer):
 
     def __repr__(self):
         return f"Player {self.character_type.name} at {self.map_rects}"
+
+    def __getstate__(self):
+        self._clear_surfaces()
+        print(dir(self))
+        return self.__dict__
 
     @classmethod
     def get_battle_back(cls, character_type, bg_colour=None, scale: float = 1.0):
@@ -80,7 +76,7 @@ class Player2(Trainer):
             frame_rect = pg.Rect((frame_idx * (frame_size.x * border_size.x), frame_size.y + border_size.y), frame_size)
             frame_rect.topleft += pg.Vector2(block_rect.topleft)
 
-            frame = cls.character_back_parent_surf.subsurface(frame_rect).copy()
+            frame = cls.trainer_back_parent_surf.subsurface(frame_rect).copy()
             if bg_colour is not None:
                 frame = frame.convert_alpha()
                 px_array = pg.PixelArray(frame)
@@ -99,21 +95,34 @@ class Player2(Trainer):
         self.battle_sprite.rect.midbottom = pg.Vector2(63, 144) * self.scale
 
     def _load_surfaces(self):
-        self._sprite_sets = {
-            Movement.walking: SpriteSet2(
-                os.path.join(self.sprite_path, "Walking Sprites.png"), 12, pg.Vector2(34, 50), pg.Vector2(0, 0)
-            ),
-            Movement.running: SpriteSet2(
-                os.path.join(self.sprite_path, "Running Sprites.png"), 12, pg.Vector2(40, 50), pg.Vector2(0, 0)
-            )
-        }
+        super()._load_surfaces()
 
         battle_animation_dir = "assets/sprites/trainers/battle_start"
         frame_durations = [1000, 200, 200, 200, 200]
         self.battle_animation = BattleAnimation(battle_animation_dir, durations=frame_durations, scale=2)
 
     def _clear_surfaces(self):
+        super()._clear_surfaces()
         self._sprite_sets = None
-        self.battle_sprite.image = None
+        self.battle_sprite.kill()
+        self.battle_sprite = None
 
         self.battle_animation = None
+
+    def get_json_data(self):
+        return {
+            "steps": self.steps,
+            "money": self.money,
+            "bag": self.bag.get_json_data(),
+            "team": self.team.get_json_data(),
+            "positions": [
+                (_map.map_name, _map.parent_collection.collection_name, pos[0:2]) for _map, pos in self.map_positions.items()
+            ]
+        }
+
+    def load_from_state(self, player_state: dict):
+        self.steps = player_state.get("steps", self.steps)
+        self.money = player_state.get("money", self.money)
+
+        self.bag = BagV2(player_state.get("bag", None))
+        self.team = Team(player_state.get("team", None))

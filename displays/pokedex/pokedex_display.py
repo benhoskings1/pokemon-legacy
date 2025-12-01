@@ -3,8 +3,8 @@ from enum import Enum
 import pygame as pg
 
 from general.utils import Colours, BlitLocation
-from graphics.sprite_screen import SpriteScreen, DisplayContainer
-from pokemon import Pokemon, oldPokedex
+from engine.graphics.sprite_screen import SpriteScreen, DisplayContainer
+from engine.pokemon.pokemon import Pokemon, oldPokedex
 
 
 NAME_CONTAINER_POSITIONS = [

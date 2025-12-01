@@ -1,5 +1,3 @@
-from pokemon import Pokemon
-
 from general.storage_system.storage_system_containers import StorageBox
 
 class StorageSystem:

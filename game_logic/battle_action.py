@@ -2,8 +2,8 @@ import os.path
 from enum import Enum
 import pygame as pg
 
-from pokemon import Pokemon
-from battle_animation import BattleAnimation, ANIMATION_PATH
+from engine.pokemon.pokemon import Pokemon
+from engine.battle.battle_animation import BattleAnimation, ANIMATION_PATH
 
 
 class BattleActionType(Enum):
