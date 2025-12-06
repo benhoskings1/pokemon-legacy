@@ -13,11 +13,11 @@ import pandas as pd
 import pygame as pg
 from pandas import DataFrame
 
-from general.utils import load_gif
-from general.Move import Move2
-from general.Animations import Animations, createAnimation
-from general.Move import getMove
-from general.ability import Ability
+from engine.general.utils import load_gif
+from engine.general.Move import Move2
+from engine.general.Animations import Animations, createAnimation
+from engine.general.Move import getMove
+from engine.general.ability import Ability
 from Image_Processing.ImageEditor import ImageEditor
 
 
@@ -185,24 +185,26 @@ class Pokemon(pg.sprite.Sprite):
     def __init__(
             self,
             name,
-            level=None,
-            exp=None,
-            moves=None,
-            health=None,
-            status=None,
-            EVs=None,
-            IVs=None,
-            gender=None,
+
+            level: int,
+            exp: int = None,
+            moves: list[dict] = None,
+            health: float = None,
+            status: None = None,
+            EVs: None | list[int] = None,
+            IVs: None | list[int] = None,
+            gender: None | str = None,  # Options: male / female / None
             nature=None,
             ability_name=None,
             stat_stages=None,
             friendly=False,
             shiny=None,
+
             visible=False,
             catch_location=None,
             catch_level=None,
             catch_date=None,
-            lazy_load=False
+            animations: None | Animations = None,
     ):
 
         # ===== Load Default Data ======
@@ -270,18 +272,15 @@ class Pokemon(pg.sprite.Sprite):
         self.images: None | dict[str, pg.Surface] = None
 
         self.smallImage: None | pg.Surface = None
-        self.animation = None
-        self.small_animation = None
 
-        if not lazy_load:
-            print("eager")
-            self.load_images()
+        self.animation = animations.front if animations else None
+        self.small_animation = animations.small if animations else None
 
-            self.displayImage = self.image.copy()
-            self.sprite_mask = pg.mask.from_surface(self.image)
-        else:
-            self.displayImage = None
-            self.sprite_mask = None
+        self.load_images()
+
+        self.displayImage = self.image.copy()
+        self.sprite_mask = pg.mask.from_surface(self.image)
+
 
         self.stat_stages = StatStages(**stat_stages) if stat_stages else StatStages()
         self.status = StatusEffect(status) if status else None
@@ -502,17 +501,17 @@ class Pokemon(pg.sprite.Sprite):
 
         self.images = None
 
-    def load_images(self, animations: None | Animations = None, verbose=True):
+    def load_images(self, verbose=True):
         """ Load images """
         t1 = time.monotonic()
         self.images = self.get_images(self.ID, crop=True, shiny=self.shiny)
 
         self.smallImage = self.images["small"]
-        if not animations:
-            animations = createAnimation(self.name)
 
-        self.small_animation = animations.small
-        self.animation = animations.front
+        if self.animation is not None:
+            animations = createAnimation(self.name)
+            self.small_animation = animations.small
+            self.animation = animations.front
 
         self.sprite = PokemonSprite(self.ID, self.shiny, friendly=self.friendly)
 

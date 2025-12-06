@@ -11,11 +11,11 @@ from pytmx.util_pygame import pygame_image_loader
 
 from math import ceil
 
-from general.utils import Colours
-from general.direction import Direction
+from engine.general.utils import Colours
+from engine.general.direction import Direction
 
 from engine.graphics.sprite_screen import SpriteScreen
-from engine.graphics.text_box import TextBox
+from engine.graphics.main_screen import MainScreen
 
 from engine.characters import npc_custom_mapping
 from engine.characters.character import Character, AttentionBubble, Movement, CharacterTypes
@@ -76,7 +76,7 @@ class WallTile(GameObject):
         self.direction = next((d for d in Direction if d.name == direction), None)
 
 
-class TiledMap2(TiledMap, SpriteScreen):
+class TiledMap2(TiledMap, MainScreen):
     tile_object_mapping = {
         "obstacle": Obstacle,
     }
@@ -152,7 +152,7 @@ class TiledMap2(TiledMap, SpriteScreen):
         self.extra_offset = -pg.Vector2(self.extra_size[0] * self.tile_size.x,
                                        self.extra_size[1] * self.tile_size.y)
 
-        SpriteScreen.__init__(self, size)
+        MainScreen.__init__(self, size)
 
         self.map_scale = map_scale
         self.obj_scale = object_scale
@@ -173,8 +173,8 @@ class TiledMap2(TiledMap, SpriteScreen):
         self.add_character(player, player_position, layer_name=player_layer)
 
         # TODO: fix the static scale here
-        self.text_box = TextBox(sprite_id="text_box", scale=2, static=True)
-        self.text_box.rect.topleft += pg.Vector2(6, 0)
+        # self.text_box = TextBox(sprite_id="text_box", scale=2, static=True)
+        # self.text_box.rect.topleft += pg.Vector2(6, 0)
 
         self.tile_surface_mapping = {
         }
@@ -571,34 +571,34 @@ class TiledMap2(TiledMap, SpriteScreen):
 
         return display_surf
 
-    def update_display_text(self, text, max_chars=None):
-        if self.text_box not in self.sprites:
-            self.sprites.add(self.text_box)
-
-        self.text_box.refresh()
-
-        text_rect = pg.Rect(pg.Vector2(12, 8) * self.text_box.scale, pg.Vector2(221, 34) * self.text_box.scale)
-        self.text_box.add_text_2(text, text_rect, max_chars=max_chars)
-        self.text_box.update_image()
-
-    def display_message(
-            self,
-            text,
-            window,
-            *,
-            speed: int | float = 1.0,
-            keep_textbox: bool =False,
-            offset: None = None,
-    ):
-        for char_idx in range(1, len(text) + 1):
-            self.update_display_text(text, max_chars=char_idx)
-            window.blit(self.get_surface(offset=offset), (0, 0))
-            pg.display.flip()
-            # 20 ms per character
-            pg.time.delay(int(40 / speed))
-
-        if not keep_textbox:
-            self.sprites.remove(self.text_box)
+    # def update_display_text(self, text, max_chars=None):
+    #     if self.text_box not in self.sprites:
+    #         self.sprites.add(self.text_box)
+    #
+    #     self.text_box.refresh()
+    #
+    #     text_rect = pg.Rect(pg.Vector2(12, 8) * self.text_box.scale, pg.Vector2(221, 34) * self.text_box.scale)
+    #     self.text_box.add_text_2(text, text_rect, max_chars=max_chars)
+    #     self.text_box.update_image()
+    #
+    # def display_message(
+    #         self,
+    #         text,
+    #         window,
+    #         *,
+    #         speed: int | float = 1.0,
+    #         keep_textbox: bool =False,
+    #         offset: None = None,
+    # ):
+    #     for char_idx in range(1, len(text) + 1):
+    #         self.update_display_text(text, max_chars=char_idx)
+    #         window.blit(self.get_surface(offset=offset), (0, 0))
+    #         pg.display.flip()
+    #         # 20 ms per character
+    #         pg.time.delay(int(40 / speed))
+    #
+    #     if not keep_textbox:
+    #         self.sprites.remove(self.text_box)
 
     def get_sprite_types(self, sprite_type) -> list[pg.sprite.Sprite]:
         sprite_list = []

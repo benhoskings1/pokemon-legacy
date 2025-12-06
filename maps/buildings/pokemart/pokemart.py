@@ -8,10 +8,10 @@ import pygame as pg
 import networkx as nx
 from statemachine import StateMachine, State
 
-from general.utils import Colours, wait_for_key
-from general.Item import Item
-from general.controller import Controller
-from general.direction import Direction, opposite_direction_mapping
+from engine.general.utils import Colours, wait_for_key
+from engine.general import Item
+from engine.general.controller import Controller
+from engine.general.direction import Direction, opposite_direction_mapping
 from engine.graphics.sprite_screen import DisplayContainer
 from engine.game_world.tiled_map import TiledMap2, GameObject, MapLinkTile
 from maps.buildings.pokemart.pokemart_containers import (
@@ -19,7 +19,7 @@ from maps.buildings.pokemart.pokemart_containers import (
     ConfirmContainer, ConfirmOption
 )
 
-from general.Item import ItemGenerator
+from engine.general.Item import ItemGenerator
 
 
 MODULE_PATH = resources.files(__package__)

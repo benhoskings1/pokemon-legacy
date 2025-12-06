@@ -2,16 +2,15 @@ from dataclasses import dataclass
 
 import pygame as pg
 
-from engine.game_world.tiled_map import TiledMap2
 from engine.storyline.game_action import *
 from engine.storyline.game_state import GameState
 
 from engine.characters.character import Character
 from engine.characters.npc import ProfessorRowan
 from engine.characters.player import Player2
-from engine.characters.trainer import Trainer, Rival, Dawn
+from engine.characters.trainer import Rival, Dawn
 
-from general.direction import Direction, opposite_direction_mapping
+from engine.general.direction import Direction
 
 __all__ = ["SelectStarterPokemon", "MapInteraction",]
 
@@ -57,20 +56,20 @@ class SelectStarterPokemon(StorylineEvent):
         dawn = next((c for c in characters if isinstance(c, Dawn)), None)
 
         return [
-            MoveCameraPosition(direction=Direction.up, tiles=5),
             MoveAction(player, Direction.up, steps=1),
             MoveAction(rival, Direction.up, steps=1),
-            # TalkAction(player, texts=[
-            #     "Damion: What's going on...?",
-            # ]),
-            # # pan ahead...
-            # TalkAction(dawn, texts=[
-            #     "Professor, there isn't anything out of the ordinary on the other side,"
-            #     "either!",
-            #     "Professor: Hmm...\nI may have been mistaken...",
-            #     "Something appears to be different than it was before, but...",
-            #     "Fine! It's enough that we have seen the lake."
-            # ]),
+            TalkAction(player, texts=[
+                "Damion: What's going on...?",
+            ]),
+            # pan ahead...
+            MoveCameraPosition(direction=Direction.up, tiles=9),
+            TalkAction(dawn, texts=[
+                "Professor, there isn't anything out of the ordinary on the other side,"
+                "either!",
+                "Professor: Hmm...\nI may have been mistaken...",
+                "Something appears to be different than it was before, but...",
+                "Fine! It's enough that we have seen the lake."
+            ]),
             SetFacingDirection(professor_rowan, direction=Direction.right),
             TalkAction(professor_rowan, texts=["Dawn, we're leaving."]),
             SetFacingDirection(professor_rowan, direction=Direction.down),
@@ -83,7 +82,23 @@ class SelectStarterPokemon(StorylineEvent):
                 "There are many rare kinds of Pokémon in Sinnoh.",
                 "The region should serve us very well in regards to our studies.",
             ]),
-            MoveAction(professor_rowan, direction=Direction.down, steps=5),
+
+            MoveAction(professor_rowan, direction=Direction.down, steps=1),
+            MoveAction(dawn, direction=Direction.left, steps=1),
+            MoveCameraPosition(direction=Direction.down, tiles=1),
+
+            MoveAction(professor_rowan, direction=Direction.down, steps=1),
+            MoveAction(dawn, direction=Direction.down, steps=1),
+            MoveCameraPosition(direction=Direction.down, tiles=1),
+
+            MoveAction(professor_rowan, direction=Direction.down, steps=1),
+            MoveAction(dawn, direction=Direction.down, steps=1),
+            MoveCameraPosition(direction=Direction.down, tiles=1),
+
+            MoveAction(professor_rowan, direction=Direction.down, steps=1),
+            MoveAction(dawn, direction=Direction.down, steps=1),
+            MoveCameraPosition(direction=Direction.down, tiles=1),
+
             MoveAction(professor_rowan, direction=Direction.left, steps=1),
             MoveAction(professor_rowan, direction=Direction.down, steps=5),
             MoveAction(dawn, direction=Direction.left, steps=1),

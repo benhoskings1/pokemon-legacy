@@ -2,7 +2,7 @@ from enum import Enum
 
 import pygame as pg
 
-from general.utils import Colours, BlitLocation
+from engine.general.utils import Colours, BlitLocation
 from engine.graphics.sprite_screen import SpriteScreen, DisplayContainer
 from engine.pokemon.pokemon import Pokemon, oldPokedex
 

@@ -5,8 +5,8 @@ from enum import Enum
 import pygame as pg
 import pandas as pd
 
-from general.direction import Direction
-from general.Item import Item
+from engine.general.direction import Direction
+from engine.general import Item
 from engine.graphics.screen_V2 import BlitLocation
 from engine.graphics.sprite_screen import DisplayContainer
 from engine.graphics.selector_display import SelectorDisplay
@@ -57,8 +57,8 @@ class ItemSetContainer(SelectorDisplay):
             container_img_path,
             selector_img_path,
             options=items,
-            positions=positions,
-            pos=pg.Vector2(95, 0),
+            option_positions=positions,
+            display_posistion=pg.Vector2(95, 0),
             scale=scale,
         )
 
@@ -177,8 +177,8 @@ class ConfirmContainer(SelectorDisplay):
             selector_img_path,
             scale=scale,
             options=[ConfirmOption.yes, ConfirmOption.no],
-            positions=[(6, 9), (6, 25)],
-            pos=pg.Vector2(178, 98),
+            option_positions=[(6, 9), (6, 25)],
+            display_posistion=pg.Vector2(178, 98),
         )
 
         self.link_options(ConfirmOption.yes, ConfirmOption.no, direction=Direction.down, reverse=True)

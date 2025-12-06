@@ -6,8 +6,8 @@ import pygame as pg
 import numpy as np
 from Image_Processing.ImageEditor import ImageEditor
 
-from general.Environment import Environment
-from general.utils import Colours, create_display_bar, BlitLocation
+from engine.general.Environment import Environment
+from engine.general.utils import Colours, create_display_bar, BlitLocation
 from engine.graphics.screen_V2 import Screen, FontOption
 from engine.graphics.sprite_screen import SpriteScreen, PokeballCatchAnimation
 from engine.pokemon.pokemon import Pokemon

@@ -7,9 +7,9 @@ from engine.pokemon.pokemon import PokemonSpriteSmall
 import pygame as pg
 from enum import Enum
 
-from general.utils import create_display_bar
-from general.Item import Pokeball, MedicineItem, BattleItemType
-from general.Move import Move2
+from engine.general.utils import create_display_bar
+from engine.general.Item import Pokeball, MedicineItem, BattleItemType
+from engine.general.Move import Move2
 # from bag import BagV2
 
 

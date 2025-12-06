@@ -7,7 +7,7 @@ from PIL import Image
 
 from Image_Processing.ImageEditor import ImageEditor
 
-pokedex = pd.read_csv("game_data/pokedex/Local Dex.tsv", delimiter='\t', index_col=1)
+
 attributes = pd.read_csv("game_data/pokedex/AttributeDex.tsv", delimiter='\t', index_col=1)
 editor = ImageEditor()
 
@@ -58,15 +58,3 @@ class Animations:
         self.front = front
         self.frontShiny = frontShiny
         self.small = small
-
-
-class PokemonAnimations:
-    def __init__(self, limit):
-        self.animations = {}
-
-        for idx, name in enumerate(pokedex.index):
-            if idx < limit:
-                pkAnimations = createAnimation(name)
-                self.animations[name] = pkAnimations
-                print(name)
-

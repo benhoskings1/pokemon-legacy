@@ -2,9 +2,7 @@ import warnings
 import hashlib
 
 import pygame as pg
-from general.utils import Colours
-
-from general.Item import Item
+from engine.general.utils import Colours
 
 
 def sha256_hash(data):

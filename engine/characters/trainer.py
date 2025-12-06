@@ -3,7 +3,7 @@ import json
 
 from engine.pokemon.team import Team
 
-from general.direction import Direction
+from engine.general.direction import Direction
 
 from engine.storyline.game_state import GameState
 from engine.storyline.game_action import *

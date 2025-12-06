@@ -10,13 +10,12 @@ from displays.battle.battle_display_touch import *
 from displays.battle.learn_move_display import LearnMoveDisplay
 from displays.battle.battle_catch_display import BattleCatchDisplay
 
-from general.utils import *
-from general.Condition import StatusCondition
-from general.Environment import Environment
-from general.Item import Item, Pokeball, MedicineItem
-from general.Move import Move2
-from general.Status_Conditions.Burn import Burn
-from general.Status_Conditions.Poison import Poison
+from engine.general.Condition import StatusCondition
+from engine.general.Environment import Environment
+from engine.general.Item import Item, Pokeball, MedicineItem
+from engine.general.Move import Move2
+from engine.general.Status_Conditions.Burn import Burn
+from engine.general.Status_Conditions.Poison import Poison
 from engine.pokemon.pokemon import Pokemon
 from engine.pokemon.team import Team
 
@@ -876,7 +875,7 @@ class Battle:
 if __name__ == '__main__':
     from game import Game
     from engine.bag import BagV2
-    from general.Route import Route
+    from engine.general.Route import Route
     import json
 
     pg.init()

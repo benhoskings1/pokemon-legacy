@@ -5,7 +5,7 @@ import time
 
 import pygame as pg
 
-from general.direction import Direction
+from engine.general.direction import Direction
 from engine.graphics.sprite_screen import DisplayContainer
 from engine.graphics.selector_display import SelectorDisplay
 
@@ -27,8 +27,8 @@ class ConfirmContainer(SelectorDisplay):
             selector_img_path,
             scale=scale,
             options=[ConfirmOption.yes, ConfirmOption.no],
-            positions=[(6, 9), (6, 25)],
-            pos=pg.Vector2(178, 98),
+            option_positions=[(6, 9), (6, 25)],
+            display_posistion=pg.Vector2(178, 98),
         )
 
         self.link_options(ConfirmOption.yes, ConfirmOption.no, direction=Direction.down, reverse=True)
@@ -98,8 +98,8 @@ class ComputerSelector(SelectorDisplay):
             selector_img_path,
             scale=scale,
             options=options,
-            positions=[(6, 9), (6, 25), (6, 41), (6, 57)],
-            pos=pg.Vector2(2, 2),
+            option_positions=[(6, 9), (6, 25), (6, 41), (6, 57)],
+            display_posistion=pg.Vector2(2, 2),
         )
 
         # define node links here
@@ -127,8 +127,8 @@ class ComputerActionSelector(SelectorDisplay):
             selector_img_path,
             scale=scale,
             options=options,
-            positions=[(8, 10), (8, 26), (8, 42), (8, 58), (8, 74)],
-            pos=pg.Vector2(2, 2),
+            option_positions=[(8, 10), (8, 26), (8, 42), (8, 58), (8, 74)],
+            display_posistion=pg.Vector2(2, 2),
         )
 
         # define node links here

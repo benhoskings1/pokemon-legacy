@@ -11,8 +11,8 @@ from engine.characters.character import Character
 from engine.game_world.map_collection import MapCollection
 
 from engine.game_world.tiled_map import TiledMap2, MapLinkTile, LinkType
-from general.direction import Direction
-from general.utils import Colours
+from engine.general.direction import Direction
+from engine.general.utils import Colours
 
 MODULE_PATH = resources.files(__package__)
 

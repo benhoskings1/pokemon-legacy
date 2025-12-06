@@ -1,4 +1,4 @@
-from general.storage_system.storage_system_containers import StorageBox
+from engine.general.storage_system.storage_system_containers import StorageBox
 
 class StorageSystem:
     def __init__(self):

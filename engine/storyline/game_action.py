@@ -1,7 +1,7 @@
 
 from enum import Enum
 
-from general.direction import Direction
+from engine.general.direction import Direction
 from engine.storyline.game_state import GameState
 
 
@@ -95,9 +95,10 @@ class SetGameState(GameAction):
 
 
 class SetFacingDirection(GameAction):
-    def __init__(self, actor, direction: Direction):
+    def __init__(self, actor, direction: Direction, duration: int = 200):
         GameAction.__init__(self, actor, GameActionType.set_facing_direction)
         self.direction = direction
+        self.duration = duration
 
 
 class MoveCameraPosition(GameAction):

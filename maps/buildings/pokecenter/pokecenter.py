@@ -4,9 +4,9 @@ from engine.characters.character import CharacterTypes
 from engine.characters.npc import NPC
 
 # from trainer import Trainer, TrainerTypes, NPC
-from general.direction import Direction
-from general.utils import Colours, wait_for_key
-from general.controller import Controller
+from engine.general.direction import Direction
+from engine.general.utils import Colours, wait_for_key
+from engine.general.controller import Controller
 
 from engine.game_world.tiled_map import TiledMap2, GameObject, Obstacle, MapLinkTile
 from maps.buildings.pokecenter.pokecenter_containers import (

@@ -1,6 +1,6 @@
 import pygame as pg
 
-from general.controller import Controller
+from engine.general.controller import Controller
 from engine.graphics.sprite_screen import DisplayContainer
 
 

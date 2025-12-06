@@ -4,21 +4,20 @@ from enum import Enum
 from dataclasses import dataclass
 import pygame as pg
 
-from general.utils import Colours
+from engine.general import Colours
 
 from engine.game_world.map_collection import MapCollection
 from engine.graphics.sprite_screen import SpriteScreen
 
-from general.direction import Direction
+from engine.general.direction import Direction
 from engine.game_world.game_map import RoutePopup
 from displays.battle.battle_display_main import TextBox
 from displays.menu.menu_display_popup import MenuDisplayPopup
-from engine.game_world.route_orchestrator import RouteOrchestrator, LinkType
+from engine.game_world.route_orchestrator import RouteOrchestrator
 from engine.game_world.tiled_map import TiledMap2, MapLinkTile, WallTile
 from engine.game_world.tiled_building import TiledBuilding
 
-from engine.errors import GameError, MapError
-from maps.buildings import RivalHouse
+from engine.errors import MapError
 
 
 class GameDisplayStates(Enum):

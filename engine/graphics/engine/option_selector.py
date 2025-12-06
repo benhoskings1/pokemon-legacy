@@ -5,7 +5,7 @@ import pygame as pg
 import networkx as nx
 from typing import Any
 
-from general.direction import Direction, opposite_direction_mapping
+from engine.general.direction import Direction, opposite_direction_mapping
 
 
 @dataclass(frozen=True)
@@ -16,16 +16,11 @@ class SelectorNode:
     scale: int | float = 1.0
 
 
-class Selector:
-    """ Properties to store on the option selector config"""
-    ...
-
-
 # ==== Sprites =======
 class OptionSelector(pg.sprite.Sprite):
     def __init__(
             self,
-            selector : str,
+            selector: str,  # arrow |
             options,
             positions,
             start_option=None,

@@ -5,7 +5,7 @@ import pygame as pg
 
 from engine.graphics.sprite_screen import DisplayContainer
 from engine.graphics.engine.option_selector import OptionSelector
-from general.direction import Direction
+from engine.general.direction import Direction
 
 
 MODULE_PATH = resources.files(__package__)
@@ -14,19 +14,29 @@ MODULE_PATH = resources.files(__package__)
 class SelectorDisplay(DisplayContainer):
     def __init__(
             self,
-            display_image,
-            selector_image,
+            display_image_path: str,
+            selector_image_path: str,
             options: list | Enum,
-            positions: list,
-            pos: pg.Vector2,
-            scale=1.0
+            option_positions: list,
+            display_position: pg.Vector2 = pg.Vector2(0, 0),
+            *,
+            scale: int | float | tuple[int, int] | list[int] | pg.Vector2 = 1.0
     ):
-        DisplayContainer.__init__(self, display_image, sprite_id=0, pos=pos, scale=scale)
+        """
+        Initialise the selector display.
+
+        :param display_image_path: path to the base image of the display
+        :param selector_image_path: path to the selector image
+        :param options: list of options within the display
+        :param option_positions: positions of each of the options
+        
+        """
+        DisplayContainer.__init__(self, display_image_path, sprite_id=0, pos=display_position, scale=scale)
 
         self.selector = OptionSelector(
-            selector_image,
+            selector_image_path,
             options,
-            positions=positions,
+            positions=option_positions,
             scale=self.scale
         )
         self.sprites.add(self.selector)

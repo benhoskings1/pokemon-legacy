@@ -3,7 +3,7 @@ from random import choice
 
 import pygame as pg
 
-from general.direction import Direction
+from engine.general.direction import Direction
 from engine.characters.character import Character
 from engine.storyline.game_action import *
 from engine.storyline.game_state import GameState

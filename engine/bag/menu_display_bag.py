@@ -7,8 +7,8 @@ from enum import Enum
 
 from engine.graphics.screen_V2 import BlitLocation, FontOption
 from engine.bag.bag import BagV2
-from general.utils import Colours
-from general.Item import ItemType, Item
+from engine.general.utils import Colours
+from engine.general.Item import ItemType, Item
 from engine.graphics.sprite_screen import SpriteScreen, DisplayContainer
 
 

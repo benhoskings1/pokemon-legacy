@@ -3,7 +3,7 @@ from enum import Enum
 import pygame as pg
 from engine.graphics.font.font import Font, FontType
 
-from general.utils import BlitLocation, Colours
+from engine.general.utils import BlitLocation, Colours
 
 
 # class Colours(Enum):

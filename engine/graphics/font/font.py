@@ -7,7 +7,7 @@ from math import floor, ceil
 import numpy as np
 import pygame as pg
 
-from general.utils import Colours
+from engine.general.utils import Colours
 
 MODULE_PATH = resources.files(__package__)
 

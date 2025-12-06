@@ -19,8 +19,8 @@ class StorageSystemContainer(SelectorDisplay):
             selector_image,
             container_image,
             options=[True],
-            positions=[(0,0)],
-            pos=pg.Vector2(0, 0)
+            option_positions=[(0, 0)],
+            display_posistion=pg.Vector2(0, 0)
         )
 
 

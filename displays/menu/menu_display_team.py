@@ -3,9 +3,9 @@ from enum import Enum
 
 import pygame as pg
 
-from general.Move import Move2
+from engine.general.Move import Move2
 from engine.pokemon.pokemon import Pokemon
-from general.utils import Colours, create_display_bar
+from engine.general.utils import Colours, create_display_bar
 from engine.graphics.screen_V2 import FontOption, BlitLocation
 from engine.graphics.sprite_screen import SpriteScreen, DisplayContainer
 from engine.pokemon.pokemon import PokemonSpriteSmall

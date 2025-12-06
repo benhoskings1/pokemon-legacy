@@ -1,26 +1,32 @@
+import os
 import json
 import random
 import shutil
 import sys
 import warnings
+import time
+import pickle
 from datetime import datetime
 
 from dataclasses import dataclass
 
+import pandas as pd
+import pygame as pg
+
+from engine import pokemon_generator, item_generator
+
 from engine.bag.bag import BagV2
-from engine.storyline.game_action import MoveCameraPosition
-from general.Item import ItemGenerator
-from engine.battle.battle import Battle, State, BattleOutcome
+from engine.battle.battle import Battle, BattleOutcome
 from engine.game_world.game_map import TallGrass
 from engine.game_world.game_obejct import PokeballTile
 from engine.pokedex.pokedex import Pokedex
 from engine.game_log.game_log import GameLog, GameEvent, GameEventType
 
 from displays.load_display import LoadDisplay
-from general.utils import *
-from general.controller import Controller
-from general.Time import Time
-from general.Route import Route
+from engine.general.controller import Controller
+from engine.general.Time import Time
+from engine.general.Route import Route
+from engine.general.utils import Colours, wait_for_key
 
 # ======= Load displays =====
 from displays.game_display import GameDisplay, GameDisplayStates
@@ -60,8 +66,6 @@ class GameConfig:
 
 
 class Game:
-
-    item_generator = ItemGenerator()
 
     def __init__(
             self,
@@ -237,8 +241,7 @@ class Game:
             name,
             **kwargs
     ):
-        # TODO: create generator object that holds animations in memory
-        return Pokemon(name, **kwargs)
+        return pokemon_generator.generate_pokemon(name, **kwargs)
 
     def load_displays(self):
         self.window = pg.display.set_mode(self.displaySize)
@@ -507,6 +510,11 @@ class Game:
                     pg.time.delay(200)
                     print(self.game_display.camera_offset)
 
+            elif action.action_type == GameActionType.set_facing_direction:
+                action.actor.facing_direction = action.direction
+                self.game_display.update(force_refresh=True)
+                self.update_display()
+                pg.time.delay(action.duration)
 
             self.update_display()
 
@@ -608,7 +616,7 @@ class Game:
 
                         elif isinstance(obj, PokeballTile):
 
-                            item = self.item_generator.generate_item(obj.item)
+                            item = item_generator.generate_item(obj.item)
                             # remove pokeball from map
                             obj.kill()
                             self.game_display.update(force_refresh=True)

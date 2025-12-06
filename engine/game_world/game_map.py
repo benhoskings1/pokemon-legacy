@@ -12,7 +12,7 @@ from engine.game_world.tiled_building import TiledBuilding
 from engine.game_world.game_obejct import GameObject, PokeballTile
 from maps.buildings import *
 
-from general.utils import BlitLocation
+from engine.general.utils import BlitLocation
 
 
 class TallGrass(GameObject):
@@ -92,6 +92,7 @@ class GameMap(TiledMap2):
 
     building_mappings = {
         "player_house": PlayerHouse,
+        "rival_house": RivalHouse,
         "pokecenter": PokeCenter,
         "pokemart": PokeMart,
     }
@@ -150,24 +151,6 @@ class GameMap(TiledMap2):
                             obj_scale=2,
                             parent_map=self
                         )
-
-                    elif obj.name == "rival_house":
-                        tile = RivalHouse(
-                            rect,
-                            obj_id=obj.id,
-                            player=self.player,
-                            map_scale=2,
-                            obj_scale=2,
-                            parent_map=self
-                        )
-                    #
-                    # elif obj.name == "pokecenter":
-                    #     tile = PokeCenter(rect, player=self.player, map_scale=2, obj_scale=2,
-                    #                             parent_map_scale=self.map_scale)
-                    #
-                    # elif obj.name == "pokemart":
-                    #     tile = PokeMart(rect, player=self.player, map_scale=2, obj_scale=2,
-                    #                             parent_map_scale=self.map_scale, properties=obj.properties)
 
                 elif obj.type == "water":
                     tile = WaterTile(rect, properties=obj.properties, scale=self.map_scale)

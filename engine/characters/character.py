@@ -8,7 +8,7 @@ import pygame as pg
 
 from engine.storyline.game_action import GameAction
 from engine.game_world.game_obejct import GameObject
-from general.direction import Direction
+from engine.general.direction import Direction
 
 from Sprites.SpriteSet import SpriteSet2
 from Image_Processing.ImageEditor import ImageEditor

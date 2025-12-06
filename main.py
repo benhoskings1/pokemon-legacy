@@ -5,7 +5,7 @@ import pickle
 import pygame as pg
 from game import Game, GameConfig
 
-from general.utils import map_properties
+from engine.general.utils import map_properties
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

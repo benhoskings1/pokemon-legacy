@@ -1,5 +1,5 @@
 import pygame as pg
-from general.direction import Direction
+from engine.general.direction import Direction
 
 class Controller:
     def __init__(self, a=pg.K_x, b=pg.K_z, x=pg.K_s, y=pg.K_a,
