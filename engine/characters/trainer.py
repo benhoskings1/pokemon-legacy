@@ -1,3 +1,4 @@
+import os
 import pygame as pg
 import json
 
@@ -8,6 +9,9 @@ from engine.general.direction import Direction
 from engine.storyline.game_state import GameState
 from engine.storyline.game_action import *
 from engine.characters.character import Character, CharacterTypes
+
+DATA_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'game_data')
+ASSET_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'assets')
 
 
 class Trainer(Character):
@@ -30,10 +34,10 @@ class Trainer(Character):
         CharacterTypes.riley: (0, 2),
     }
 
-    trainer_front_parent_surf = pg.image.load('assets/sprites/trainers/trainer_front_images.png')
-    trainer_back_parent_surf = pg.image.load('assets/sprites/trainers/trainer_front_images.png')
+    trainer_front_parent_surf = pg.image.load(os.path.join(ASSET_PATH, 'sprites/trainers/trainer_front_images.png'))
+    trainer_back_parent_surf = pg.image.load(os.path.join(ASSET_PATH, 'sprites/trainers/trainer_front_images.png'))
 
-    with open("game_data/game_config/trainer_teams.json") as f:
+    with open(os.path.join(DATA_PATH, "game_config/trainer_teams.json")) as f:
         trainer_data = json.load(f)
 
     def __init__(

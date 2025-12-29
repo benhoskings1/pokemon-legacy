@@ -368,7 +368,6 @@ class GameDisplay(SpriteScreen):
             touch_window,
             time_delay
     ):
-        # TODO: migrate this to game display
         black_surf = pg.Surface(main_window.get_size())
         black_surf.fill(Colours.darkGrey.value)
         for count in range(2):

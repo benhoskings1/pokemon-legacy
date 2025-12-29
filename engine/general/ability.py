@@ -2,7 +2,9 @@ import os
 
 import pandas as pd
 
-ABIlITIES = pd.read_csv("game_data/abilities.tsv", sep="\t", index_col=0)
+DATA_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'game_data', 'abilities.tsv')
+
+ABIlITIES = pd.read_csv(DATA_PATH, sep="\t", index_col=0)
 
 
 class Ability:

@@ -12,7 +12,7 @@ from displays.battle.battle_catch_display import BattleCatchDisplay
 
 from engine.general.Condition import StatusCondition
 from engine.general.Environment import Environment
-from engine.general.Item import Item, Pokeball, MedicineItem
+from engine.general.item import Item, Pokeball, MedicineItem
 from engine.general.Move import Move2
 from engine.general.Status_Conditions.Burn import Burn
 from engine.general.Status_Conditions.Poison import Poison

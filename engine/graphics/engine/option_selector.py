@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 from enum import Enum
 import pygame as pg
@@ -6,6 +7,8 @@ import networkx as nx
 from typing import Any
 
 from engine.general.direction import Direction, opposite_direction_mapping
+
+MODULE_PATH = Path(__file__).parent
 
 
 @dataclass(frozen=True)
@@ -18,6 +21,10 @@ class SelectorNode:
 
 # ==== Sprites =======
 class OptionSelector(pg.sprite.Sprite):
+    preset_paths = {
+        "arrow": str(MODULE_PATH / "assets" / "selector_arrow.png"),
+    }
+
     def __init__(
             self,
             selector: str,  # arrow |
@@ -32,13 +39,14 @@ class OptionSelector(pg.sprite.Sprite):
         """
         super().__init__()
 
+        selector_path = self.preset_paths[selector] if selector in self.preset_paths else selector
 
-        self.image = pg.image.load(selector)
+        self.image = pg.image.load(selector_path)
         self.image = pg.transform.scale(
             self.image, pg.Vector2(self.image.get_size()) * scale
         )
 
-        self.sprite_type = "arrow"
+        self.sprite_type = "selector"
 
         self.selected = list(options)[0] if start_option is None else start_option
 
@@ -90,7 +98,6 @@ class OptionSelector(pg.sprite.Sprite):
 
         match = next((nbr for nbr, link_dict in node_neighbors.items() if link_dict["link"] == direction), None)
         if match:
-            # print(match)
             self.selected = match.value
 
         return match

@@ -1,3 +1,4 @@
+import os
 import datetime
 import pickle
 import time
@@ -22,13 +23,14 @@ from Image_Processing.ImageEditor import ImageEditor
 
 
 MODULE_PATH = resources.files(__package__)
+DATA_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'game_data')
 
 
-with open("game_data/pokedex/LocalDex/LocalDex.pickle", 'rb') as file:
+with open(os.path.join(DATA_PATH, "pokedex/LocalDex/LocalDex.pickle"), 'rb') as file:
     pokedex: pd.DataFrame = pickle.load(file)
 
-oldPokedex = pd.read_csv("game_data/pokedex/Local Dex.tsv", delimiter='\t', index_col=1)
-national_dex = pd.read_csv("game_data/pokedex/NationalDex/NationalDex.tsv", delimiter='\t', index_col=0)
+oldPokedex = pd.read_csv(os.path.join(DATA_PATH, "pokedex/Local Dex.tsv"), delimiter='\t', index_col=1)
+national_dex = pd.read_csv(os.path.join(DATA_PATH, "pokedex/NationalDex/NationalDex.tsv"), delimiter='\t', index_col=0)
 
 editor = ImageEditor()
 
@@ -178,9 +180,9 @@ class Pokemon(pg.sprite.Sprite):
     small_sprites = cv2.imread(MODULE_PATH / "assets/Gen_IV_Small_Sprites.png", cv2.IMREAD_UNCHANGED)
 
     # pokemon data
-    natures = pd.read_csv("game_data/natures.tsv", delimiter='\t', index_col=0)
-    level_up_values: DataFrame = pd.read_csv("game_data/level_up_exp.tsv", delimiter='\t', index_col=6)
-    effectiveness = pd.read_csv("game_data/effectiveness.csv", index_col=0)
+    natures = pd.read_csv(os.path.join(DATA_PATH, "natures.tsv"), delimiter='\t', index_col=0)
+    level_up_values: DataFrame = pd.read_csv(os.path.join(DATA_PATH, "level_up_exp.tsv"), delimiter='\t', index_col=6)
+    effectiveness = pd.read_csv(os.path.join(DATA_PATH, "effectiveness.csv"), index_col=0)
 
     def __init__(
             self,
@@ -371,6 +373,7 @@ class Pokemon(pg.sprite.Sprite):
 
     @property
     def image(self) -> None | pg.Surface:
+        """ Return the blit image of the pokémon"""
         if self._clear_surfaces:
             return None
         return self.images["back"] if self.friendly else self.images["front"]
@@ -381,6 +384,12 @@ class Pokemon(pg.sprite.Sprite):
 
     @property
     def health_ratio(self) -> float:
+        """
+        Return a float value of the pokémon's current health as a fraction of its maximum health.
+
+        :return: heath ratio
+        :rtype: float (0-1)
+        """
         return self.health / self.stats.health
 
     def _get_move_damage(self, move: Move2, target, ignore_modifiers=False) -> float:
@@ -454,14 +463,20 @@ class Pokemon(pg.sprite.Sprite):
 
         return damage, type1 * type2, inflict_condition, heal, modify, hits, crit
 
-    def update_evs(self, name) -> None:
-        data = pokedex.loc[name]
+    def update_evs(self, foe_name: str) -> None:
+        """
+        Update the EVs of the pokémon after KO'ing another
+
+        :param foe_name: the name of the pokemon that was knocked out
+        """
+
+        data = pokedex.loc[foe_name]
         EVYield = data.EV_Yield
         for [idx, value] in enumerate(EVYield):
             self.EVs[idx] += value
 
     def get_faint_xp(self) -> float:
-        """ Return the exp yield of the pokemon on ko """
+        """ Return the exp yield of the pokémon on ko """
         a, e, f, L, Lp, p, s, t, v = 1, 1, 1, 1, 1, 1, 1, 1, 1
 
         b = self.stats.exp
@@ -476,6 +491,7 @@ class Pokemon(pg.sprite.Sprite):
         self.stats = Stats.from_base_and_evs(base_stats, self.EVs, self.level, self.stats.exp)
 
     def level_up(self):
+        """ Level up the pokémon. Update the stats """
         self.level += 1
         self.level_exp = int(self.level_up_values.loc[self.level, self.growthRate])
         self.level_up_exp = int(self.level_up_values.loc[self.level + 1, self.growthRate])
@@ -486,6 +502,7 @@ class Pokemon(pg.sprite.Sprite):
         return [getMove(move_name) for move_name, level in self.moveData if level == self.level]
 
     def get_evolution(self):
+        """ Get the evolution of the pokémon """
         return oldPokedex[oldPokedex["ID"] == self.ID + 1].index[0]
 
     def _clear_images(self) -> None:
@@ -522,6 +539,7 @@ class Pokemon(pg.sprite.Sprite):
         self.stat_stages = StatStages()
 
     def restore(self) -> None:
+        """ Restore the pokémon to full health """
         self.health = self.stats.health
         self.status = None
 
@@ -530,6 +548,7 @@ class Pokemon(pg.sprite.Sprite):
 
     # ========== GET JSON SAVE DATA  =============
     def get_json_data(self) -> dict[str, Any]:
+        """ Return the json data representation of this pokémon """
         status = self.status.value if self.status else None
 
         data = {

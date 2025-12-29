@@ -1,3 +1,4 @@
+import os
 import json
 from random import choice
 
@@ -12,12 +13,15 @@ from engine.storyline.game_state import GameState
 __all__ = ["NPC", "TwinleafGuard", "ProfessorRowan", "PlayerMum"]
 
 
+DATA_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'game_data')
+
+
 class NPC(Character):
     """
     Returns a NPC Object.
     """
 
-    with open("game_data/game_config/npc_texts.json", "r") as file:
+    with open(os.path.join(DATA_PATH, "game_config/npc_texts.json"), "r") as file:
         response_texts = json.load(file)
 
 

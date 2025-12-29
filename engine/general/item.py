@@ -1,14 +1,18 @@
+import os
+
 import pandas as pd
 import pygame as pg
 
 from engine.pokemon.pokemon import StatusEffect
 from enum import Enum
 
-item_data = pd.read_csv("game_data/items.tsv", delimiter="\t")
-item_types = pd.read_csv("game_data/item_types.tsv", delimiter="\t", index_col=0)
-battle_item_types = pd.read_csv("game_data/battle_item_types.tsv", delimiter="\t", index_col=0)
-pokeballs = pd.read_csv("game_data/Items/pokeballs.tsv", delimiter="\t", index_col=0)
-medicine = pd.read_csv("game_data/Items/medicine.tsv", delimiter="\t", index_col=0)
+DATA_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'game_data')
+
+item_data = pd.read_csv(os.path.join(DATA_PATH, "items.tsv"), delimiter="\t")
+item_types = pd.read_csv(os.path.join(DATA_PATH, "item_types.tsv"), delimiter="\t", index_col=0)
+battle_item_types = pd.read_csv(os.path.join(DATA_PATH, "battle_item_types.tsv"), delimiter="\t", index_col=0)
+pokeballs = pd.read_csv(os.path.join(DATA_PATH, "Items/pokeballs.tsv"), delimiter="\t", index_col=0)
+medicine = pd.read_csv(os.path.join(DATA_PATH, "Items/medicine.tsv"), delimiter="\t", index_col=0)
 
 item_data = item_data.merge(item_types, on="item_type_id", how="left", suffixes=["", "_item_type"])
 item_data = item_data.merge(battle_item_types, on="battle_item_type_id", how="left", suffixes=["", "_battle_item_type"])
@@ -93,11 +97,11 @@ class MedicineItem(Item):
 
 
 class ItemGenerator:
-    item_data = pd.read_csv("game_data/items.tsv", delimiter="\t")
-    item_types = pd.read_csv("game_data/item_types.tsv", delimiter="\t", index_col=0)
-    battle_item_types = pd.read_csv("game_data/battle_item_types.tsv", delimiter="\t", index_col=0)
-    pokeballs = pd.read_csv("game_data/Items/pokeballs.tsv", delimiter="\t", index_col=0)
-    medicine = pd.read_csv("game_data/Items/medicine.tsv", delimiter="\t", index_col=0)
+    item_data = pd.read_csv(os.path.join(DATA_PATH, "items.tsv"), delimiter="\t")
+    item_types = pd.read_csv(os.path.join(DATA_PATH, "item_types.tsv"), delimiter="\t", index_col=0)
+    battle_item_types = pd.read_csv(os.path.join(DATA_PATH, "battle_item_types.tsv"), delimiter="\t", index_col=0)
+    pokeballs = pd.read_csv(os.path.join(DATA_PATH, "Items/pokeballs.tsv"), delimiter="\t", index_col=0)
+    medicine = pd.read_csv(os.path.join(DATA_PATH, "Items/medicine.tsv"), delimiter="\t", index_col=0)
 
     item_data = item_data.merge(item_types, on="item_type_id", how="left", suffixes=["", "_item_type"])
     item_data = item_data.merge(battle_item_types, on="battle_item_type_id", how="left",

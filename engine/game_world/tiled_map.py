@@ -172,10 +172,6 @@ class TiledMap2(TiledMap, MainScreen):
         # add trainer map position
         self.add_character(player, player_position, layer_name=player_layer)
 
-        # TODO: fix the static scale here
-        # self.text_box = TextBox(sprite_id="text_box", scale=2, static=True)
-        # self.text_box.rect.topleft += pg.Vector2(6, 0)
-
         self.tile_surface_mapping = {
         }
 

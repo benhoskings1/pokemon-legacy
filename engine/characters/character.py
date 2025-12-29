@@ -1,7 +1,7 @@
-import importlib.resources as resources
-
+import os
 import json
 from enum import Enum
+import importlib.resources as resources
 
 import cv2
 import pygame as pg
@@ -15,6 +15,7 @@ from Image_Processing.ImageEditor import ImageEditor
 
 
 MODULE_PATH = resources.files(__package__)
+ASSET_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'assets')
 
 
 class CharacterTypes(Enum):
@@ -53,7 +54,7 @@ class AttentionBubble(pg.sprite.Sprite):
         self.character = character
         self.scale = scale
 
-        self.image = pg.image.load("assets/sprites/trainers/attention_bubble.png").convert_alpha()
+        self.image = pg.image.load(os.path.join(ASSET_PATH, "sprites/trainers/attention_bubble.png")).convert_alpha()
 
         if scale != 1.0:
             self.image = pg.transform.scale(self.image, pg.Vector2(self.image.get_size()) * scale)
@@ -65,7 +66,7 @@ class AttentionBubble(pg.sprite.Sprite):
 
 class Character(GameObject):
     # load in the sprite surfaces
-    npc_parent_surf_cv2 = cv2.imread('assets/sprites/trainers/all_npcs_2.png', cv2.IMREAD_UNCHANGED)
+    npc_parent_surf_cv2 = cv2.imread(os.path.join(ASSET_PATH, 'sprites/trainers/all_npcs_2.png'), cv2.IMREAD_UNCHANGED)
 
     character_sprite_mapping = {
         CharacterTypes.player_male: (0, 0),

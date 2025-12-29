@@ -1,7 +1,7 @@
 import json
 import pygame as pg
 
-from engine.general.Item import Item, Pokeball, MedicineItem, BattleItemType, ItemType
+from engine.general.item import Item, Pokeball, MedicineItem, BattleItemType, ItemType
 from collections import Counter
 
 

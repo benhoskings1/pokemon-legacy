@@ -8,11 +8,12 @@ class MainScreen(SpriteScreen):
     def __init__(
             self,
             size: tuple[int, int] | list[int] | pg.Vector2,
+            scale = 1.0
     ):
         SpriteScreen.__init__(self, size)
 
-        self.text_box = TextBox(sprite_id="text_box", scale=2, static=True)
-        self.text_box.rect.topleft += pg.Vector2(6, 0)
+        self.text_box = TextBox(sprite_id="text_box", scale=scale, static=True)
+        self.text_box.rect.topleft += pg.Vector2(3, 0) * scale
 
     def update_display_text(self, text, max_chars=None):
         if self.text_box not in self.sprites:

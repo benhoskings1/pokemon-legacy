@@ -1,9 +1,11 @@
 import random
 from enum import Enum
 
+import os
 import pandas as pd
 
-movesData = pd.read_csv("game_data/Moves.tsv", delimiter='\t', index_col=0)
+DATA_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'game_data', 'Moves.tsv')
+movesData = pd.read_csv(DATA_PATH, delimiter='\t', index_col=0)
 
 
 class EffectType(Enum):

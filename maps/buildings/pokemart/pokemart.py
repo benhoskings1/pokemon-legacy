@@ -9,7 +9,6 @@ import networkx as nx
 from statemachine import StateMachine, State
 
 from engine.general.utils import Colours, wait_for_key
-from engine.general import Item
 from engine.general.controller import Controller
 from engine.general.direction import Direction, opposite_direction_mapping
 from engine.graphics.sprite_screen import DisplayContainer
@@ -19,9 +18,9 @@ from maps.buildings.pokemart.pokemart_containers import (
     ConfirmContainer, ConfirmOption
 )
 
-from engine.general.Item import ItemGenerator
+from engine.general.item import ItemGenerator
 
-
+ASSET_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'assets')
 MODULE_PATH = resources.files(__package__)
 
 
@@ -43,7 +42,7 @@ class SelectorNode:
 class ArrowSelector(pg.sprite.Sprite):
     def __init__(self, scale=1):
         super().__init__()
-        self.image = pg.image.load("assets/containers/menu/team/popup_arrow.png")
+        self.image = pg.image.load(os.path.join("containers/menu/team/popup_arrow.png"))
         self.image = pg.transform.scale(
             self.image, pg.Vector2(self.image.get_size()) * scale
         )

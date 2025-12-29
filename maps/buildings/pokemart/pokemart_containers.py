@@ -6,7 +6,7 @@ import pygame as pg
 import pandas as pd
 
 from engine.general.direction import Direction
-from engine.general import Item
+from engine.general.item import Item
 from engine.graphics.screen_V2 import BlitLocation
 from engine.graphics.sprite_screen import DisplayContainer
 from engine.graphics.selector_display import SelectorDisplay

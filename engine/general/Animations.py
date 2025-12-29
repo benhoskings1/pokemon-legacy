@@ -7,8 +7,12 @@ from PIL import Image
 
 from Image_Processing.ImageEditor import ImageEditor
 
+import os
+import pandas as pd
 
-attributes = pd.read_csv("game_data/pokedex/AttributeDex.tsv", delimiter='\t', index_col=1)
+DATA_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'game_data', 'pokedex', 'AttributeDex.tsv')
+
+attributes = pd.read_csv(DATA_PATH, delimiter='\t', index_col=1)
 editor = ImageEditor()
 
 

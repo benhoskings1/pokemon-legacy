@@ -19,6 +19,7 @@ from engine.bag.bag import BagV2
 from engine.battle.battle import Battle, BattleOutcome
 from engine.game_world.game_map import TallGrass
 from engine.game_world.game_obejct import PokeballTile
+from engine.graphics.sprite_screen import SpriteScreen
 from engine.pokedex.pokedex import Pokedex
 from engine.game_log.game_log import GameLog, GameEvent, GameEventType
 
@@ -41,6 +42,7 @@ from engine.characters.player import Player2
 from engine.storyline.game_action import *
 from engine.storyline.game_state import GameState, build_game_state_machine
 from engine.storyline.story_event import *
+from engine.storyline.story_events.choose_starter import *
 
 from engine.pokemon.pokemon import Pokemon
 
@@ -66,14 +68,13 @@ class GameConfig:
 
 
 class Game:
-
     def __init__(
             self,
             new=False,
             overwrite=False,
             save_slot=1,
 
-            game_state: GameState = GameState.going_to_lake_verity,
+            game_state: GameState = GameState.going_to_sandgem_town,
             cfg: GameConfig = GameConfig(),
     ):
 
@@ -103,6 +104,10 @@ class Game:
         self.loadDisplay: None | LoadDisplay = None
         self.game_display = None
 
+        self.displays: dict[str, None | SpriteScreen] = {
+            "choose_starter": None
+        }
+
         self.load_displays()
         self.game_display = GameDisplay(
             self.topSurf.get_size(),
@@ -126,7 +131,6 @@ class Game:
         self.pokedex.load_surfaces()
 
         # ========== DISPLAY INITIALISATION =========
-
         self.menu_objects = {
             GameDisplayStates.pokedex: self.pokedex,
             GameDisplayStates.team: MenuTeamDisplay(self.displaySize, self.graphics_scale, self),
@@ -251,6 +255,8 @@ class Game:
         self.bottomSurf.fill(Colours.white.value)
         self.loadDisplay = LoadDisplay(self.topSurf.get_size())
 
+        self.displays["choose_starter"] = ChooseStarterDisplay(self.topSurf.get_size(), scale=self.graphics_scale)
+
     def update_display(self, flip=True):
         """ update the game screen """
         self.game_display.refresh()
@@ -369,43 +375,43 @@ class Game:
         if trainer is not None:
             trainer.battled = True
 
-    def battle_intro(
-            self,
-            time_delay
-    ):
-        # TODO: migrate this to game display
-        black_surf = pg.Surface(self.topSurf.get_size())
-        black_surf.fill(Colours.darkGrey.value)
-        for count in range(2):
-            self.topSurf.blit(black_surf, (0, 0))
-            pg.display.flip()
-            pg.time.delay(time_delay)
-            self.update_display()
-            pg.time.delay(time_delay)
-
-            if count == 0:
-                self.bottomSurf.blit(black_surf, (0, 0))
-
-        current_game_display = self.game_display.get_surface()
-        left_cut, right_cut = current_game_display, current_game_display.copy()
-
-        # create stripy left/right surfaces
-        for i in range(20):
-            bar_rect = pg.Rect(0, i * 10 * self.graphics_scale, current_game_display.get_width(), 5 * self.graphics_scale)
-            pg.draw.rect(right_cut, pg.Color(0, 0, 0, 0), bar_rect)
-            bar_rect = bar_rect.move(0, 5 * self.graphics_scale)
-            pg.draw.rect(left_cut, pg.Color(0, 0, 0, 0), bar_rect)
-
-        max_frames = 30
-        for frame in range(max_frames):
-            black_surf.fill(Colours.black.value)
-            offset = (frame+1) * self.game_display.size.x / max_frames
-            black_surf.blit(left_cut, (-offset, 0))
-            black_surf.blit(right_cut, (offset, 0))
-            self.topSurf.blit(black_surf, (0, 0))
-
-            pg.display.flip()
-            pg.time.delay(20)
+    # def battle_intro(
+    #         self,
+    #         time_delay
+    # ):
+    #     # TODO: migrate this to game display
+    #     black_surf = pg.Surface(self.topSurf.get_size())
+    #     black_surf.fill(Colours.darkGrey.value)
+    #     for count in range(2):
+    #         self.topSurf.blit(black_surf, (0, 0))
+    #         pg.display.flip()
+    #         pg.time.delay(time_delay)
+    #         self.update_display()
+    #         pg.time.delay(time_delay)
+    #
+    #         if count == 0:
+    #             self.bottomSurf.blit(black_surf, (0, 0))
+    #
+    #     current_game_display = self.game_display.get_surface()
+    #     left_cut, right_cut = current_game_display, current_game_display.copy()
+    #
+    #     # create stripy left/right surfaces
+    #     for i in range(20):
+    #         bar_rect = pg.Rect(0, i * 10 * self.graphics_scale, current_game_display.get_width(), 5 * self.graphics_scale)
+    #         pg.draw.rect(right_cut, pg.Color(0, 0, 0, 0), bar_rect)
+    #         bar_rect = bar_rect.move(0, 5 * self.graphics_scale)
+    #         pg.draw.rect(left_cut, pg.Color(0, 0, 0, 0), bar_rect)
+    #
+    #     max_frames = 30
+    #     for frame in range(max_frames):
+    #         black_surf.fill(Colours.black.value)
+    #         offset = (frame+1) * self.game_display.size.x / max_frames
+    #         black_surf.blit(left_cut, (-offset, 0))
+    #         black_surf.blit(right_cut, (offset, 0))
+    #         self.topSurf.blit(black_surf, (0, 0))
+    #
+    #         pg.display.flip()
+    #         pg.time.delay(20)
 
     def wait_for_key(
             self,
@@ -413,6 +419,9 @@ class Game:
             key: int = None,
             break_on_timeout: bool=True
     ) -> bool:
+        """
+        Wait for a key to 
+        """
         key = key if key is not None else self.controller.a
 
         t0 = time.monotonic()
@@ -442,7 +451,15 @@ class Game:
         """
         self.game_display.map.display_message(text, self.topSurf, speed=self.cfg.text_speed)
 
-    def process_game_interaction(self, interaction: list[GameAction]):
+    def process_game_interaction(
+            self,
+            interaction: list[GameAction]
+    ):
+        """
+        Run a set of game actions.
+
+        :param interaction: The game actions to run
+        """
         for action in interaction:
             if action.action_type == GameActionType.move:
                 action: MoveAction
@@ -633,7 +650,7 @@ class Game:
                             wait_for_key(break_on_timeout=False)
                             self.update_display()
 
-                            self.bag.add_item(item)
+                            self.player.bag.add_item(item)
 
                         elif obj:
                             self.game_display.map.object_interaction(obj, self.topSurf)
@@ -708,8 +725,7 @@ class Game:
             lake_verity.object_layer_sprites[add_layer.id].add(self.professor_rowan)
             lake_verity.object_layer_sprites[add_layer.id].add(self.dawn)
 
-            print(self.dawn.map_positions)
-
+    # === STORY ===
     def check_story_triggers(self):
         def check_trigger_activated(trigger: MapInteraction):
             subject = None
