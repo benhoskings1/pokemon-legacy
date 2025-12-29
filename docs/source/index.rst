@@ -10,7 +10,7 @@ This projects aims to build a fully-fledged pokemon emulator in python.
 
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 4
     :caption: Contents:
 
     installation

@@ -1,6 +1,5 @@
-engine.characters.trainer
-=========================
+engine.characters.trainer.Trainer
+================================
 
 .. automodule:: engine.characters.trainer
    :members:
-   :undoc-members:

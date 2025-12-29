@@ -5,7 +5,7 @@ engine
    :members:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    pokemon
    characters/index

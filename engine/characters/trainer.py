@@ -144,6 +144,12 @@ class Trainer(Character):
         self.battle_sprite.image = None
 
     def interaction(self, *args, **kwargs) -> None | list[GameAction]:
+        """
+        Defines all interactions with this trainer. This is often dependent on the game state.
+
+        :return: list of GameAction
+        :rtype: list[GameAction]
+        """
         return [
             TrainerBattle(self)
         ]

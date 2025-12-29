@@ -1,11 +1,9 @@
 engine.characters
 =================
 
-.. automodule:: engine.characters.character
-   :members:
-
 .. toctree::
    :maxdepth: 2
 
+   base
    npc
    trainer

@@ -1,6 +1,6 @@
-numpy~=1.25.2
-pygame~=2.5.0
-pandas~=2.0.3
-Pillow~=10.0.0
-opencv-python~=4.8.0.76
-PyTMX~=3.32
+numpy
+pygame
+pandas
+Pillow
+opencv-python
+PyTMX

@@ -4,6 +4,7 @@ import pickle
 import time
 from typing import Any
 import importlib.resources as resources
+from dataclasses import dataclass
 
 from enum import Enum
 from math import floor
@@ -36,6 +37,7 @@ editor = ImageEditor()
 
 
 class StatusEffect(Enum):
+    """ Status Effect that a pokémon can have """
     Burned = "Burned"
     Frozen = "Frozen"
     Paralysed = "Paralysed"
@@ -91,26 +93,20 @@ class Stats:
         return self.get_values()[key]
 
     def get_values(self):
+        """ Return all values of stats """
         return [self.health, self.attack, self.defence, self.spAttack, self.spDefence, self.speed]
 
 
+@dataclass
 class StatStages:
-    def __init__(self, attack=0, defence=0, spAttack=0, spDefence=0, speed=0, accuracy=0, evasion=0):
-        self.attack = attack
-        self.defence = defence
-        self.spAttack = spAttack
-        self.spDefence = spDefence
-        self.speed = speed
-        self.accuracy = accuracy
-        self.evasion = evasion
-
-    def __str__(self):
-        return (f"{self.attack}, {self.defence}, {self.spAttack}, {self.spDefence}, "
-                f"{self.speed}, {self.accuracy}, {self.evasion}")
-
-    def __repr__(self):
-        return (f"{self.attack}, {self.defence}, {self.spAttack}, {self.spDefence}, "
-                f"{self.speed}, {self.accuracy}, {self.evasion}")
+    """ dataclass to keep track of the in-battle stat stages """
+    attack: int = 0
+    defence: int = 0
+    spAttack: int = 0
+    spDefence: int = 0
+    speed: int = 0
+    accuracy: int = 0
+    evasion: int = 0
 
 
 class PokemonSpriteSmall(pg.sprite.Sprite):
@@ -176,8 +172,8 @@ class Pokemon(pg.sprite.Sprite):
     stage_multipliers = {idx: (idx + 2 if idx > 0 else 2) / (abs(idx) + 2 if idx < 0 else 2) for idx in range(-6, 7)}
 
     # pokemon sprites
-    all_sprites = cv2.imread(MODULE_PATH / "assets/Gen_IV_Sprites.png", cv2.IMREAD_UNCHANGED)
-    small_sprites = cv2.imread(MODULE_PATH / "assets/Gen_IV_Small_Sprites.png", cv2.IMREAD_UNCHANGED)
+    all_sprites = cv2.imread(str(MODULE_PATH / "assets/Gen_IV_Sprites.png"), cv2.IMREAD_UNCHANGED)
+    small_sprites = cv2.imread(str(MODULE_PATH / "assets/Gen_IV_Small_Sprites.png"), cv2.IMREAD_UNCHANGED)
 
     # pokemon data
     natures = pd.read_csv(os.path.join(DATA_PATH, "natures.tsv"), delimiter='\t', index_col=0)
