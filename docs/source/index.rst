@@ -15,5 +15,5 @@ This projects aims to build a fully-fledged pokemon emulator in python.
 
     installation
     usage
-    api
+    api/index
     changelog
