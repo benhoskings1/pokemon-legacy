@@ -3,3 +3,5 @@
 !/game_data/save_states/start/*
 *.iml
 .idea/*
+
+docs/build
