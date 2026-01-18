@@ -19,9 +19,9 @@ from engine.pokemon.pokemon import Pokemon
 MODULE_PATH = Path(__file__).parent
 
 
-class SelectorOptions(Enum):
-    no = 0
+class ConfirmOption(Enum):
     yes = 1
+    no = 0
 
 
 class PokemonContainer(pg.sprite.Sprite, SpriteScreen):
@@ -51,9 +51,10 @@ class PokemonContainer(pg.sprite.Sprite, SpriteScreen):
 class ChooseStarterDisplay(SelectorDisplay, MainScreen, StateMachine):
     choosing = State("choose", initial=True)
     confirming = State("confirm")
-    # confirmed = State("confirmed")
+    confirmed = State("confirmed", final=True)
 
     confirm_starter = choosing.to(confirming, on="confirm_transition")
+    complete_starter = confirming.to(confirmed, on="complete_transition")
 
     go_back = (
         choosing.to(choosing)
@@ -82,6 +83,8 @@ class ChooseStarterDisplay(SelectorDisplay, MainScreen, StateMachine):
             scale=scale
         )
 
+        self.main_selector = self.selector
+
         StateMachine.__init__(self)
 
         self.link_options(starters[0], starters[1], Direction.right, reverse=True)
@@ -90,12 +93,19 @@ class ChooseStarterDisplay(SelectorDisplay, MainScreen, StateMachine):
         self.confirm_box = SelectorDisplay(
             display_image_path=str(MODULE_PATH / "assets" / "confirm_box.png"),
             selector_image_path="arrow",
-            options=SelectorOptions,
+            options=ConfirmOption,
             option_positions=[(6, 9), (6, 25)],
             display_position=pg.Vector2(178, 90),
             scale=scale
 
         )
+
+        self.confirm_box.link_options(ConfirmOption.yes, ConfirmOption.no, direction=Direction.down, reverse=True)
+
+        self.selector_map = {
+            self.choosing: self.selector,
+            self.confirming: self.confirm_box.selector,
+        }
 
     # === STATE MACHINE API ===
     def confirm_transition(self):
@@ -105,12 +115,16 @@ class ChooseStarterDisplay(SelectorDisplay, MainScreen, StateMachine):
         self.sprites.add(self.starter_containers[selected_pk])
 
         self.update_display_text(
-            f"{selected_pk.species} {selected_pk.name.upper()}!,"
+            f"{selected_pk.species} {selected_pk.name.upper()}!"
             f"Will you take this Pokémon?"
         )
 
+    def complete_transition(self):
+        ...
+
     def cancel_selection(self):
         self.sprites.empty()
+        self.sprites.add(self.selector)
         self.refresh()
 
     # === DISPLAY CONFIGURATION ===
@@ -121,7 +135,7 @@ class ChooseStarterDisplay(SelectorDisplay, MainScreen, StateMachine):
             self,
             window: pg.Surface,
             controller: Controller = Controller()
-    ):
+    ) -> None | bool:
         window.blit(self.get_surface(), (0, 0))
         pg.display.flip()
 
@@ -133,14 +147,22 @@ class ChooseStarterDisplay(SelectorDisplay, MainScreen, StateMachine):
                 elif event.type == pg.KEYDOWN:
                     if event.key in controller.move_keys:
                         move_dir = controller.direction_key_bindings[event.key]
-                        self.process_interaction(move_dir)
+                        self.confirm_box.refresh()
+                        self.process_interaction(move_dir, self.selector_map[self.current_state])
+
                         self.update()
 
-                    elif event.key == controller.a:
-                        self.send("confirm_starter")
-
-                    elif event.key == controller.b:
+                    elif event.key == controller.b or self.selector_map[self.current_state].selected == ConfirmOption.no:
                         self.send("go_back")
+
+                    elif event.key == controller.a:
+                        if self.current_state == self.choosing:
+                            self.send("confirm_starter")
+                        elif self.current_state == self.confirming:
+                            self.send("complete_starter")
+                            return True
+
+
 
                 window.blit(self.get_surface(), (0, 0))
                 pg.display.flip()

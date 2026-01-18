@@ -45,9 +45,15 @@ class SelectorDisplay(DisplayContainer):
     def selected(self):
         return self.selector.selected
 
-    def process_interaction(self, direction: Direction):
+    def process_interaction(
+            self,
+            direction: Direction,
+            selector: None | OptionSelector = None
+    ):
         self.refresh()
-        self.selector.process_interaction(direction)
+        selector = selector or self.selector
+
+        selector.process_interaction(direction)
 
     def link_options(
             self,

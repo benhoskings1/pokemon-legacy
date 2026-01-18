@@ -1,6 +1,6 @@
 """ A collection of maps, linked with a networkx graph """
 import networkx as nx
-import networkx_mermaid as nxm
+# import networkx_mermaid as nxm
 import pygame as pg
 
 from engine.game_world.tiled_map import TiledMap2, LinkType, MapLinkTile
@@ -207,14 +207,15 @@ class MapCollection:
 
     # === Utils API ===
     def write_to_mermaid(self):
-        builder = nxm.builders.DiagramBuilder(
-            orientation=nxm.DiagramOrientation.LEFT_RIGHT,
-            node_shape=nxm.DiagramNodeShape.ROUND_RECTANGLE,
-        )
-
-        mermaid_diagram: nxm.typing.MermaidDiagram = builder.build(self.route_graph)
-        markdown_diagram: str = nxm.formatters.markdown(mermaid_diagram)
-        return markdown_diagram
+        ...
+        # builder = nxm.builders.DiagramBuilder(
+        #     orientation=nxm.DiagramOrientation.LEFT_RIGHT,
+        #     node_shape=nxm.DiagramNodeShape.ROUND_RECTANGLE,
+        # )
+        #
+        # mermaid_diagram: nxm.typing.MermaidDiagram = builder.build(self.route_graph)
+        # markdown_diagram: str = nxm.formatters.markdown(mermaid_diagram)
+        # return markdown_diagram
 
     def write_to_latex(self, filename: str):
         nx.write_latex(self._graph, f"{filename}.tex", caption="A caption")
