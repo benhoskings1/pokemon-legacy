@@ -12,3 +12,6 @@ Please install all required packages specified in ```requirements.txt``` before 
 4. Enjoy!!
 
 ## The game has 10 save states
+
+## API documentation
+> https://benhoskings1.github.io/pokemon-legacy/.

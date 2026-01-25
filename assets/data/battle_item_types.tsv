@@ -1,0 +1,5 @@
+battle_item_type_id	name	description
+1	restore
+2	pokeball
+3	healer
+4	battle_item

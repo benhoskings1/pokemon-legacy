@@ -1,0 +1,4 @@
+Time	Pokemon	Rarity	Start_Levels	End_Levels
+Morning	[Starly, Bidoof, Shinx, Kricketot, Abra]	[C, C, C, U, U]	[4, 4, 4, 4, 4]	[4, 6, 5, 4, 5]
+Day	[Starly, Bidoof, Shinx, Abra]	[C, C, C, U]	[4, 4, 4, 4]	[6, 6, 5, 5]
+Night	[Starly, Bidoof, Shinx, Zubat, Abra]	[C, C, C, U, U]	[4, 4, 4, 5, 4]	[4, 6, 5, 5, 5]

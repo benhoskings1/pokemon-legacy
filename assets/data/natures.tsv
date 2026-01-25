@@ -1,0 +1,26 @@
+	Name	Increased	Decreased	Favourite	Disliked
+0	Hardy	—	—	—	—
+1	Lonely	Attack	Defense	Spicy	Sour
+2	Brave	Attack	Speed	Spicy	Sweet
+3	Adamant	Attack	Sp. Attack	Spicy	Dry
+4	Naughty	Attack	Sp. Defense	Spicy	Bitter
+5	Bold	Defense	Attack	Sour	Spicy
+6	Docile	—	—	—	—
+7	Relaxed	Defense	Speed	Sour	Sweet
+8	Impish	Defense	Sp. Attack	Sour	Dry
+9	Lax	Defense	Sp. Defense	Sour	Bitter
+10	Timid	Speed	Attack	Sweet	Spicy
+11	Hasty	Speed	Defense	Sweet	Sour
+12	Serious	—	—	—	—
+13	Jolly	Speed	Sp. Attack	Sweet	Dry
+14	Naive	Speed	Sp. Defense	Sweet	Bitter
+15	Modest	Sp. Attack	Attack	Dry	Spicy
+16	Mild	Sp. Attack	Defense	Dry	Sour
+17	Quiet	Sp. Attack	Speed	Dry	Sweet
+18	Bashful	—	—	—	—
+19	Rash	Sp. Attack	Sp. Defense	Dry	Bitter
+20	Calm	Sp. Defense	Attack	Bitter	Spicy
+21	Gentle	Sp. Defense	Defense	Bitter	Sour
+22	Sassy	Sp. Defense	Speed	Bitter	Sweet
+23	Careful	Sp. Defense	Sp. Attack	Bitter	Dry
+24	Quirky	—	—	—	—

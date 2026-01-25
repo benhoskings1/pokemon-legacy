@@ -1,0 +1,87 @@
+{
+    "game_state": "going_to_sandgem_town",
+    "player": {
+        "steps": 16,
+        "money": 3000,
+        "bag": {},
+        "team": [],
+        "positions": [
+            [
+                "sandgem_town",
+                "route_orchestrator",
+                [
+                    31.0,
+                    14.0
+                ]
+            ],
+            [
+                "verity_lakefront",
+                "route_orchestrator",
+                [
+                    8.0,
+                    20.0
+                ]
+            ],
+            [
+                "route_219",
+                "route_orchestrator",
+                [
+                    16.0,
+                    6.0
+                ]
+            ],
+            [
+                "route_201",
+                "route_orchestrator",
+                [
+                    -15.0,
+                    14.0
+                ]
+            ],
+            [
+                "floor_0",
+                "rival_house",
+                [
+                    6.0,
+                    10.0
+                ]
+            ],
+            [
+                "floor_1",
+                "rival_house",
+                [
+                    3.0,
+                    4.0
+                ]
+            ],
+            [
+                "floor_0",
+                "player_house",
+                [
+                    10.0,
+                    3.0
+                ]
+            ],
+            [
+                "floor_1",
+                "player_house",
+                [
+                    4.0,
+                    6.0
+                ]
+            ],
+            [
+                "twinleaf_town",
+                "route_orchestrator",
+                [
+                    22.0,
+                    22.0
+                ]
+            ]
+        ]
+    },
+    "game_display": {
+        "map_name": "verity_lakefront",
+        "collection_name": "route_orchestrator"
+    }
+}

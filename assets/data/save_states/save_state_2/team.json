@@ -1,0 +1,53 @@
+[
+    {
+        "name": "Riolu",
+        "level": 10,
+        "exp": 700,
+        "moves": [
+            {
+                "name": "Scratch",
+                "pp": 35
+            },
+            {
+                "name": "Leer",
+                "pp": 30
+            }
+        ],
+        "health": 28,
+        "status": null,
+        "EVs": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        ],
+        "IVs": [
+            1,
+            31,
+            20,
+            17,
+            21,
+            1
+        ],
+        "gender": "male",
+        "nature": "Mild",
+        "ability_name": "Steadfast",
+        "stat_stages": {
+            "attack": 0,
+            "defence": 0,
+            "spAttack": 0,
+            "spDefence": 0,
+            "speed": 0,
+            "accuracy": 0,
+            "evasion": 0
+        },
+        "friendly": true,
+        "shiny": false,
+        "visible": true,
+        "catch_date": "2025-08-06",
+        "catch_location": null,
+        "catch_level": 10
+    }
+]

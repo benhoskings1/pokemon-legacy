@@ -1,0 +1,13 @@
+[
+    {
+        "name": "Piplup",
+        "level": 10,
+        "exp": 700,
+        "moves": [
+            {"name": "Pound"},
+            {"name": "Leer"}
+        ],
+        "health": 20,
+        "friendly": true
+    }
+]

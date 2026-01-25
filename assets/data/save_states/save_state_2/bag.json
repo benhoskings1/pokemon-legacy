@@ -1,0 +1,24 @@
+{
+    "Items": {},
+    "Pokeballs": {
+        "Poke Ball": 10,
+        "Master Ball": 24
+    },
+    "Medicine": {
+        "Antidote": 19,
+        "Awakening": 1,
+        "Potion": 20,
+        "Burn Heal": 1,
+        "Full Heal": 1,
+        "Full Restore": 1,
+        "Heal Powder": 1,
+        "Hyper Potion": 1,
+        "Ice Heal": 1,
+        "Max Revive": 1
+    },
+    "TMs": {},
+    "Berries": {},
+    "Mail": {},
+    "Battle_Items": {},
+    "Key_Items": {}
+}

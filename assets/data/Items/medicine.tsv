@@ -1,0 +1,17 @@
+medicine_id	item_id	heal_amount	status	battle_type	active
+1	5	20		HP/PP	1
+2	6	50		HP/PP	1
+4	7	200		HP/PP	1
+5	8		Poisoned	Status	0
+6	9		Sleeping	Status	0
+7	10		Burned	Status	0
+8	11				0
+9	12				0
+10	13				0
+11			Frozen		0
+12					0
+13		Old Gateau
+14		Paralyse Heal
+15		Revival Herb
+16		Revive		Status
+17		Sacred Ash
